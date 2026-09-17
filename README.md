@@ -32,6 +32,21 @@ The contact section deliberately reads "Contact details coming soon." Replace th
 text in `#contact-slot` with the approved business email or booking link before
 accepting enquiries. There is no enquiry form and no backend.
 
+## Deployment
+
+`.github/workflows/pages.yml` publishes the site to GitHub Pages on every push to
+`main`, and can also be run manually from the Actions tab. It copies the three site
+files into `_site/`, adds `.nojekyll` so Pages serves them verbatim, and deploys via
+the official Pages actions. No build tooling is involved.
+
+This requires Pages to be enabled once in **Settings → Pages → Source → GitHub
+Actions**. Until that is set, the deploy job fails with a Pages-not-enabled error;
+the site itself is unaffected.
+
+`.github/workflows/ci.yml` runs on pull requests and on pushes to `main`: it checks
+the script syntax and verifies that every local file reference and in-page anchor in
+`index.html` actually resolves.
+
 ## Checks
 
 ```sh
