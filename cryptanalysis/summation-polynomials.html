@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0f18">
+  <meta name="description" content="Semaev summation polynomials, Gaudry and Diem&#x27;s index calculus for elliptic curves over extension fields, the Grobner-basis bottleneck, and why prime-field curves such as P-256 are unaffected.">
+  <meta property="og:title" content="Summation polynomials and elliptic-curve index calculus — Isogeny Labs">
+  <meta property="og:description" content="Semaev summation polynomials, Gaudry and Diem&#x27;s index calculus for elliptic curves over extension fields, the Grobner-basis bottleneck, and why prime-field curves such as P-256 are unaffected.">
+  <meta property="og:type" content="article">
+  <title>Summation polynomials and elliptic-curve index calculus — Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
+    <nav class="navigation" id="navigation" aria-label="Main navigation">
+      <a href="../index.html#work">What we do</a><a href="../index.html#approach">How we work</a><a href="../index.html#foundations">Foundations</a><a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis</a>
+      <a class="nav-cta" href="../index.html#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main">
+    <article class="doc">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Isogeny Labs</a> <span aria-hidden="true">/</span>
+        <a href="index.html">Cryptanalysis</a> <span aria-hidden="true">/</span>
+        <span aria-current="page">Summation polynomials</span>
+      </nav>
+      <header class="doc-header">
+        <p class="eyebrow"><span class="small-cross">+</span> INDEX CALCULUS AND DESCENT</p>
+        <h1>Summation polynomials and elliptic-curve index calculus</h1>
+        <p class="doc-standfirst">Index calculus reduced finite-field discrete logarithms to subexponential time. Whether the same can be done for elliptic curves is the central open question in ECC hardness, and summation polynomials are the sharpest tool anyone has aimed at it. Over extension fields they work. Over prime fields, after twenty years, they do not.</p>
+      </header>
+      <dl class="doc-facts">
+        <div class="fact"><dt>Problem</dt><dd>ECDLP on E/F<sub>q<sup>n</sup></sub></dd></div>
+        <div class="fact"><dt>Cost</dt><dd>&Otilde;(q<sup>2&minus;2/n</sup>) for fixed n &gt; 1 (Gaudry); subexponential for suitable growing families (Diem)</dd></div>
+        <div class="fact"><dt>Bottleneck</dt><dd>Gr&ouml;bner-basis solving of the decomposition system</dd></div>
+        <div class="fact"><dt>Affects</dt><dd>Curves over extension fields with a usable subfield structure</dd></div>
+        <div class="fact"><dt>Does not affect</dt><dd>Prime-field curves &mdash; P-256, secp256k1, Curve25519</dd></div>
+      </dl>
+      <nav class="doc-toc" aria-label="On this page">
+        <p class="eyebrow">On this page</p>
+        <ol>
+        <li><a href="#why-index-calculus-is-the-question">Why index calculus is the question</a></li>
+        <li><a href="#semaev-s-construction">Semaev's construction</a></li>
+        <li><a href="#the-factor-base-and-why-it-needs-an-extension-field">The factor base, and why it needs an extension field</a></li>
+        <li><a href="#the-gröbner-bottleneck">The Gr&ouml;bner bottleneck</a></li>
+        <li><a href="#the-boundary">The boundary</a></li>
+        </ol>
+      </nav>
+      <section class="doc-section" id="why-index-calculus-is-the-question" aria-labelledby="why-index-calculus-is-the-question-title">
+        <h2 id="why-index-calculus-is-the-question-title"><span class="doc-section-number">01</span>Why index calculus is the question</h2>
+        <p>In <strong>F</strong><sub>p</sub><sup>&times;</sup>, index calculus is devastating: pick a factor base of small primes, find many relations among their logarithms, solve the resulting sparse linear system, and the discrete logarithm becomes subexponential. This is why a finite-field Diffie&ndash;Hellman modulus must be 3072 bits to match a 256-bit curve.</p>
+        <p>The method needs two ingredients: a notion of an element being <em>smooth</em>, and cheap relations among smooth elements. A group of points on an elliptic curve has neither by default. There is no factorisation, so there is no smoothness; the only structure is the group law. Making index calculus work on a curve means manufacturing both.</p>
+      </section>
+      <section class="doc-section" id="semaev-s-construction" aria-labelledby="semaev-s-construction-title">
+        <h2 id="semaev-s-construction-title"><span class="doc-section-number">02</span>Semaev's construction</h2>
+        <p>Semaev supplies the missing notion of a relation. The <em>m</em>-th summation polynomial <em>S<sub>m</sub></em> is the polynomial in <em>m</em> variables whose vanishing characterises <em>x</em>-coordinates of points summing to the identity:</p>
+        <div class="math">S<sub>m</sub>(x<sub>1</sub>, &hellip;, x<sub>m</sub>) = 0 &nbsp;&hArr;&nbsp; &exist; y<sub>i</sub> with (x<sub>i</sub>, y<sub>i</sub>) &isin; E and P<sub>1</sub> + &hellip; + P<sub>m</sub> = O
+          <span class="math-label">The defining property</span></div>
+        <p>For <em>E</em>: <em>y</em><sup>2</sup> = <em>x</em><sup>3</sup> + <em>ax</em> + <em>b</em> the third one is explicit, and it is just the group law with the <em>y</em>-coordinates eliminated by resultant:</p>
+        <div class="math">S<sub>3</sub> = (x<sub>1</sub> &minus; x<sub>2</sub>)<sup>2</sup>x<sub>3</sub><sup>2</sup> &minus; 2((x<sub>1</sub> + x<sub>2</sub>)(x<sub>1</sub>x<sub>2</sub> + a) + 2b)x<sub>3</sub> + ((x<sub>1</sub>x<sub>2</sub> &minus; a)<sup>2</sup> &minus; 4b(x<sub>1</sub> + x<sub>2</sub>))
+          <span class="math-label">S<sub>3</sub> for a short Weierstrass curve</span></div>
+        <p>Higher ones come from resultants of lower ones, <em>S<sub>m+1</sub></em> = Res<sub><em>X</em></sub>(<em>S<sub>m</sub></em>, <em>S</em><sub>3</sub>), and the degree in each variable doubles each time: deg <em>S<sub>m</sub></em> = 2<sup><em>m</em>&minus;2</sup> per variable. That doubling is the whole story of the method's cost.</p>
+      </section>
+      <section class="doc-section" id="the-factor-base-and-why-it-needs-an-extension-field" aria-labelledby="the-factor-base-and-why-it-needs-an-extension-field-title">
+        <h2 id="the-factor-base-and-why-it-needs-an-extension-field-title"><span class="doc-section-number">03</span>The factor base, and why it needs an extension field</h2>
+        <p>Gaudry's insight is that over <strong>F</strong><sub><em>q<sup>n</sup></em></sub> there is a natural factor base with no analogue over a prime field: the points whose <em>x</em>-coordinate lies in the subfield <strong>F</strong><sub><em>q</em></sub>. That set has about <em>q</em> elements inside a group of size <em>q<sup>n</sup></em>, which is a genuine sub-object to decompose against.</p>
+        <p>Relation search then proceeds by Weil restriction. For a random point <em>R</em> = <em>aP</em> + <em>bQ</em>, ask whether it decomposes as a sum of <em>n</em> factor-base points:</p>
+        <ol class="doc-steps">
+          <li>Impose <em>S</em><sub><em>n</em>+1</sub>(<em>x</em><sub>1</sub>, &hellip;, <em>x<sub>n</sub></em>, <em>x</em>(<em>R</em>)) = 0 with each <em>x<sub>i</sub></em> constrained to the subfield <strong>F</strong><sub><em>q</em></sub>.</li>
+          <li>Write each <em>x<sub>i</sub></em> in a basis of <strong>F</strong><sub><em>q<sup>n</sup></em></sub> over <strong>F</strong><sub><em>q</em></sub>; the single equation becomes <em>n</em> equations over <strong>F</strong><sub><em>q</em></sub> in <em>n</em> unknowns.</li>
+          <li>Solve that system with a Gr&ouml;bner-basis engine. A solution is a relation; no solution means try another <em>R</em>.</li>
+          <li>Collect slightly more than <em>q</em> relations, then solve the sparse linear system over &#x2124;/<em>n</em>&#x2124; for the factor-base logarithms.</li>
+        </ol>
+        <p>Counting relations gives the asymptotic: for fixed <em>n</em>, the total is &Otilde;(<em>q</em><sup>2&minus;2/<em>n</em></sup>) group operations, which beats rho's <em>q</em><sup><em>n</em>/2</sup> once <em>n</em> &ge; 3. Diem pushed this further, showing that for suitable families in which <em>n</em> grows with <em>q</em> the problem becomes subexponential in the size of the group. These are real results about real elliptic curves, and they are the reason "ECDLP is exponential" is a claim about chosen parameters rather than a theorem about curves.</p>
+      </section>
+      <section class="doc-section" id="the-gröbner-bottleneck" aria-labelledby="the-gröbner-bottleneck-title">
+        <h2 id="the-gröbner-bottleneck-title"><span class="doc-section-number">04</span>The Gr&ouml;bner bottleneck</h2>
+        <p>Hidden inside step three is where all the difficulty lives. The decomposition system has <em>n</em> equations in <em>n</em> variables, of degree 2<sup><em>n</em>&minus;1</sup>, and solving it with F4/F5 costs something governed by the <em>degree of regularity</em> reached during the computation &mdash; a quantity that is not known in advance and, for these particular systems, is not reliably predicted by the generic-system heuristics.</p>
+        <p>Two research threads try to control it. Symmetrisation rewrites the system in the elementary symmetric functions of the <em>x<sub>i</sub></em>, since the decomposition is unordered, cutting the degree substantially; over binary fields Faug&egrave;re, Perret, Petit and Renault exploited the additional structure of the field equations. The <em>first fall degree</em> &mdash; the degree at which non-trivial degree falls first occur &mdash; became the standard proxy for predicting feasibility, and a body of work argues both that it is a good predictor and that it is not.</p>
+        <aside class="doc-note"><span class="doc-note-label">Read the heuristic</span><p>The published asymptotics for this family of attacks rest on heuristic assumptions about Gr&ouml;bner-basis behaviour on non-generic systems. A complexity claim in this area should always be read together with its heuristic, and treated as measured only at the scales where someone has actually run it.</p></aside>
+      </section>
+      <section class="doc-section" id="the-boundary" aria-labelledby="the-boundary-title">
+        <h2 id="the-boundary-title"><span class="doc-section-number">05</span>The boundary</h2>
+        <p>For a curve over a prime field <strong>F</strong><sub>p</sub> there is no proper subfield, so Gaudry's factor base does not exist. Every attempt to substitute something else &mdash; points whose <em>x</em>-coordinate lies in a chosen interval, in a small-degree image, or in a set defined by a low-weight representation &mdash; has failed to produce enough relations cheaply enough to beat &radic;<em>p</em>. No published attack on the prime-field ECDLP improves on generic methods.</p>
+        <p>So the practical reading is narrow and specific:</p>
+        <ul>
+          <li>Prime-field curves &mdash; P-256, P-384, secp256k1, Curve25519 &mdash; are unaffected. Their security level remains the rho bound.</li>
+          <li>Curves over <strong>F</strong><sub><em>q<sup>n</sup></em></sub> with small <em>n</em> &gt; 1 need their security assessed against &Otilde;(<em>q</em><sup>2&minus;2/<em>n</em></sup>), not against the group size.</li>
+          <li>Binary curves over <strong>F</strong><sub>2<sup><em>m</em></sup></sub> with <em>m</em> prime resist this and <a href="weil-descent.html">Weil descent</a>, which is why the standardised binary degrees are prime.</li>
+          <li>The open question &mdash; whether any factor base works over a prime field &mdash; is unresolved, not settled in the negative. It is worth tracking rather than filing away.</li>
+        </ul>
+      </section>
+      <section class="doc-section doc-references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title"><span class="doc-section-number">06</span>Primary sources</h2>
+        <p>Read these rather than this page. Links open in a new tab.</p>
+        <ul class="reference-list">
+        <li><a href="https://eprint.iacr.org/2004/031" rel="noopener noreferrer" target="_blank">I. Semaev, "Summation polynomials and the discrete logarithm problem on elliptic curves" (2004) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://eprint.iacr.org/2004/073" rel="noopener noreferrer" target="_blank">P. Gaudry, "Index calculus for abelian varieties of small dimension and the elliptic curve discrete logarithm problem", Journal of Symbolic Computation 44 (2009) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://www.math.uni-leipzig.de/~diem/preprints/dlp-ell-curves.pdf" rel="noopener noreferrer" target="_blank">C. Diem, "On the discrete logarithm problem in elliptic curves", Compositio Mathematica 147 (2011) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://link.springer.com/chapter/10.1007/978-3-642-29011-4_4" rel="noopener noreferrer" target="_blank">J.-C. Faug&egrave;re, L. Perret, C. Petit and G. Renault, "Improving the complexity of index calculus algorithms in elliptic curves over binary fields", EUROCRYPT 2012 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://eprint.iacr.org/2012/146" rel="noopener noreferrer" target="_blank">C. Petit and J.-J. Quisquater, "On polynomial systems arising from a Weil descent", ASIACRYPT 2012 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://eprint.iacr.org/2015/1022" rel="noopener noreferrer" target="_blank">S. D. Galbraith and P. Gaudry, "Recent progress on the elliptic curve discrete logarithm problem", Designs, Codes and Cryptography 78 (2016) <span aria-hidden="true">↗</span></a></li>
+        </ul>
+      </section>
+      <section class="doc-related" aria-labelledby="related-title">
+        <h2 id="related-title" class="eyebrow">Related techniques</h2>
+        <ul>
+        <li><a href="weil-descent.html"><span>Index calculus and descent</span>Weil descent and the GHS attack</a></li>
+        <li><a href="pollard-rho.html"><span>Generic group algorithms</span>Pollard's rho and the parallel collision search</a></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-top">
+      <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+      <p>Cryptographic analysis.<br>Systems that hold up.</p>
+      <a class="text-link light" href="#main">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <span>Hardness analysis · Isogeny systems · Post-quantum migration</span>
+    </div>
+  </footer>
+</body>
+</html>

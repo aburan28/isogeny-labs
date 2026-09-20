@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0f18">
+  <meta name="description" content="How Pohlig-Hellman reduces a discrete logarithm to the prime factors of the group order, and why invalid-curve and small-subgroup attacks are its practical consequence.">
+  <meta property="og:title" content="Pohlig–Hellman and the smooth-order reduction — Isogeny Labs">
+  <meta property="og:description" content="How Pohlig-Hellman reduces a discrete logarithm to the prime factors of the group order, and why invalid-curve and small-subgroup attacks are its practical consequence.">
+  <meta property="og:type" content="article">
+  <title>Pohlig–Hellman and the smooth-order reduction — Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
+    <nav class="navigation" id="navigation" aria-label="Main navigation">
+      <a href="../index.html#work">What we do</a><a href="../index.html#approach">How we work</a><a href="../index.html#foundations">Foundations</a><a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis</a>
+      <a class="nav-cta" href="../index.html#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main">
+    <article class="doc">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Isogeny Labs</a> <span aria-hidden="true">/</span>
+        <a href="index.html">Cryptanalysis</a> <span aria-hidden="true">/</span>
+        <span aria-current="page">Pohlig&ndash;Hellman</span>
+      </nav>
+      <header class="doc-header">
+        <p class="eyebrow"><span class="small-cross">+</span> GENERIC GROUP ALGORITHMS</p>
+        <h1>Pohlig&ndash;Hellman and the smooth-order reduction</h1>
+        <p class="doc-standfirst">Pohlig&ndash;Hellman is the reason a curve order is published as <em>h</em> &middot; <em>n</em> with <em>n</em> prime, and the reason a protocol that skips point validation can be broken by an attacker who simply hands it the wrong curve.</p>
+      </header>
+      <dl class="doc-facts">
+        <div class="fact"><dt>Problem</dt><dd>Discrete logarithm in a group of composite, partly smooth order</dd></div>
+        <div class="fact"><dt>Cost</dt><dd>O(&Sigma;<sub>i</sub> e<sub>i</sub>(log n + &radic;p<sub>i</sub>)) for n = &prod; p<sub>i</sub><sup>e<sub>i</sub></sup></dd></div>
+        <div class="fact"><dt>Requires</dt><dd>The factorisation of the group order &mdash; normally public</dd></div>
+        <div class="fact"><dt>Deployed consequence</dt><dd>Invalid-curve attacks, small-subgroup confinement attacks</dd></div>
+        <div class="fact"><dt>Defence</dt><dd>Prime-order subgroup, cofactor handling, point validation</dd></div>
+      </dl>
+      <nav class="doc-toc" aria-label="On this page">
+        <p class="eyebrow">On this page</p>
+        <ol>
+        <li><a href="#the-problem-instance">The problem instance</a></li>
+        <li><a href="#the-mechanism">The mechanism</a></li>
+        <li><a href="#why-this-shapes-curve-standards">Why this shapes curve standards</a></li>
+        <li><a href="#invalid-curve-attacks-the-real-version">Invalid-curve attacks: the real version</a></li>
+        <li><a href="#the-boundary">The boundary</a></li>
+        </ol>
+      </nav>
+      <section class="doc-section" id="the-problem-instance" aria-labelledby="the-problem-instance-title">
+        <h2 id="the-problem-instance-title"><span class="doc-section-number">01</span>The problem instance</h2>
+        <p>Given <em>P</em> of order <em>n</em> = &prod; <em>p<sub>i</sub><sup>e<sub>i</sub></sup></em> and <em>Q</em> = <em>kP</em>, recover <em>k</em>. Unlike the setting for <a href="pollard-rho.html">rho</a>, the order is not prime, and its factorisation is known &mdash; for a standardised curve it is printed in the specification.</p>
+      </section>
+      <section class="doc-section" id="the-mechanism" aria-labelledby="the-mechanism-title">
+        <h2 id="the-mechanism-title"><span class="doc-section-number">02</span>The mechanism</h2>
+        <p>The group decomposes by the Chinese remainder theorem, and so does the logarithm. For each prime power <em>p<sub>i</sub><sup>e<sub>i</sub></sup></em>, project into the subgroup of that order by multiplying through by the cofactor:</p>
+        <div class="math">P<sub>i</sub> = (n/p<sub>i</sub><sup>e<sub>i</sub></sup>)P, &nbsp; Q<sub>i</sub> = (n/p<sub>i</sub><sup>e<sub>i</sub></sup>)Q &nbsp;&rArr;&nbsp; k mod p<sub>i</sub><sup>e<sub>i</sub></sup> solves a DLP in a group of order p<sub>i</sub><sup>e<sub>i</sub></sup>
+          <span class="math-label">Solve each piece, then reassemble by CRT</span></div>
+        <p>Within a prime-power subgroup the logarithm is recovered one <em>p<sub>i</sub></em>-adic digit at a time: write <em>k</em> &equiv; <em>d</em><sub>0</sub> + <em>d</em><sub>1</sub><em>p<sub>i</sub></em> + &hellip; and determine each digit by a discrete logarithm in a group of order <em>p<sub>i</sub></em>, solved with rho or baby-step giant-step at cost &radic;<em>p<sub>i</sub></em>. The total is O(&Sigma; <em>e<sub>i</sub></em>(log <em>n</em> + &radic;<em>p<sub>i</sub></em>)) group operations.</p>
+        <aside class="doc-note"><span class="doc-note-label">The consequence</span><p>The security of the group collapses to its largest prime factor. A 256-bit group order whose factors are all below 2<sup>40</sup> offers about 20 bits of security, not 128. There is no partial credit for the size of n itself.</p></aside>
+      </section>
+      <section class="doc-section" id="why-this-shapes-curve-standards" aria-labelledby="why-this-shapes-curve-standards-title">
+        <h2 id="why-this-shapes-curve-standards-title"><span class="doc-section-number">03</span>Why this shapes curve standards</h2>
+        <p>Every standardised curve publishes its group order as <em>h</em> &middot; <em>n</em>, with <em>n</em> a large prime and <em>h</em> a small cofactor: <em>h</em> = 1 for the NIST prime curves and secp256k1, <em>h</em> = 8 for Curve25519, <em>h</em> = 4 for Curve448. Cryptographic operations are confined to the order-<em>n</em> subgroup precisely so that Pohlig&ndash;Hellman has nothing to work with.</p>
+        <p>The cofactor is not free. In a group with <em>h</em> = 8, an attacker who can get a peer to compute with a point of order 8 learns the secret scalar modulo 8. That is only three bits, but it is three bits per protocol run against a static key, and it composes with other leakage. Hence cofactor clearing, or the ristretto255-style construction that removes the cofactor from the abstraction entirely.</p>
+      </section>
+      <section class="doc-section" id="invalid-curve-attacks-the-real-version" aria-labelledby="invalid-curve-attacks-the-real-version-title">
+        <h2 id="invalid-curve-attacks-the-real-version-title"><span class="doc-section-number">04</span>Invalid-curve attacks: the real version</h2>
+        <p>The damaging deployed form of this attack does not need the target's curve to have a smooth order &mdash; it supplies a different curve that does. Short Weierstrass point arithmetic over <strong>F</strong><sub>p</sub> for <em>y</em><sup>2</sup> = <em>x</em><sup>3</sup> + <em>ax</em> + <em>b</em> never uses <em>b</em>. So a point that does not lie on the intended curve lies on some other curve with the same <em>a</em>, and the victim's scalar multiplication computes happily in <em>that</em> group.</p>
+        <ol class="doc-steps">
+          <li>The attacker searches for a curve <em>E'</em> with the same <em>a</em> whose order has a small prime factor <em>q</em>, and finds a point <em>R</em> of order <em>q</em> on it.</li>
+          <li>The attacker sends <em>R</em> as a public key. The victim computes <em>dR</em> with its long-term secret <em>d</em> and returns or reveals something derived from it.</li>
+          <li>Because <em>R</em> has order <em>q</em>, brute force over <em>q</em> candidates yields <em>d</em> mod <em>q</em>.</li>
+          <li>Repeat with different small primes until the CRT reconstruction pins down <em>d</em> &mdash; typically a few dozen queries.</li>
+        </ol>
+        <p>Real instances have been found in TLS libraries, in Bluetooth pairing, and in JSON Web Encryption implementations. The defence is unglamorous and absolute: validate that a received point satisfies the curve equation, is not the identity, and lies in the correct subgroup, before any secret-dependent arithmetic. Curve models whose arithmetic uses every parameter &mdash; Montgomery and twisted Edwards forms &mdash; reduce the exposure but do not replace validation, because they leave the twist reachable.</p>
+      </section>
+      <section class="doc-section" id="the-boundary" aria-labelledby="the-boundary-title">
+        <h2 id="the-boundary-title"><span class="doc-section-number">05</span>The boundary</h2>
+        <p>On a prime-order curve with validated inputs, Pohlig&ndash;Hellman contributes nothing: there is one prime factor and the reduction is the identity. Its residual relevance is entirely in the surrounding engineering &mdash; cofactors, twists, missing validation, and protocols that reuse a static key across many attacker-chosen inputs.</p>
+        <p>It is worth stating what this means for review practice. Asking "is the curve strong?" is the wrong question for this attack class; the right questions are whether every received point is validated, whether the cofactor is cleared, and whether the same private scalar is ever applied to more than a handful of attacker-supplied group elements.</p>
+      </section>
+      <section class="doc-section doc-references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title"><span class="doc-section-number">06</span>Primary sources</h2>
+        <p>Read these rather than this page. Links open in a new tab.</p>
+        <ul class="reference-list">
+        <li><a href="https://ieeexplore.ieee.org/document/1055817" rel="noopener noreferrer" target="_blank">S. Pohlig and M. Hellman, "An improved algorithm for computing logarithms over GF(p) and its cryptographic significance", IEEE Trans. Inf. Theory 24 (1978) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://link.springer.com/chapter/10.1007/3-540-44598-6_8" rel="noopener noreferrer" target="_blank">I. Biehl, B. Meyer and V. M&uuml;ller, "Differential fault attacks on elliptic curve cryptosystems", CRYPTO 2000 &mdash; the origin of the invalid-curve attack <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://link.springer.com/chapter/10.1007/978-3-319-24174-6_21" rel="noopener noreferrer" target="_blank">T. Jager, J. Schwenk and J. Somorovsky, "Practical invalid curve attacks on TLS-ECDH", ESORICS 2015 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://safecurves.cr.yp.to/" rel="noopener noreferrer" target="_blank">D. J. Bernstein and T. Lange, "SafeCurves: choosing safe curves for elliptic-curve cryptography" <span aria-hidden="true">↗</span></a></li>
+        </ul>
+      </section>
+      <section class="doc-related" aria-labelledby="related-title">
+        <h2 id="related-title" class="eyebrow">Related techniques</h2>
+        <ul>
+        <li><a href="pollard-rho.html"><span>Generic group algorithms</span>Pollard's rho and the parallel collision search</a></li>
+        <li><a href="hidden-number-problem.html"><span>Lattice attacks</span>The hidden number problem and ECDSA nonce leakage</a></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-top">
+      <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+      <p>Cryptographic analysis.<br>Systems that hold up.</p>
+      <a class="text-link light" href="#main">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <span>Hardness analysis · Isogeny systems · Post-quantum migration</span>
+    </div>
+  </footer>
+</body>
+</html>

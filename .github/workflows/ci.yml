@@ -17,36 +17,8 @@ jobs:
       - name: Check script syntax
         run: node --check script.js
 
-      - name: Check the page parses and its local references resolve
-        run: |
-          python3 - <<'PY'
-          import html.parser, pathlib, sys, urllib.parse
+      - name: Check the cryptanalysis pages match their content files
+        run: python3 tools/build_cryptanalysis.py --check
 
-          class P(html.parser.HTMLParser):
-              def __init__(self):
-                  super().__init__()
-                  self.refs, self.ids = [], set()
-              def handle_starttag(self, tag, attrs):
-                  a = dict(attrs)
-                  if a.get("id"):
-                      self.ids.add(a["id"])
-                  for k in ("href", "src"):
-                      if a.get(k):
-                          self.refs.append(a[k])
-
-          p = P()
-          p.feed(pathlib.Path("index.html").read_text())
-
-          errors = []
-          for ref in p.refs:
-              if ref.startswith("#"):
-                  if len(ref) > 1 and ref[1:] not in p.ids:
-                      errors.append(f"dead anchor: {ref}")
-              elif not urllib.parse.urlparse(ref).scheme:
-                  if not pathlib.Path(ref).exists():
-                      errors.append(f"missing local file: {ref}")
-
-          for e in errors:
-              print(e, file=sys.stderr)
-          sys.exit(1 if errors else 0)
-          PY
+      - name: Check every page parses and its local references resolve
+        run: python3 tools/check_links.py
