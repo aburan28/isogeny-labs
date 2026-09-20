@@ -1,0 +1,147 @@
+{
+  "slug": "number-field-sieve",
+  "position": 3,
+  "family": "index-calculus",
+  "title": "The number field sieve",
+  "short_title": "The number field sieve",
+  "one_liner": "The L(1/3) algorithm behind every factoring and prime-field discrete-log record &mdash; and the reason RSA and finite-field Diffie&ndash;Hellman need 3072-bit parameters to match a 256-bit curve.",
+  "cost_label": "L<sub>N</sub>[1/3, 1.923] for general N",
+  "description": "How the number field sieve factors integers and computes prime-field discrete logarithms in subexponential time, what the RSA-250 and DLP-240 records actually consumed, and why its per-prime precomputation phase broke export-grade Diffie-Hellman.",
+  "standfirst": "The NFS is the reason a 2048-bit RSA key and a 224-bit elliptic curve are said to offer comparable security. Both numbers come from the same place: one problem has a subexponential attack and the other does not, so the parameters diverge and keep diverging.",
+  "facts": {
+    "Problems": "Integer factorisation; discrete logarithm in F<sub>p</sub><sup>&times;</sup>",
+    "Cost": "L<sub>N</sub>[1/3, (64/9)<sup>1/3</sup>] &asymp; L<sub>N</sub>[1/3, 1.923]",
+    "Special-form cost": "L<sub>N</sub>[1/3, (32/9)<sup>1/3</sup>] &asymp; L<sub>N</sub>[1/3, 1.526] (SNFS)",
+    "Records": "RSA-250 (829-bit factorisation) and DLP-240 (795-bit prime-field DL), both 2019&ndash;2020",
+    "Structural hazard": "Most of the DL work is per-prime precomputation, reusable across every session using that prime"
+  },
+  "sections": [
+    {
+      "heading": "What subexponential means here",
+      "blocks": [
+        {
+          "p": "Costs in this area are quoted in the <em>L</em>-notation, which interpolates between polynomial and exponential:"
+        },
+        {
+          "math": "L<sub>N</sub>[&alpha;, c] = exp( (c + o(1)) &middot; (log N)<sup>&alpha;</sup> (log log N)<sup>1&minus;&alpha;</sup> )",
+          "label": "&alpha; = 0 is polynomial in log N; &alpha; = 1 is exponential in log N"
+        },
+        {
+          "p": "The number field sieve runs at &alpha; = 1/3, with <em>c</em> = (64/9)<sup>1/3</sup> &asymp; 1.923 in its general form. That exponent is what makes key sizes for RSA and finite-field Diffie&ndash;Hellman grow so much faster than elliptic-curve key sizes, where the best known attack is still at &alpha; = 1. The commonly quoted equivalences &mdash; 2048-bit RSA near a 224-bit curve, 3072-bit RSA near a 256-bit curve &mdash; are this asymptotic evaluated at real sizes, with the constants that record computations have calibrated."
+        },
+        {
+          "note": "The <em>o</em>(1) in the exponent is doing real work at cryptographic sizes, and it is not a small correction. Security-level equivalence tables are extrapolations from measured records, not evaluations of a closed formula. Treat the records as the data and the asymptotic as the shape.",
+          "note_label": "Read the o(1)"
+        }
+      ]
+    },
+    {
+      "heading": "The mechanism",
+      "blocks": [
+        {
+          "p": "The NFS is index calculus carried out in a number field rather than in the integers. To factor <em>N</em>, choose two irreducible polynomials with a common root modulo <em>N</em>; they define number rings that both map into &#x2124;/<em>N</em>&#x2124;. Search for elements that are smooth on <em>both</em> sides at once, and each such element gives a multiplicative relation valid modulo <em>N</em>. Enough relations produce a congruence of squares, and a non-trivial factor follows."
+        },
+        {
+          "p": "Four phases, with sharply different engineering characters:"
+        },
+        {
+          "steps": [
+            "<strong>Polynomial selection.</strong> Search for a pair of polynomials with unusually good smoothness yield. Cheap relative to the rest, and worth a lot &mdash; a better pair can shorten sieving by a large constant factor.",
+            "<strong>Sieving.</strong> Collect relations. Embarrassingly parallel, arbitrarily distributable, and the bulk of the raw CPU time.",
+            "<strong>Linear algebra.</strong> Solve the sparse system over the relation matrix, with block Wiedemann or block Lanczos. This phase does <em>not</em> distribute freely &mdash; it needs tightly coupled machines with fast interconnect, and it is the practical bottleneck at record sizes.",
+            "<strong>Square root (factoring) or descent (discrete log).</strong> Finish the job: extract the factor, or express the target logarithm in terms of the computed factor-base logarithms."
+          ]
+        },
+        {
+          "p": "The discrete-log variant over <strong>F</strong><sub><em>p</em></sub> follows the same structure and the same asymptotic. Where the modulus has a special form &mdash; as for Mersenne-like primes, or an RSA modulus built from special primes &mdash; the special number field sieve applies instead, at constant 1.526, which is a large advantage at fixed size."
+        }
+      ]
+    },
+    {
+      "heading": "What the records consumed",
+      "blocks": [
+        {
+          "p": "The state of the art comes from a small number of well-documented computations, and their measured resource use is the honest input to parameter selection."
+        },
+        {
+          "ul": [
+            "<strong>RSA-768</strong> (768-bit factorisation, 2009) by Kleinjung and collaborators: the first public factorisation at that size, and for a decade the reference point for \"1024-bit is uncomfortably close\".",
+            "<strong>768-bit prime-field DL</strong> (2016) by Kleinjung, Diem, Lenstra, Priplata and Stahlke, establishing that the discrete-log side tracks the factoring side at a modest lag.",
+            "<strong>RSA-240 and DLP-240</strong> (795 bits, 2019) by Boudot, Gaudry, Guillevic, Heninger, Thom&eacute; and Zimmermann &mdash; run together, deliberately, so the two problems could be compared on the same hardware with the same software. The discrete logarithm cost a few times more than the factorisation of the same size.",
+            "<strong>RSA-250</strong> (829 bits, 2020) by the same team, on the order of a few thousand core-years."
+          ]
+        },
+        {
+          "p": "Two things are worth extracting from that history. The factoring and discrete-log costs at equal size are within a small factor of each other, so they should not be given different margins. And progress has come roughly equally from algorithmic refinement and from hardware, which is the argument for treating published records as a moving baseline rather than a fixed one."
+        }
+      ]
+    },
+    {
+      "heading": "The precomputation hazard",
+      "blocks": [
+        {
+          "p": "For discrete logarithms the cost split matters more than the total. The expensive phases &mdash; polynomial selection, sieving, linear algebra &mdash; depend only on the prime <em>p</em>, not on the target. Once they are done for a given prime, each individual logarithm modulo that prime costs only a descent, which is comparatively cheap."
+        },
+        {
+          "p": "Finite-field Diffie&ndash;Hellman deployments have historically shared a very small number of fixed primes across enormous numbers of servers. Adrian and collaborators exploited exactly this in the Logjam attack: a one-time precomputation against a standard 512-bit export-grade prime, after which individual connections downgraded to that group could be broken in about a minute. The same paper argued that a state-level precomputation against one of the handful of widely used 1024-bit primes was plausible, and that this would passively expose a large fraction of internet traffic."
+        },
+        {
+          "note": "A cost model that prices \"one discrete log\" misprices this attack by orders of magnitude. The right unit for a shared prime is the precomputation, amortised over every session that will ever use it &mdash; which for a standardised group is effectively unbounded.",
+          "note_label": "The amortisation"
+        },
+        {
+          "p": "There is a related hazard in the other direction. Fried, Gaudry, Heninger and Thom&eacute; demonstrated a 1024-bit prime with a hidden special form, for which SNFS applies: a discrete log in that group is within reach of ordinary academic resources, while the prime looks unremarkable to anyone who does not know the trapdoor. Unverifiable Diffie&ndash;Hellman parameters are therefore a real risk, not a theoretical one, and the mitigations are named, standardised groups (RFC 7919) or a move to elliptic curves."
+        }
+      ]
+    },
+    {
+      "heading": "The boundary",
+      "blocks": [
+        {
+          "p": "The NFS needs smoothness &mdash; a notion of an element factoring into small pieces. That exists in number rings and in the multiplicative group of a finite field. It does not exist in the group of points on an elliptic curve, which is the entire reason ECC gets away with far smaller parameters; whether a usable substitute can be manufactured is the open question that <a href=\"summation-polynomials.html\">summation polynomials</a> address."
+        },
+        {
+          "p": "For a review, the practical consequences are narrow and checkable:"
+        },
+        {
+          "ul": [
+            "RSA and finite-field Diffie&ndash;Hellman below 2048 bits should be treated as legacy; 3072 bits is the level commonly matched to a 256-bit curve.",
+            "Diffie&ndash;Hellman groups should be named and verifiable, never an unexplained prime supplied by a peer or a vendor.",
+            "Downgrade paths to small or export-grade groups are the live exposure, not the primary parameter choice &mdash; Logjam was a downgrade attack that the NFS merely made worth mounting.",
+            "Any prime with an unexplained special structure should be assumed to invite SNFS at 1.526 rather than GNFS at 1.923."
+          ]
+        },
+        {
+          "p": "Finally, the NFS is the part of the landscape that Shor's algorithm removes outright: factoring and finite-field discrete logs both fall to polynomial-time quantum algorithms, along with the elliptic-curve problem. Subexponential versus exponential is the classical distinction, and it does not survive into the quantum setting &mdash; which is why post-quantum migration replaces all of them at once rather than resizing any of them."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "A. K. Lenstra and H. W. Lenstra, Jr. (eds.), \"The development of the number field sieve\", Lecture Notes in Mathematics 1554 (1993)",
+      "href": "https://link.springer.com/book/10.1007/BFb0091534"
+    },
+    {
+      "text": "T. Kleinjung et al., \"Factorization of a 768-bit RSA modulus\", CRYPTO 2010",
+      "href": "https://eprint.iacr.org/2010/006"
+    },
+    {
+      "text": "F. Boudot, P. Gaudry, A. Guillevic, N. Heninger, E. Thom&eacute; and P. Zimmermann, \"Comparing the difficulty of factorization and discrete logarithm: a 240-digit experiment\", CRYPTO 2020",
+      "href": "https://eprint.iacr.org/2020/697"
+    },
+    {
+      "text": "D. Adrian et al., \"Imperfect forward secrecy: how Diffie-Hellman fails in practice\" (Logjam), CCS 2015",
+      "href": "https://weakdh.org/imperfect-forward-secrecy-ccs15.pdf"
+    },
+    {
+      "text": "J. Fried, P. Gaudry, N. Heninger and E. Thom&eacute;, \"A kilobit hidden SNFS discrete logarithm computation\", EUROCRYPT 2017",
+      "href": "https://eprint.iacr.org/2016/961"
+    },
+    {
+      "text": "D. Gillmor, \"Negotiated finite field Diffie-Hellman ephemeral parameters for TLS\", RFC 7919",
+      "href": "https://www.rfc-editor.org/rfc/rfc7919"
+    }
+  ],
+  "related": ["summation-polynomials", "weil-descent", "pollard-rho"]
+}

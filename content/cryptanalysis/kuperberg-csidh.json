@@ -1,0 +1,137 @@
+{
+  "slug": "kuperberg-csidh",
+  "position": 2,
+  "family": "isogeny",
+  "title": "Kuperberg's algorithm and CSIDH",
+  "short_title": "Kuperberg and CSIDH",
+  "one_liner": "Commutativity buys CSIDH its small keys and non-interactive key exchange, and costs it a subexponential quantum attack &mdash; whose concrete cost is still disputed.",
+  "cost_label": "Classical p<sup>1/4</sup>; quantum 2<sup>O(&radic;log N)</sup>",
+  "description": "Why the CSIDH class-group action is an abelian hidden shift problem, how Kuperberg's subexponential quantum algorithm applies, and what the parameter dispute between the Peikert and CSIDH camps actually turns on.",
+  "standfirst": "CSIDH was not broken. It was <em>repriced</em>, repeatedly, by analyses that disagree about what a quantum computer costs to run &mdash; and the disagreement is a more instructive object than either answer, because it is about cost models rather than about mathematics.",
+  "facts": {
+    "Scheme": "CSIDH &mdash; commutative supersingular isogeny Diffie&ndash;Hellman",
+    "Underlying problem": "Abelian hidden shift / group-action inversion",
+    "Classical cost": "&Otilde;(&radic;|cl(O)|) &asymp; p<sup>1/4</sup>, by meet-in-the-middle or random walk",
+    "Quantum cost": "Subexponential: 2<sup>O(&radic;log N)</sup> &mdash; not polynomial",
+    "Status": "Unbroken; parameter sizes contested, CSIDH-512 widely considered insufficient",
+    "Not affected by": "The <a href=\"sidh-torsion-attacks.html\">SIDH torsion attacks</a> &mdash; no torsion images are published"
+  },
+  "sections": [
+    {
+      "heading": "The structure CSIDH chose",
+      "blocks": [
+        {
+          "p": "CSIDH, introduced by Castryck, Lange, Martindale, Panny and Renes, works with supersingular elliptic curves defined over <strong>F</strong><sub><em>p</em></sub> rather than over <strong>F</strong><sub><em>p</em><sup>2</sup></sub>. Restricting to the prime field makes the endomorphism ring commutative &mdash; an order <em>O</em> in an imaginary quadratic field &mdash; and its ideal class group then <em>acts</em> on the set of such curves, freely and transitively:"
+        },
+        {
+          "math": "cl(O) &times; Ell<sub>p</sub>(O) &rarr; Ell<sub>p</sub>(O),&nbsp; ([a], E) &#8614; [a] &middot; E",
+          "label": "A free, transitive group action &mdash; a torsor, not a group"
+        },
+        {
+          "p": "That action commutes, so key exchange is the obvious thing: Alice publishes [<em>a</em>]&middot;<em>E</em><sub>0</sub>, Bob publishes [<em>b</em>]&middot;<em>E</em><sub>0</sub>, and both compute [<em>a</em>][<em>b</em>]&middot;<em>E</em><sub>0</sub>. Nothing else is transmitted &mdash; and that absence is why CSIDH survived the attacks that ended SIDH. The prize is real: very small public keys, and genuine non-interactive key exchange, which no lattice-based KEM provides."
+        },
+        {
+          "p": "The price is the same commutativity. A group action whose group is abelian is precisely the setting of the <em>abelian hidden shift problem</em>, and that problem has a subexponential quantum algorithm."
+        }
+      ]
+    },
+    {
+      "heading": "The mechanism",
+      "blocks": [
+        {
+          "p": "Recovering Alice's secret from [<em>a</em>]&middot;<em>E</em><sub>0</sub> means inverting the group action. Define two functions on the group, one built from <em>E</em><sub>0</sub> and one from [<em>a</em>]&middot;<em>E</em><sub>0</sub>; they are equal up to a shift by the unknown [<em>a</em>]. Finding that shift is the abelian hidden shift problem, and Kuperberg gave a quantum sieve for it running in"
+        },
+        {
+          "math": "2<sup>O(&radic;(log N))</sup> quantum queries and time, for a group of order N",
+          "label": "Subexponential &mdash; between Grover's &radic;N and Shor's polynomial time"
+        },
+        {
+          "p": "The sieve prepares many phase-encoded states over the group and combines them pairwise, each combination concentrating the unknown shift into fewer, more useful bits, until the shift can be read out. Regev gave a variant using polynomial quantum space at somewhat greater time; Kuperberg's second algorithm improved the tradeoff again. The important structural point is what the algorithm is <em>not</em>: it is not Shor. Commutativity is enough for a subexponential quantum attack and not enough for a polynomial-time one, which is exactly the narrow ledge CSIDH stands on."
+        },
+        {
+          "p": "Classically the picture is unremarkable. Inverting the action is a search over the class group, done by meet-in-the-middle or a random-walk collision search in &Otilde;(&radic;|cl(<em>O</em>)|), which for CSIDH parameters is about <em>p</em><sup>1/4</sup>. Classical security therefore scales the way generic attacks always do."
+        }
+      ]
+    },
+    {
+      "heading": "The dispute",
+      "blocks": [
+        {
+          "p": "The exponent is agreed. What is contested is the constant, the query count, and above all what a quantum query <em>costs</em> &mdash; and at subexponential asymptotics those decide everything at real parameter sizes."
+        },
+        {
+          "ul": [
+            "<strong>The original proposal</strong> offered CSIDH-512 as a NIST level 1 parameter set, on an analysis of Kuperberg-style attacks available at the time.",
+            "<strong>Peikert</strong> gave a concrete analysis of the collimation sieve applied to CSIDH and concluded that CSIDH-512 falls well short of that claim &mdash; that the quantum work is far smaller than the proposers had estimated.",
+            "<strong>Bonnetain and Schrottenloher</strong> reached similarly reduced security estimates by a different route.",
+            "<strong>Bernstein, Lange, Martindale and Panny</strong> costed the quantum circuits for evaluating the group action in detail, arguing that the per-query cost of a real implementation is high enough to change the conclusion substantially.",
+            "<strong>Ch&aacute;vez-Saab, Chi-Dom&iacute;nguez, Jaques and Rodr&iacute;guez-Henr&iacute;quez</strong> took the conservative branch and showed that much larger parameters &mdash; CSIDH-4096 and beyond &mdash; remain implementable, if slower."
+          ]
+        },
+        {
+          "p": "The disagreement is not about the mathematics. It is about the cost model: whether quantum random access memory is free or expensive, whether an attack is allowed unbounded circuit depth or must fit within a realistic time limit, and how much error-correction overhead a long-running quantum computation carries. Different defensible answers to those questions produce security estimates that differ by tens of bits."
+        },
+        {
+          "note": "A quantum security claim is a claim about a cost model, and it is worth no more than the model it names. When someone quotes a post-quantum security level, the first question is which model produced it &mdash; depth-limited or not, QRAM free or costed. Two papers can be simultaneously correct and 40 bits apart.",
+          "note_label": "What to ask"
+        },
+        {
+          "p": "The practical consequence today is a consensus that CSIDH-512 is not a level 1 parameter set, and disagreement about exactly how much larger is enough. CSIDH is not a NIST candidate and is not deployed at scale; it remains an active research object, valued for the non-interactive key exchange that nothing else in the post-quantum portfolio offers."
+        }
+      ]
+    },
+    {
+      "heading": "The boundary",
+      "blocks": [
+        {
+          "p": "Kuperberg's algorithm needs the group to be abelian. That single hypothesis partitions the isogeny landscape cleanly:"
+        },
+        {
+          "ul": [
+            "<strong>CSIDH and CSI-FiSh</strong> use a commutative class-group action, so the attack applies and sets their quantum parameters.",
+            "<strong>SIDH and SIKE</strong> used the non-commutative supersingular graph over <strong>F</strong><sub><em>p</em><sup>2</sup></sub>, so Kuperberg never applied to them &mdash; they fell to something else entirely, the <a href=\"sidh-torsion-attacks.html\">torsion-point attacks</a>.",
+            "<strong>SQIsign</strong> is likewise non-commutative, resting on the endomorphism-ring problem via the Deuring correspondence. Kuperberg does not reach it.",
+            "The <strong>general supersingular isogeny path problem</strong> has no known subexponential quantum attack; claw-finding approaches give about <em>p</em><sup>1/3</sup> quantum against &radic;<em>p</em> classical, with severe memory costs that argue against the quantum advantage being real."
+          ]
+        },
+        {
+          "p": "Read the two isogeny pages in this library together and the trade is explicit. SIDH published extra data to make its non-commutative walk usable, and the extra data is what killed it. CSIDH needs no extra data because commutativity does that work &mdash; and commutativity is what exposes it to Kuperberg. Each scheme paid for its key exchange in a different currency, and the community found out what each price was, in one case abruptly and in the other by a decade of argument that is still running."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "W. Castryck, T. Lange, C. Martindale, L. Panny and J. Renes, \"CSIDH: an efficient post-quantum commutative group action\", ASIACRYPT 2018",
+      "href": "https://eprint.iacr.org/2018/383"
+    },
+    {
+      "text": "G. Kuperberg, \"A subexponential-time quantum algorithm for the dihedral hidden subgroup problem\", SIAM J. Comput. 35 (2005)",
+      "href": "https://arxiv.org/abs/quant-ph/0302112"
+    },
+    {
+      "text": "G. Kuperberg, \"Another subexponential-time quantum algorithm for the dihedral hidden subgroup problem\", TQC 2013",
+      "href": "https://arxiv.org/abs/1112.3333"
+    },
+    {
+      "text": "C. Peikert, \"He gives C-sieves on the CSIDH\", EUROCRYPT 2020",
+      "href": "https://eprint.iacr.org/2019/725"
+    },
+    {
+      "text": "X. Bonnetain and A. Schrottenloher, \"Quantum security analysis of CSIDH\", EUROCRYPT 2020",
+      "href": "https://eprint.iacr.org/2018/537"
+    },
+    {
+      "text": "D. J. Bernstein, T. Lange, C. Martindale and L. Panny, \"Quantum circuits for the CSIDH: optimizing quantum evaluation of isogenies\", EUROCRYPT 2019",
+      "href": "https://eprint.iacr.org/2018/1059"
+    },
+    {
+      "text": "J. Ch&aacute;vez-Saab, J.-J. Chi-Dom&iacute;nguez, S. Jaques and F. Rodr&iacute;guez-Henr&iacute;quez, \"The SQALE of CSIDH: sublinear V&eacute;lu quantum-resistant isogeny action with low exponents\", JCEN 12 (2022)",
+      "href": "https://eprint.iacr.org/2020/1520"
+    }
+  ],
+  "related": [
+    "sidh-torsion-attacks",
+    "number-field-sieve"
+  ]
+}
