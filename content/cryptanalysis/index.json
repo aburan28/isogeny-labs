@@ -35,6 +35,7 @@
       "planned": [
         {
           "title": "Baby-step giant-step and kangaroos",
+          "slug": "baby-step-giant-step",
           "one_liner": "Deterministic &radic;n time-memory tradeoffs, and Pollard's lambda method for logarithms known to lie in a short interval."
         }
       ]
@@ -46,11 +47,8 @@
       "intro": "Index calculus collects multiplicative relations over a factor base and solves a linear system. It is why finite-field discrete logs are subexponential and RSA moduli must be large — and why the question of whether it reaches elliptic curves has occupied two decades of research.",
       "planned": [
         {
-          "title": "The number field sieve",
-          "one_liner": "The subexponential L(1/3) algorithm behind factoring and prime-field discrete-log records, and what its precomputation phase means for reused parameters."
-        },
-        {
           "title": "Gr&ouml;bner-basis solving and first fall degree",
+          "slug": "groebner-first-fall-degree",
           "one_liner": "How F4/F5 behaves on the polynomial systems that index calculus generates, and why the measured degree of regularity decides feasibility."
         }
       ]
@@ -63,6 +61,7 @@
       "planned": [
         {
           "title": "Coppersmith's method",
+          "slug": "coppersmith",
           "one_liner": "Finding small roots of modular polynomials, and the partial-key-exposure and small-exponent attacks on RSA that follow from it."
         }
       ]
@@ -74,11 +73,8 @@
       "intro": "Isogeny problems are the youngest hardness assumptions in deployment-adjacent cryptography, and the only ones to have had a headline scheme broken outright after standardisation review had begun. That history is the argument for reading them carefully rather than the argument for avoiding them.",
       "planned": [
         {
-          "title": "Kuperberg's algorithm and CSIDH",
-          "one_liner": "Subexponential quantum attacks on the class-group action, and the parameter dispute they caused."
-        },
-        {
           "title": "Meet-in-the-middle and the supersingular path problem",
+          "slug": "supersingular-path-problem",
           "one_liner": "Delfs&ndash;Galbraith, claw finding, and what the &radic;p barrier means for SQIsign parameters."
         }
       ]
