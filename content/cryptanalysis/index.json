@@ -35,6 +35,7 @@
       "planned": [
         {
           "title": "Baby-step giant-step and kangaroos",
+          "slug": "baby-step-giant-step",
           "one_liner": "Deterministic &radic;n time-memory tradeoffs, and Pollard's lambda method for logarithms known to lie in a short interval."
         }
       ]
@@ -47,6 +48,7 @@
       "planned": [
         {
           "title": "Gr&ouml;bner-basis solving and first fall degree",
+          "slug": "groebner-first-fall-degree",
           "one_liner": "How F4/F5 behaves on the polynomial systems that index calculus generates, and why the measured degree of regularity decides feasibility."
         }
       ]
@@ -59,6 +61,7 @@
       "planned": [
         {
           "title": "Coppersmith's method",
+          "slug": "coppersmith",
           "one_liner": "Finding small roots of modular polynomials, and the partial-key-exposure and small-exponent attacks on RSA that follow from it."
         }
       ]
@@ -71,6 +74,7 @@
       "planned": [
         {
           "title": "Meet-in-the-middle and the supersingular path problem",
+          "slug": "supersingular-path-problem",
           "one_liner": "Delfs&ndash;Galbraith, claw finding, and what the &radic;p barrier means for SQIsign parameters."
         }
       ]
