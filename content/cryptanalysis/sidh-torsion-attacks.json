@@ -1,0 +1,132 @@
+{
+  "slug": "sidh-torsion-attacks",
+  "position": 1,
+  "family": "isogeny",
+  "title": "The SIDH torsion-point attacks",
+  "short_title": "SIDH torsion attacks",
+  "one_liner": "Kani's criterion turned the auxiliary torsion images published by SIDH into a polynomial-time key recovery &mdash; breaking SIKE during NIST standardisation.",
+  "cost_label": "Polynomial time; SIKEp434 in about an hour",
+  "description": "How Castryck-Decru, Maino-Martindale and Robert broke SIDH and SIKE in 2022 using higher-dimensional isogenies, what exactly the attack consumed, and why CSIDH and SQIsign are not affected.",
+  "standfirst": "In July 2022 a scheme that had survived a decade of analysis and reached the fourth round of NIST standardisation was broken on a laptop. The attack did not attack the isogeny problem. It attacked the extra data SIDH had to publish to make key exchange work.",
+  "facts": {
+    "Broken": "SIDH and SIKE, all parameter sets",
+    "Published": "July&ndash;August 2022, three independent lines of work",
+    "Cost": "SIKEp434 in roughly an hour on one core; larger sets in hours to a day",
+    "Mechanism": "Kani's criterion; isogenies between higher-dimensional abelian varieties",
+    "Not affected": "CSIDH, CSI-FiSh, SQIsign, and the general supersingular isogeny problem"
+  },
+  "sections": [
+    {
+      "heading": "What SIDH published, and why",
+      "blocks": [
+        {
+          "p": "In SIDH the two parties walk different isogeny graphs from a common starting curve <em>E</em><sub>0</sub> over <strong>F</strong><sub><em>p</em><sup>2</sup></sub> with <em>p</em> + 1 = 2<sup><em>a</em></sup>3<sup><em>b</em></sup>. Alice computes a secret 2<sup><em>a</em></sup>-isogeny &phi;<sub><em>A</em></sub>: <em>E</em><sub>0</sub> &rarr; <em>E<sub>A</sub></em>, Bob a 3<sup><em>b</em></sup>-isogeny. To let each party recompute the other's walk on the other's curve, the protocol publishes not only <em>E<sub>A</sub></em> but the images of the other party's torsion basis:"
+        },
+        {
+          "math": "Alice sends (E<sub>A</sub>, &phi;<sub>A</sub>(P<sub>B</sub>), &phi;<sub>A</sub>(Q<sub>B</sub>)) where &langle;P<sub>B</sub>, Q<sub>B</sub>&rangle; = E<sub>0</sub>[3<sup>b</sup>]",
+          "label": "The auxiliary torsion data &mdash; required for correctness, and fatal"
+        },
+        {
+          "p": "This was always understood to be extra information beyond a pure isogeny problem instance. Petit had shown in 2017 that unbalanced parameters with abundant torsion data were attackable, but the balanced parameters of SIKE stayed out of reach. For years the consensus was that the torsion images were an acceptable, well-studied risk."
+        }
+      ]
+    },
+    {
+      "heading": "The mechanism: gluing in dimension two",
+      "blocks": [
+        {
+          "p": "Castryck and Decru's attack rests on Kani's criterion, a nineteenth-century-style result about when a configuration of isogenies between elliptic curves glues into an isogeny between abelian surfaces. Stated loosely: given a suitable commutative square of isogenies with matching degrees, the product <em>E</em><sub>1</sub> &times; <em>E</em><sub>2</sub> admits an isogeny to another product or to a Jacobian, and whether the codomain <em>splits</em> as a product of elliptic curves is a computable, observable property."
+        },
+        {
+          "p": "That splitting behaviour is a decision oracle, and the attack is an adaptive search driven by it:"
+        },
+        {
+          "steps": [
+            "Guess the first few steps of the secret isogeny &phi;<sub><em>A</em></sub>.",
+            "Use the published torsion images and the guess to build a Kani configuration &mdash; an isogeny in dimension two between abelian surfaces, computed with Richelot correspondences on genus-2 Jacobians.",
+            "Test whether the codomain splits into a product of elliptic curves. It does exactly when the guess was correct.",
+            "Accept the correct step, extend the guess, and repeat. Each step costs a small number of surface isogeny computations, so the total is polynomial rather than exponential."
+          ]
+        },
+        {
+          "p": "The original Castryck&ndash;Decru attack needed the endomorphism ring of the starting curve <em>E</em><sub>0</sub> to be known &mdash; which it is in SIKE, since <em>E</em><sub>0</sub> is a fixed special curve published in the specification. Maino and Martindale gave an independent attack removing that dependence, and Robert then proved the strongest form: with dimension-eight isogenies, <em>any</em> SIDH-style instance is broken in polynomial time, with no assumption on the starting curve. Three independent constructions, within weeks."
+        }
+      ]
+    },
+    {
+      "heading": "What it cost in practice",
+      "blocks": [
+        {
+          "p": "The published implementation was Magma code of a few hundred lines. Castryck and Decru reported recovering a SIKEp434 key &mdash; the NIST level 1 parameter set &mdash; in about an hour on a single core, with the larger parameter sets taking hours to roughly a day. Independent reimplementations reduced this to minutes."
+        },
+        {
+          "note": "Parameter inflation was never an option here. The attack is polynomial in the security parameter, so doubling the parameters roughly doubles the attack time. SIKE was withdrawn rather than resized, and the affected key-exchange design has not returned.",
+          "note_label": "Why there was no patch"
+        }
+      ]
+    },
+    {
+      "heading": "What was not broken",
+      "blocks": [
+        {
+          "p": "This distinction is the part most often lost in summary. The attack consumes the auxiliary torsion images. A scheme that does not publish them is not touched by it."
+        },
+        {
+          "ul": [
+            "<strong>The supersingular isogeny path problem</strong> &mdash; given two supersingular curves, find an isogeny between them &mdash; is untouched. Best known classical attacks remain around &radic;<em>p</em>, via Delfs&ndash;Galbraith and meet-in-the-middle claw finding.",
+            "<strong>CSIDH and CSI-FiSh</strong> use a commutative class-group action and publish no torsion images. Their security question is different and older: Kuperberg's subexponential quantum algorithm for the abelian hidden shift problem, and the ongoing dispute over what parameter sizes it implies.",
+            "<strong>SQIsign</strong>, the isogeny signature scheme still in NIST's additional-signatures process, rests on the endomorphism-ring problem and the Deuring correspondence, not on published torsion images."
+          ]
+        },
+        {
+          "p": "The higher-dimensional machinery that broke SIDH also turned out to be constructive. Isogenies between abelian surfaces are now a standard tool for building isogeny protocols and for the verification and compression steps in newer SQIsign variants &mdash; the same technique used to attack became infrastructure."
+        }
+      ]
+    },
+    {
+      "heading": "What to take from it",
+      "blocks": [
+        {
+          "p": "Three lessons, all of which generalise past isogenies:"
+        },
+        {
+          "ul": [
+            "<strong>The published data is part of the assumption.</strong> SIDH's hardness assumption was never \"the isogeny problem\"; it was \"the isogeny problem given these torsion images\". That is a different, younger and much less studied assumption, and the gap between the two is where the break lived. The same audit question applies to any scheme: what exactly does a real transcript reveal, beyond the problem instance the security proof names?",
+            "<strong>Survival time is weak evidence.</strong> SIDH went a decade without a comparable attack. That decade contained no proof; it contained an absence of a specific idea, supplied by importing a tool &mdash; Kani's criterion &mdash; from a neighbouring area of mathematics.",
+            "<strong>Diversity of assumptions paid off.</strong> SIKE was an alternate candidate alongside lattice-based ML-KEM, not a sole dependency. The break was expensive in research effort and reputation, not in deployed systems."
+          ]
+        },
+        {
+          "p": "None of this is an argument against isogeny-based cryptography, and the fact that the break was found by the research community, publicly, before standardisation completed is the system working. It is an argument for reading what a scheme actually transmits, and for pricing a young assumption as young."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "W. Castryck and T. Decru, \"An efficient key recovery attack on SIDH\", EUROCRYPT 2023",
+      "href": "https://eprint.iacr.org/2022/975"
+    },
+    {
+      "text": "L. Maino and C. Martindale, \"An attack on SIDH with arbitrary starting curve\", EUROCRYPT 2023",
+      "href": "https://eprint.iacr.org/2022/1026"
+    },
+    {
+      "text": "D. Robert, \"Breaking SIDH in polynomial time\", EUROCRYPT 2023",
+      "href": "https://eprint.iacr.org/2022/1038"
+    },
+    {
+      "text": "C. Petit, \"Faster algorithms for isogeny problems using torsion point images\", ASIACRYPT 2017",
+      "href": "https://eprint.iacr.org/2017/571"
+    },
+    {
+      "text": "D. Jao and L. De Feo, \"Towards quantum-resistant cryptosystems from supersingular elliptic curve isogenies\", PQCrypto 2011 &mdash; the original SIDH",
+      "href": "https://eprint.iacr.org/2011/506"
+    },
+    {
+      "text": "C. Delfs and S. D. Galbraith, \"Computing isogenies between supersingular elliptic curves over F_p\", Designs, Codes and Cryptography 78 (2016)",
+      "href": "https://arxiv.org/abs/1310.7789"
+    }
+  ],
+  "related": ["pollard-rho", "summation-polynomials"]
+}

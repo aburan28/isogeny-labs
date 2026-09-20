@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0f18">
+  <meta name="description" content="A working reference on how cryptographic hardness assumptions are actually attacked: generic discrete-log algorithms, index calculus and descent, lattice attacks, and isogeny attacks — with concrete costs and stated limits.">
+  <meta property="og:title" content="Cryptanalysis techniques — Isogeny Labs">
+  <meta property="og:description" content="A working reference on how cryptographic hardness assumptions are actually attacked: generic discrete-log algorithms, index calculus and descent, lattice attacks, and isogeny attacks — with concrete costs and stated limits.">
+  <meta property="og:type" content="article">
+  <title>Cryptanalysis techniques — Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
+    <nav class="navigation" id="navigation" aria-label="Main navigation">
+      <a href="../index.html#work">What we do</a><a href="../index.html#approach">How we work</a><a href="../index.html#foundations">Foundations</a><a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis</a>
+      <a class="nav-cta" href="../index.html#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main">
+    <section class="library-hero" aria-labelledby="library-title">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Isogeny Labs</a> <span aria-hidden="true">/</span>
+        <span aria-current="page">Cryptanalysis</span>
+      </nav>
+      <p class="eyebrow"><span class="small-cross">+</span> THE CRYPTANALYSIS LIBRARY</p>
+      <h1 id="library-title">How these problems<br>are actually attacked.</h1>
+      <p class="library-standfirst">A security level is a claim about work. This library collects the attacks that claim is measured against — what each one needs, what it costs, and precisely where it stops being relevant. Every page states its assumptions and points at the primary sources rather than restating folklore.</p>
+      <dl class="doc-facts library-facts">
+        <div class="fact"><dt>Techniques written up</dt><dd>6</dd></div>
+        <div class="fact"><dt>Queued</dt><dd>6</dd></div>
+        <div class="fact"><dt>Scope</dt><dd>Public-key hardness assumptions, with an ECC and isogeny bias</dd></div>
+      </dl>
+    </section>
+    <section class="library-guide section-pad" aria-labelledby="guide-title">
+      <div class="guide-copy">
+        <h2 id="guide-title">Read an attack the way<br>a parameter-setter does.</h2>
+        <p>Most published attacks do not break anything. They move an exponent, or they require a structural coincidence that real parameters avoid, or they assume an oracle nobody can build. The useful question is never "is this broken?" but "what does this attack cost against <em>my</em> parameters, and what would have to change for it to matter?"</p>
+        <p>So each page here is organised around four things, in this order:</p>
+        <ul>
+          <li><strong>The problem instance.</strong> Exactly what the attacker is given, and what counts as success.</li>
+          <li><strong>The mechanism.</strong> The one idea that makes the attack cheaper than brute force — usually a collision, a relation, or a structure-preserving map to an easier object.</li>
+          <li><strong>The cost.</strong> An asymptotic bound, plus whatever the largest honest computation on record actually consumed.</li>
+          <li><strong>The boundary.</strong> The hypothesis that makes the attack work, and therefore the parameter choice that makes it irrelevant.</li>
+        </ul>
+        <aside class="doc-note"><span class="doc-note-label">The standing caveat</span><p>An asymptotic complexity is not a security level. A bound of O(&radic;n) group operations says nothing about memory, communication, or the constant in front — and it is those, not the exponent, that decide whether a computation is affordable. Where a record computation exists, its measured resource use is worth more than the bound.</p></aside>
+      </div>
+      <nav class="library-jump" aria-label="Technique families">
+        <p class="eyebrow">Families</p>
+        <ol>
+        <li><a href="#generic">Generic group algorithms</a></li>
+        <li><a href="#index-calculus">Index calculus and descent</a></li>
+        <li><a href="#lattice">Lattice attacks</a></li>
+        <li><a href="#isogeny">Isogeny attacks</a></li>
+        </ol>
+      </nav>
+    </section>
+      <section class="family" id="generic" aria-labelledby="generic-title">
+        <div class="family-head">
+          <p class="eyebrow"><span class="section-index">01 /</span> GENERIC GROUP ALGORITHMS</p>
+          <h2 id="generic-title">Attacks that use nothing about the group.</h2>
+          <p class="family-intro">These work against any cyclic group in which you can multiply and test equality. They set the ceiling every concrete discrete-log parameter is measured against, and Shoup's lower bound says no generic algorithm can do better than &radic;p.</p>
+        </div>
+        <ul class="technique-grid">
+          <li class="technique">
+            <a href="pollard-rho.html">
+              <h3>Pollard's rho</h3>
+              <p>The square-root generic attack that every elliptic-curve key size is calibrated against.</p>
+              <span class="technique-cost">&Theta;(&radic;n) group operations</span>
+            </a>
+          </li>
+          <li class="technique">
+            <a href="pohlig-hellman.html">
+              <h3>Pohlig&ndash;Hellman</h3>
+              <p>A discrete logarithm is only as hard as the largest prime factor of the group order &mdash; which makes group-order validation a security control, not a formality.</p>
+              <span class="technique-cost">O(&Sigma; e<sub>i</sub>(log n + &radic;p<sub>i</sub>))</span>
+            </a>
+          </li>
+          <li class="technique technique-planned">
+            <h3>Baby-step giant-step and kangaroos</h3>
+            <p>Deterministic &radic;n time-memory tradeoffs, and Pollard's lambda method for logarithms known to lie in a short interval.</p>
+            <span class="technique-cost">Not written yet</span>
+          </li>
+        </ul>
+      </section>
+      <section class="family" id="index-calculus" aria-labelledby="index-calculus-title">
+        <div class="family-head">
+          <p class="eyebrow"><span class="section-index">02 /</span> INDEX CALCULUS AND DESCENT</p>
+          <h2 id="index-calculus-title">Attacks that exploit the arithmetic underneath.</h2>
+          <p class="family-intro">Index calculus collects multiplicative relations over a factor base and solves a linear system. It is why finite-field discrete logs are subexponential and RSA moduli must be large — and why the question of whether it reaches elliptic curves has occupied two decades of research.</p>
+        </div>
+        <ul class="technique-grid">
+          <li class="technique">
+            <a href="summation-polynomials.html">
+              <h3>Summation polynomials</h3>
+              <p>Semaev's construction turns point decomposition into polynomial system solving &mdash; and delivers a genuine speedup over extension fields while leaving prime-field curves untouched.</p>
+              <span class="technique-cost">&Otilde;(q<sup>2&minus;2/n</sup>) over F<sub>q<sup>n</sup></sub>, n fixed</span>
+            </a>
+          </li>
+          <li class="technique">
+            <a href="weil-descent.html">
+              <h3>Weil descent (GHS)</h3>
+              <p>Transport an elliptic curve over F<sub>2<sup>m</sup></sub> to a higher-genus curve over a subfield, where index calculus already works.</p>
+              <span class="technique-cost">Subexponential on vulnerable binary curves</span>
+            </a>
+          </li>
+          <li class="technique technique-planned">
+            <h3>The number field sieve</h3>
+            <p>The subexponential L(1/3) algorithm behind factoring and prime-field discrete-log records, and what its precomputation phase means for reused parameters.</p>
+            <span class="technique-cost">Not written yet</span>
+          </li>
+          <li class="technique technique-planned">
+            <h3>Gr&ouml;bner-basis solving and first fall degree</h3>
+            <p>How F4/F5 behaves on the polynomial systems that index calculus generates, and why the measured degree of regularity decides feasibility.</p>
+            <span class="technique-cost">Not written yet</span>
+          </li>
+        </ul>
+      </section>
+      <section class="family" id="lattice" aria-labelledby="lattice-title">
+        <div class="family-head">
+          <p class="eyebrow"><span class="section-index">03 /</span> LATTICE ATTACKS</p>
+          <h2 id="lattice-title">Attacks that turn partial information into a short vector.</h2>
+          <p class="family-intro">When a secret is almost known — a few leaked bits, a slightly biased nonce, a small root of a modular equation — lattice reduction usually finishes the job. These are the attacks that break deployed systems whose underlying mathematics was never in question.</p>
+        </div>
+        <ul class="technique-grid">
+          <li class="technique">
+            <a href="hidden-number-problem.html">
+              <h3>Hidden number problem</h3>
+              <p>A few bits of nonce bias per signature, collected over a few hundred signatures, recovers the private key outright &mdash; regardless of curve size.</p>
+              <span class="technique-cost">Seconds, given enough biased signatures</span>
+            </a>
+          </li>
+          <li class="technique technique-planned">
+            <h3>Coppersmith's method</h3>
+            <p>Finding small roots of modular polynomials, and the partial-key-exposure and small-exponent attacks on RSA that follow from it.</p>
+            <span class="technique-cost">Not written yet</span>
+          </li>
+        </ul>
+      </section>
+      <section class="family" id="isogeny" aria-labelledby="isogeny-title">
+        <div class="family-head">
+          <p class="eyebrow"><span class="section-index">04 /</span> ISOGENY ATTACKS</p>
+          <h2 id="isogeny-title">Attacks on the newest assumptions.</h2>
+          <p class="family-intro">Isogeny problems are the youngest hardness assumptions in deployment-adjacent cryptography, and the only ones to have had a headline scheme broken outright after standardisation review had begun. That history is the argument for reading them carefully rather than the argument for avoiding them.</p>
+        </div>
+        <ul class="technique-grid">
+          <li class="technique">
+            <a href="sidh-torsion-attacks.html">
+              <h3>SIDH torsion attacks</h3>
+              <p>Kani's criterion turned the auxiliary torsion images published by SIDH into a polynomial-time key recovery &mdash; breaking SIKE during NIST standardisation.</p>
+              <span class="technique-cost">Polynomial time; SIKEp434 in about an hour</span>
+            </a>
+          </li>
+          <li class="technique technique-planned">
+            <h3>Kuperberg's algorithm and CSIDH</h3>
+            <p>Subexponential quantum attacks on the class-group action, and the parameter dispute they caused.</p>
+            <span class="technique-cost">Not written yet</span>
+          </li>
+          <li class="technique technique-planned">
+            <h3>Meet-in-the-middle and the supersingular path problem</h3>
+            <p>Delfs&ndash;Galbraith, claw finding, and what the &radic;p barrier means for SQIsign parameters.</p>
+            <span class="technique-cost">Not written yet</span>
+          </li>
+        </ul>
+      </section>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-top">
+      <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+      <p>Cryptographic analysis.<br>Systems that hold up.</p>
+      <a class="text-link light" href="#main">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <span>Hardness analysis · Isogeny systems · Post-quantum migration</span>
+    </div>
+  </footer>
+</body>
+</html>

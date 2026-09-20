@@ -1,0 +1,107 @@
+{
+  "slug": "pohlig-hellman",
+  "position": 2,
+  "family": "generic",
+  "title": "Pohlig&ndash;Hellman and the smooth-order reduction",
+  "short_title": "Pohlig&ndash;Hellman",
+  "one_liner": "A discrete logarithm is only as hard as the largest prime factor of the group order &mdash; which makes group-order validation a security control, not a formality.",
+  "cost_label": "O(&Sigma; e<sub>i</sub>(log n + &radic;p<sub>i</sub>))",
+  "description": "How Pohlig-Hellman reduces a discrete logarithm to the prime factors of the group order, and why invalid-curve and small-subgroup attacks are its practical consequence.",
+  "standfirst": "Pohlig&ndash;Hellman is the reason a curve order is published as <em>h</em> &middot; <em>n</em> with <em>n</em> prime, and the reason a protocol that skips point validation can be broken by an attacker who simply hands it the wrong curve.",
+  "facts": {
+    "Problem": "Discrete logarithm in a group of composite, partly smooth order",
+    "Cost": "O(&Sigma;<sub>i</sub> e<sub>i</sub>(log n + &radic;p<sub>i</sub>)) for n = &prod; p<sub>i</sub><sup>e<sub>i</sub></sup>",
+    "Requires": "The factorisation of the group order &mdash; normally public",
+    "Deployed consequence": "Invalid-curve attacks, small-subgroup confinement attacks",
+    "Defence": "Prime-order subgroup, cofactor handling, point validation"
+  },
+  "sections": [
+    {
+      "heading": "The problem instance",
+      "blocks": [
+        {
+          "p": "Given <em>P</em> of order <em>n</em> = &prod; <em>p<sub>i</sub><sup>e<sub>i</sub></sup></em> and <em>Q</em> = <em>kP</em>, recover <em>k</em>. Unlike the setting for <a href=\"pollard-rho.html\">rho</a>, the order is not prime, and its factorisation is known &mdash; for a standardised curve it is printed in the specification."
+        }
+      ]
+    },
+    {
+      "heading": "The mechanism",
+      "blocks": [
+        {
+          "p": "The group decomposes by the Chinese remainder theorem, and so does the logarithm. For each prime power <em>p<sub>i</sub><sup>e<sub>i</sub></sup></em>, project into the subgroup of that order by multiplying through by the cofactor:"
+        },
+        {
+          "math": "P<sub>i</sub> = (n/p<sub>i</sub><sup>e<sub>i</sub></sup>)P, &nbsp; Q<sub>i</sub> = (n/p<sub>i</sub><sup>e<sub>i</sub></sup>)Q &nbsp;&rArr;&nbsp; k mod p<sub>i</sub><sup>e<sub>i</sub></sup> solves a DLP in a group of order p<sub>i</sub><sup>e<sub>i</sub></sup>",
+          "label": "Solve each piece, then reassemble by CRT"
+        },
+        {
+          "p": "Within a prime-power subgroup the logarithm is recovered one <em>p<sub>i</sub></em>-adic digit at a time: write <em>k</em> &equiv; <em>d</em><sub>0</sub> + <em>d</em><sub>1</sub><em>p<sub>i</sub></em> + &hellip; and determine each digit by a discrete logarithm in a group of order <em>p<sub>i</sub></em>, solved with rho or baby-step giant-step at cost &radic;<em>p<sub>i</sub></em>. The total is O(&Sigma; <em>e<sub>i</sub></em>(log <em>n</em> + &radic;<em>p<sub>i</sub></em>)) group operations."
+        },
+        {
+          "note": "The security of the group collapses to its largest prime factor. A 256-bit group order whose factors are all below 2<sup>40</sup> offers about 20 bits of security, not 128. There is no partial credit for the size of n itself.",
+          "note_label": "The consequence"
+        }
+      ]
+    },
+    {
+      "heading": "Why this shapes curve standards",
+      "blocks": [
+        {
+          "p": "Every standardised curve publishes its group order as <em>h</em> &middot; <em>n</em>, with <em>n</em> a large prime and <em>h</em> a small cofactor: <em>h</em> = 1 for the NIST prime curves and secp256k1, <em>h</em> = 8 for Curve25519, <em>h</em> = 4 for Curve448. Cryptographic operations are confined to the order-<em>n</em> subgroup precisely so that Pohlig&ndash;Hellman has nothing to work with."
+        },
+        {
+          "p": "The cofactor is not free. In a group with <em>h</em> = 8, an attacker who can get a peer to compute with a point of order 8 learns the secret scalar modulo 8. That is only three bits, but it is three bits per protocol run against a static key, and it composes with other leakage. Hence cofactor clearing, or the ristretto255-style construction that removes the cofactor from the abstraction entirely."
+        }
+      ]
+    },
+    {
+      "heading": "Invalid-curve attacks: the real version",
+      "blocks": [
+        {
+          "p": "The damaging deployed form of this attack does not need the target's curve to have a smooth order &mdash; it supplies a different curve that does. Short Weierstrass point arithmetic over <strong>F</strong><sub>p</sub> for <em>y</em><sup>2</sup> = <em>x</em><sup>3</sup> + <em>ax</em> + <em>b</em> never uses <em>b</em>. So a point that does not lie on the intended curve lies on some other curve with the same <em>a</em>, and the victim's scalar multiplication computes happily in <em>that</em> group."
+        },
+        {
+          "steps": [
+            "The attacker searches for a curve <em>E'</em> with the same <em>a</em> whose order has a small prime factor <em>q</em>, and finds a point <em>R</em> of order <em>q</em> on it.",
+            "The attacker sends <em>R</em> as a public key. The victim computes <em>dR</em> with its long-term secret <em>d</em> and returns or reveals something derived from it.",
+            "Because <em>R</em> has order <em>q</em>, brute force over <em>q</em> candidates yields <em>d</em> mod <em>q</em>.",
+            "Repeat with different small primes until the CRT reconstruction pins down <em>d</em> &mdash; typically a few dozen queries."
+          ]
+        },
+        {
+          "p": "Real instances have been found in TLS libraries, in Bluetooth pairing, and in JSON Web Encryption implementations. The defence is unglamorous and absolute: validate that a received point satisfies the curve equation, is not the identity, and lies in the correct subgroup, before any secret-dependent arithmetic. Curve models whose arithmetic uses every parameter &mdash; Montgomery and twisted Edwards forms &mdash; reduce the exposure but do not replace validation, because they leave the twist reachable."
+        }
+      ]
+    },
+    {
+      "heading": "The boundary",
+      "blocks": [
+        {
+          "p": "On a prime-order curve with validated inputs, Pohlig&ndash;Hellman contributes nothing: there is one prime factor and the reduction is the identity. Its residual relevance is entirely in the surrounding engineering &mdash; cofactors, twists, missing validation, and protocols that reuse a static key across many attacker-chosen inputs."
+        },
+        {
+          "p": "It is worth stating what this means for review practice. Asking \"is the curve strong?\" is the wrong question for this attack class; the right questions are whether every received point is validated, whether the cofactor is cleared, and whether the same private scalar is ever applied to more than a handful of attacker-supplied group elements."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "S. Pohlig and M. Hellman, \"An improved algorithm for computing logarithms over GF(p) and its cryptographic significance\", IEEE Trans. Inf. Theory 24 (1978)",
+      "href": "https://ieeexplore.ieee.org/document/1055817"
+    },
+    {
+      "text": "I. Biehl, B. Meyer and V. M&uuml;ller, \"Differential fault attacks on elliptic curve cryptosystems\", CRYPTO 2000 &mdash; the origin of the invalid-curve attack",
+      "href": "https://link.springer.com/chapter/10.1007/3-540-44598-6_8"
+    },
+    {
+      "text": "T. Jager, J. Schwenk and J. Somorovsky, \"Practical invalid curve attacks on TLS-ECDH\", ESORICS 2015",
+      "href": "https://link.springer.com/chapter/10.1007/978-3-319-24174-6_21"
+    },
+    {
+      "text": "D. J. Bernstein and T. Lange, \"SafeCurves: choosing safe curves for elliptic-curve cryptography\"",
+      "href": "https://safecurves.cr.yp.to/"
+    }
+  ],
+  "related": ["pollard-rho", "hidden-number-problem"]
+}

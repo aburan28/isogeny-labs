@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0f18">
+  <meta name="description" content="How Pollard&#x27;s rho method solves discrete logarithms in square-root time, how van Oorschot-Wiener parallelisation makes it practical, and what the largest published ECDLP computations actually cost.">
+  <meta property="og:title" content="Pollard&#x27;s rho and the parallel collision search — Isogeny Labs">
+  <meta property="og:description" content="How Pollard&#x27;s rho method solves discrete logarithms in square-root time, how van Oorschot-Wiener parallelisation makes it practical, and what the largest published ECDLP computations actually cost.">
+  <meta property="og:type" content="article">
+  <title>Pollard&#x27;s rho and the parallel collision search — Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
+    <nav class="navigation" id="navigation" aria-label="Main navigation">
+      <a href="../index.html#work">What we do</a><a href="../index.html#approach">How we work</a><a href="../index.html#foundations">Foundations</a><a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis</a>
+      <a class="nav-cta" href="../index.html#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main">
+    <article class="doc">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Isogeny Labs</a> <span aria-hidden="true">/</span>
+        <a href="index.html">Cryptanalysis</a> <span aria-hidden="true">/</span>
+        <span aria-current="page">Pollard's rho</span>
+      </nav>
+      <header class="doc-header">
+        <p class="eyebrow"><span class="small-cross">+</span> GENERIC GROUP ALGORITHMS</p>
+        <h1>Pollard's rho and the parallel collision search</h1>
+        <p class="doc-standfirst">Rho is the attack a 256-bit curve is sized against. It needs no structure at all &mdash; only the ability to add points and compare them &mdash; which is exactly why it sets the floor, and why beating it requires finding structure the group was chosen not to have.</p>
+      </header>
+      <dl class="doc-facts">
+        <div class="fact"><dt>Problem</dt><dd>Discrete logarithm in a cyclic group of prime order n</dd></div>
+        <div class="fact"><dt>Expected cost</dt><dd>&radic;(&pi;n/2) &asymp; 1.25&radic;n group operations</dd></div>
+        <div class="fact"><dt>Memory</dt><dd>Negligible per worker; distinguished-point storage when parallelised</dd></div>
+        <div class="fact"><dt>Largest published solve</dt><dd>114-bit prime-field curve (2009); 113-bit binary Koblitz curve (2014)</dd></div>
+        <div class="fact"><dt>Relevance to 256-bit curves</dt><dd>None. 2<sup>128</sup> operations is not reachable.</dd></div>
+      </dl>
+      <nav class="doc-toc" aria-label="On this page">
+        <p class="eyebrow">On this page</p>
+        <ol>
+        <li><a href="#the-problem-instance">The problem instance</a></li>
+        <li><a href="#the-mechanism">The mechanism</a></li>
+        <li><a href="#making-it-parallel">Making it parallel</a></li>
+        <li><a href="#the-constant-factors-that-matter">The constant factors that matter</a></li>
+        <li><a href="#what-record-computations-have-cost">What record computations have cost</a></li>
+        <li><a href="#the-boundary">The boundary</a></li>
+        </ol>
+      </nav>
+      <section class="doc-section" id="the-problem-instance" aria-labelledby="the-problem-instance-title">
+        <h2 id="the-problem-instance-title"><span class="doc-section-number">01</span>The problem instance</h2>
+        <p>Let <em>G</em> = &langle;P&rangle; be a cyclic group of prime order <em>n</em>, written additively because the target is usually an elliptic curve. The attacker is given <em>P</em> and <em>Q</em> = <em>kP</em>, and must recover <em>k</em> &isin; &#x2124;/n&#x2124;. The attacker can add group elements and test two elements for equality. Nothing else is assumed &mdash; no factorisation of the group order beyond primality, no embedding, no special curve shape.</p>
+        <p>That restriction is the point. Shoup proved that any algorithm confined to these operations needs &Omega;(&radic;p) of them, where <em>p</em> is the largest prime factor of <em>n</em>. So an attack that beats rho on a specific curve is necessarily an attack that used something about that curve. Finding out whether such a thing exists is the whole business of elliptic-curve cryptanalysis.</p>
+      </section>
+      <section class="doc-section" id="the-mechanism" aria-labelledby="the-mechanism-title">
+        <h2 id="the-mechanism-title"><span class="doc-section-number">02</span>The mechanism</h2>
+        <p>Define a pseudorandom iteration on group elements that keeps track of how each element was built. Every point reached is written <em>X<sub>i</sub></em> = <em>a<sub>i</sub>P</em> + <em>b<sub>i</sub>Q</em>, and the step function <em>X<sub>i+1</sub></em> = <em>f</em>(<em>X<sub>i</sub></em>) updates <em>a<sub>i</sub></em> and <em>b<sub>i</sub></em> alongside the point &mdash; typically by partitioning the group into <em>r</em> buckets by a hash of the point and adding a fixed precomputed multiple per bucket.</p>
+        <p>The walk is a function on a finite set, so it must eventually repeat, tracing the shape that gives the method its name: a tail leading into a cycle. A repeat means</p>
+        <div class="math">a<sub>i</sub>P + b<sub>i</sub>Q = a<sub>j</sub>P + b<sub>j</sub>Q &nbsp;&rArr;&nbsp; k &equiv; (a<sub>i</sub> &minus; a<sub>j</sub>)(b<sub>j</sub> &minus; b<sub>i</sub>)<sup>&minus;1</sup> (mod n)
+          <span class="math-label">The collision solves the instance, provided b<sub>i</sub> &ne; b<sub>j</sub></span></div>
+        <p>By the birthday bound, a walk behaving like a random map collides after about &radic;(&pi;n/2) &asymp; 1.25&radic;n steps. Floyd's or Brent's cycle-finding turns that into constant memory for a single walk; in practice nobody runs a single walk.</p>
+      </section>
+      <section class="doc-section" id="making-it-parallel" aria-labelledby="making-it-parallel-title">
+        <h2 id="making-it-parallel-title"><span class="doc-section-number">03</span>Making it parallel</h2>
+        <p>The version that actually gets run is van Oorschot and Wiener's parallel collision search. Declare a point <em>distinguished</em> if it satisfies a cheap, rare predicate &mdash; say, its <em>x</em>-coordinate has 30 leading zero bits. Each of <em>m</em> independent workers walks from its own random start, reports only distinguished points with their (<em>a</em>, <em>b</em>) coefficients to a central server, and restarts. Two workers that ever step onto the same point follow the same trail from there and report the same distinguished point, which the server detects.</p>
+        <ol class="doc-steps">
+          <li>Workers exchange no messages with each other and need no shared state.</li>
+          <li>Wall-clock time falls to &radic;(&pi;n/2)/<em>m</em>, a genuinely linear speedup in the number of workers.</li>
+          <li>Storage is bounded by the distinguished-point rate, which is a tunable parameter, not by &radic;n.</li>
+          <li>Interrupted work is not lost: the reported points remain valid.</li>
+        </ol>
+        <p>This is why rho is the right benchmark rather than baby-step giant-step: BSGS also runs in &radic;n time but needs &radic;n <em>memory</em>, and memory does not parallelise for free. Rho has no such handicap, so the attacker's cost is honestly a time&ndash;hardware product with no hidden ceiling.</p>
+      </section>
+      <section class="doc-section" id="the-constant-factors-that-matter" aria-labelledby="the-constant-factors-that-matter-title">
+        <h2 id="the-constant-factors-that-matter-title"><span class="doc-section-number">04</span>The constant factors that matter</h2>
+        <p>Against a real curve the exponent is fixed and the fight is entirely over constants. Three of them are worth knowing.</p>
+        <ul>
+          <li><strong>The negation map.</strong> On an elliptic curve, &minus;(<em>x</em>, <em>y</em>) = (<em>x</em>, &minus;<em>y</em>), so a walk defined on <em>x</em>-coordinates alone searches a space of size <em>n</em>/2 and gains a factor of &radic;2. Realising the gain requires handling fruitless cycles, where the walk oscillates between a point and its negative.</li>
+          <li><strong>Efficient endomorphisms.</strong> A Koblitz curve over <strong>F</strong><sub>2<sup>m</sup></sub> has the Frobenius endomorphism acting freely on classes of size <em>m</em>, giving a further &radic;m speedup &mdash; a real, quantifiable reason to price Koblitz curves differently from random binary curves.</li>
+          <li><strong>The cost of one step.</strong> Inversion-free coordinates, batched inversions across many simultaneous walks, and field arithmetic tuned to the hardware decide the per-step cost, and that is what separates a feasible computation from an infeasible one at a fixed exponent.</li>
+        </ul>
+      </section>
+      <section class="doc-section" id="what-record-computations-have-cost" aria-labelledby="what-record-computations-have-cost-title">
+        <h2 id="what-record-computations-have-cost-title"><span class="doc-section-number">05</span>What record computations have cost</h2>
+        <p>Published ECDLP records are the honest calibration data. A 112-bit prime-field instance (the <em>secp112r1</em> curve) was solved in 2009 by Bos, Kaihara, Kleinjung, Lenstra and Montgomery on a cluster of PlayStation 3 consoles, taking roughly six months of the cluster's time; the same team later reported a 114-bit solve. Wenger and Wolfger solved a 113-bit binary Koblitz instance on an FPGA cluster, and Bernstein, Lange and collaborators have run long-lived attacks on the 131-bit Certicom ECC2K-130 challenge without completing it.</p>
+        <aside class="doc-note"><span class="doc-note-label">The extrapolation</span><p>Each additional bit of group order doubles the attacker's work, so the gap between a 113-bit solve and a 256-bit curve is a factor of about 2<sup>71</sup>. No engineering improvement, hardware platform or constant-factor trick closes a gap of that size. When a 256-bit curve fails, it will not be to rho.</p></aside>
+      </section>
+      <section class="doc-section" id="the-boundary" aria-labelledby="the-boundary-title">
+        <h2 id="the-boundary-title"><span class="doc-section-number">06</span>The boundary</h2>
+        <p>Rho is optimal among generic algorithms, so anything that beats it is a statement about the specific group. The attacks that do beat it all work by leaving the generic model:</p>
+        <ul>
+          <li>A composite group order with only small prime factors &mdash; see <a href="pohlig-hellman.html">Pohlig&ndash;Hellman</a>, which is why cofactors and subgroup orders are checked.</li>
+          <li>A small embedding degree, where the MOV/Frey&ndash;R&uuml;ck pairing transfers the problem into a finite field with subexponential index calculus.</li>
+          <li>Trace one (anomalous curves), where the Smart&ndash;Satoh&ndash;Araki lift solves the instance in linear time.</li>
+          <li>Definition over an extension field, where the point decomposition of <a href="summation-polynomials.html">summation polynomials</a> or <a href="weil-descent.html">Weil descent</a> becomes available.</li>
+          <li>An implementation that leaks &mdash; where the <a href="hidden-number-problem.html">hidden number problem</a> makes the group order irrelevant.</li>
+        </ul>
+        <p>A standard prime-field curve such as P-256 or secp256k1 is chosen to have none of the first four properties. Which leaves the fifth, and that is where deployed systems actually break.</p>
+      </section>
+      <section class="doc-section doc-references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title"><span class="doc-section-number">07</span>Primary sources</h2>
+        <p>Read these rather than this page. Links open in a new tab.</p>
+        <ul class="reference-list">
+        <li><a href="https://www.ams.org/journals/mcom/1978-32-143/S0025-5718-1978-0491431-9/" rel="noopener noreferrer" target="_blank">J. M. Pollard, "Monte Carlo methods for index computation (mod p)", Mathematics of Computation 32 (1978) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://link.springer.com/article/10.1007/PL00003816" rel="noopener noreferrer" target="_blank">P. C. van Oorschot and M. J. Wiener, "Parallel collision search with cryptanalytic applications", Journal of Cryptology 12 (1999) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://www.shoup.net/papers/dlbounds1.pdf" rel="noopener noreferrer" target="_blank">V. Shoup, "Lower bounds for discrete logarithms and related problems", EUROCRYPT 1997 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://www.ams.org/journals/mcom/2000-69-232/S0025-5718-99-01119-9/" rel="noopener noreferrer" target="_blank">R. Gallant, R. Lambert and S. Vanstone, "Improving the parallelized Pollard lambda search on anomalous binary curves", Mathematics of Computation 69 (2000) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://eprint.iacr.org/2009/541" rel="noopener noreferrer" target="_blank">J. W. Bos, M. E. Kaihara, T. Kleinjung, A. K. Lenstra and P. L. Montgomery, "Solving a 112-bit prime elliptic curve discrete logarithm problem on game consoles using sloppy reduction", IJACT 2 (2012) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://eprint.iacr.org/2014/368" rel="noopener noreferrer" target="_blank">E. Wenger and P. Wolfger, "Solving the discrete logarithm of a 113-bit Koblitz curve with an FPGA cluster", SAC 2014 <span aria-hidden="true">↗</span></a></li>
+        </ul>
+      </section>
+      <section class="doc-related" aria-labelledby="related-title">
+        <h2 id="related-title" class="eyebrow">Related techniques</h2>
+        <ul>
+        <li><a href="pohlig-hellman.html"><span>Generic group algorithms</span>Pohlig&ndash;Hellman and the smooth-order reduction</a></li>
+        <li><a href="summation-polynomials.html"><span>Index calculus and descent</span>Summation polynomials and elliptic-curve index calculus</a></li>
+        <li><a href="hidden-number-problem.html"><span>Lattice attacks</span>The hidden number problem and ECDSA nonce leakage</a></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-top">
+      <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+      <p>Cryptographic analysis.<br>Systems that hold up.</p>
+      <a class="text-link light" href="#main">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <span>Hardness analysis · Isogeny systems · Post-quantum migration</span>
+    </div>
+  </footer>
+</body>
+</html>

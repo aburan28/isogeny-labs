@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0f18">
+  <meta name="description" content="How the hidden number problem converts partial nonce leakage into a lattice problem that recovers ECDSA private keys, the real-world breaks it explains, and the implementation practices that close it.">
+  <meta property="og:title" content="The hidden number problem and ECDSA nonce leakage — Isogeny Labs">
+  <meta property="og:description" content="How the hidden number problem converts partial nonce leakage into a lattice problem that recovers ECDSA private keys, the real-world breaks it explains, and the implementation practices that close it.">
+  <meta property="og:type" content="article">
+  <title>The hidden number problem and ECDSA nonce leakage — Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
+    <nav class="navigation" id="navigation" aria-label="Main navigation">
+      <a href="../index.html#work">What we do</a><a href="../index.html#approach">How we work</a><a href="../index.html#foundations">Foundations</a><a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis</a>
+      <a class="nav-cta" href="../index.html#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main">
+    <article class="doc">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Isogeny Labs</a> <span aria-hidden="true">/</span>
+        <a href="index.html">Cryptanalysis</a> <span aria-hidden="true">/</span>
+        <span aria-current="page">Hidden number problem</span>
+      </nav>
+      <header class="doc-header">
+        <p class="eyebrow"><span class="small-cross">+</span> LATTICE ATTACKS</p>
+        <h1>The hidden number problem and ECDSA nonce leakage</h1>
+        <p class="doc-standfirst">This is where deployed elliptic-curve cryptography actually fails. Not the group, not the curve, not the key length &mdash; the per-signature nonce, and a side channel that reveals a fraction of a bit of it.</p>
+      </header>
+      <dl class="doc-facts">
+        <div class="fact"><dt>Problem</dt><dd>Recover <em>d</em> from signatures whose nonces are partly known or biased</dd></div>
+        <div class="fact"><dt>Cost</dt><dd>Lattice reduction on a basis of dimension &asymp; number of signatures</dd></div>
+        <div class="fact"><dt>Leakage needed</dt><dd>A few bits per signature, or a sub-bit bias across many</dd></div>
+        <div class="fact"><dt>Affects</dt><dd>ECDSA, DSA, Schnorr variants with a per-message secret nonce</dd></div>
+        <div class="fact"><dt>Deployed instances</dt><dd>Minerva, TPM-Fail, LadderLeak, and many wallet key losses</dd></div>
+      </dl>
+      <nav class="doc-toc" aria-label="On this page">
+        <p class="eyebrow">On this page</p>
+        <ol>
+        <li><a href="#the-problem-instance">The problem instance</a></li>
+        <li><a href="#why-ecdsa-is-an-instance">Why ECDSA is an instance</a></li>
+        <li><a href="#the-lattice-step">The lattice step</a></li>
+        <li><a href="#where-the-leakage-comes-from">Where the leakage comes from</a></li>
+        <li><a href="#the-boundary-and-how-to-close-it">The boundary, and how to close it</a></li>
+        </ol>
+      </nav>
+      <section class="doc-section" id="the-problem-instance" aria-labelledby="the-problem-instance-title">
+        <h2 id="the-problem-instance-title"><span class="doc-section-number">01</span>The problem instance</h2>
+        <p>Boneh and Venkatesan's hidden number problem: recover a secret &alpha; modulo <em>n</em> given many pairs (<em>t<sub>i</sub></em>, <em>u<sub>i</sub></em>) with</p>
+        <div class="math">| &alpha;t<sub>i</sub> &minus; u<sub>i</sub> |<sub>n</sub> &lt; n / 2<sup>&#8467;+1</sup>
+          <span class="math-label">u<sub>i</sub> approximates &alpha;t<sub>i</sub> to &#8467; bits</span></div>
+        <p>Each sample confines &alpha; to a narrow band; enough bands intersect in a single point. Boneh and Venkatesan solved it with lattice reduction for &#8467; on the order of &radic;(log <em>n</em>), and the interesting part is how naturally ECDSA hands over exactly these samples.</p>
+      </section>
+      <section class="doc-section" id="why-ecdsa-is-an-instance" aria-labelledby="why-ecdsa-is-an-instance-title">
+        <h2 id="why-ecdsa-is-an-instance-title"><span class="doc-section-number">02</span>Why ECDSA is an instance</h2>
+        <p>An ECDSA signature on hash <em>h</em> with private key <em>d</em> and per-message nonce <em>k</em> is (<em>r</em>, <em>s</em>) with <em>r</em> = <em>x</em>(<em>kG</em>) mod <em>n</em> and <em>s</em> = <em>k</em><sup>&minus;1</sup>(<em>h</em> + <em>rd</em>) mod <em>n</em>. Rearranged:</p>
+        <div class="math">k &equiv; s<sup>&minus;1</sup>h + s<sup>&minus;1</sup>r &middot; d (mod n)
+          <span class="math-label">k is an affine function of d with publicly known coefficients</span></div>
+        <p>So any partial knowledge of <em>k</em> is partial knowledge of an affine image of <em>d</em> &mdash; precisely an HNP sample with &alpha; = <em>d</em>, <em>t<sub>i</sub></em> = <em>s<sub>i</sub></em><sup>&minus;1</sup><em>r<sub>i</sub></em> and <em>u<sub>i</sub></em> derived from the leaked bits and <em>s<sub>i</sub></em><sup>&minus;1</sup><em>h<sub>i</sub></em>. The degenerate cases are familiar: a repeated nonce across two signatures gives two linear equations in two unknowns and the key falls out with no lattice at all, which is how the Sony PlayStation 3 signing key and a long series of Bitcoin wallets were lost.</p>
+      </section>
+      <section class="doc-section" id="the-lattice-step" aria-labelledby="the-lattice-step-title">
+        <h2 id="the-lattice-step-title"><span class="doc-section-number">03</span>The lattice step</h2>
+        <p>Build a lattice whose vectors encode the HNP congruences, with a final coordinate carrying the unknown. A standard construction from <em>m</em> samples uses the basis</p>
+        <div class="math">B = [ n&middot;I<sub>m</sub> | 0 ; t<sub>1</sub> &hellip; t<sub>m</sub> , 1/2<sup>&#8467;</sup> ; u<sub>1</sub> &hellip; u<sub>m</sub> , 0 , n/2<sup>&#8467;</sup> ]
+          <span class="math-label">One common (m+2)-dimensional embedding; variants abound</span></div>
+        <p>The vector corresponding to the true <em>d</em> is unusually short because every error term is bounded by the leakage. Running LLL, or BKZ when the margin is thin, finds it, and <em>d</em> is read off a coordinate. The practical recipe:</p>
+        <ol class="doc-steps">
+          <li>Collect signatures and whatever side-channel measurement bounds each nonce.</li>
+          <li>Filter aggressively &mdash; keep only the samples with the strongest bound, since lattice dimension is the cost driver and noisy samples poison the basis.</li>
+          <li>Reduce. If it fails, resample the subset; success is probabilistic and cheap to retry.</li>
+          <li>Below about four bits of leakage per signature, switch to Bleichenbacher's Fourier-analytic method, which tolerates far less bias per sample at the price of needing far more of them.</li>
+        </ol>
+        <aside class="doc-note"><span class="doc-note-label">Key size does not help</span><p>The attack cost does not depend on the curve. A 521-bit key falls to the same lattice as a 256-bit one, given the same per-signature leakage. Raising key size is not a mitigation for this attack class &mdash; it is the wrong axis entirely.</p></aside>
+      </section>
+      <section class="doc-section" id="where-the-leakage-comes-from" aria-labelledby="where-the-leakage-comes-from-title">
+        <h2 id="where-the-leakage-comes-from-title"><span class="doc-section-number">04</span>Where the leakage comes from</h2>
+        <p>Every published break in this family began with a nonce that was not uniform, or a computation whose timing depended on it.</p>
+        <ul>
+          <li><strong>Modular bias.</strong> Generating a nonce by reducing a uniform 256-bit string modulo <em>n</em> biases the top bits whenever <em>n</em> is not a power of two. Small, but HNP-usable in bulk.</li>
+          <li><strong>Non-constant-time scalar multiplication.</strong> If the loop runs for the bit-length of <em>k</em>, the signing time reveals that length &mdash; a full bit, sometimes more. This was the Minerva family of vulnerabilities, and TPM-Fail in hardware TPMs.</li>
+          <li><strong>Sub-bit leakage.</strong> LadderLeak showed key recovery from less than one bit of nonce leakage per signature by combining Bleichenbacher's method with a very large signature corpus.</li>
+          <li><strong>Cache and branch behaviour.</strong> Window-based or wNAF multiplication with secret-dependent table indices leaks nonce bits to a co-resident attacker; a long line of results has extracted keys from OpenSSL this way.</li>
+          <li><strong>Outright repetition.</strong> Bad entropy at boot, a virtual machine rollback, or an embedded device with no entropy source. Still the most common cause of real losses.</li>
+        </ul>
+      </section>
+      <section class="doc-section" id="the-boundary-and-how-to-close-it" aria-labelledby="the-boundary-and-how-to-close-it-title">
+        <h2 id="the-boundary-and-how-to-close-it-title"><span class="doc-section-number">05</span>The boundary, and how to close it</h2>
+        <p>The attack needs <em>per-signature</em> secret randomness with exploitable structure. Remove that and the whole class disappears:</p>
+        <ul>
+          <li><strong>Deterministic nonces</strong> (RFC 6979) or hedged deterministic nonces derive <em>k</em> from the key and message via a PRF, removing entropy failures and modular bias in one step. Hedging with fresh randomness retains protection against fault attacks, which deterministic signing alone makes worse.</li>
+          <li><strong>Constant-time scalar multiplication</strong> with a fixed loop count, uniform ladder and no secret-dependent memory addressing removes the timing and cache channels.</li>
+          <li><strong>Rejection sampling</strong> or wide reduction removes modular bias where a nonce must be random.</li>
+          <li><strong>Schemes without a fresh nonce per signature</strong> &mdash; EdDSA derives it deterministically by construction, which is a large part of why it is recommended.</li>
+        </ul>
+        <p>A protocol review that checks curve choice and key length but not nonce generation and scalar-multiplication timing has checked the part that has never failed and skipped the part that has. The same machinery applies beyond signatures: any protocol leaking partial information about a secret exponent &mdash; including Diffie&ndash;Hellman premaster secrets, as in Boneh and Venkatesan's original motivation &mdash; is an HNP instance waiting to be written down.</p>
+      </section>
+      <section class="doc-section doc-references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title"><span class="doc-section-number">06</span>Primary sources</h2>
+        <p>Read these rather than this page. Links open in a new tab.</p>
+        <ul class="reference-list">
+        <li><a href="https://link.springer.com/chapter/10.1007/3-540-68697-5_11" rel="noopener noreferrer" target="_blank">D. Boneh and R. Venkatesan, "Hardness of computing the most significant bits of secret keys in Diffie-Hellman and related schemes", CRYPTO 1996 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://link.springer.com/article/10.1023/A:1011214926272" rel="noopener noreferrer" target="_blank">N. A. Howgrave-Graham and N. P. Smart, "Lattice attacks on digital signature schemes", Designs, Codes and Cryptography 23 (2001) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://link.springer.com/article/10.1023/A:1025436905711" rel="noopener noreferrer" target="_blank">P. Q. Nguyen and I. E. Shparlinski, "The insecurity of the elliptic curve digital signature algorithm with partially known nonces", Designs, Codes and Cryptography 30 (2003) <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://eprint.iacr.org/2020/728" rel="noopener noreferrer" target="_blank">J. Jancar, V. Sedlacek, P. Svenda and M. Sys, "Minerva: the curse of ECDSA nonces", CHES 2020 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://arxiv.org/abs/1911.05673" rel="noopener noreferrer" target="_blank">D. Moghimi, B. Sunar, T. Eisenbarth and N. Heninger, "TPM-FAIL: TPM meets timing and lattice attacks", USENIX Security 2020 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://eprint.iacr.org/2020/615" rel="noopener noreferrer" target="_blank">D. F. Aranha, F. R. Novaes, A. Takahashi, M. Tibouchi and Y. Yarom, "LadderLeak: breaking ECDSA with less than one bit of nonce leakage", CCS 2020 <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://www.rfc-editor.org/rfc/rfc6979" rel="noopener noreferrer" target="_blank">T. Pornin, "Deterministic usage of DSA and ECDSA", RFC 6979 <span aria-hidden="true">↗</span></a></li>
+        </ul>
+      </section>
+      <section class="doc-related" aria-labelledby="related-title">
+        <h2 id="related-title" class="eyebrow">Related techniques</h2>
+        <ul>
+        <li><a href="pollard-rho.html"><span>Generic group algorithms</span>Pollard's rho and the parallel collision search</a></li>
+        <li><a href="pohlig-hellman.html"><span>Generic group algorithms</span>Pohlig&ndash;Hellman and the smooth-order reduction</a></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-top">
+      <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
+      <p>Cryptographic analysis.<br>Systems that hold up.</p>
+      <a class="text-link light" href="#main">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <span>Hardness analysis · Isogeny systems · Post-quantum migration</span>
+    </div>
+  </footer>
+</body>
+</html>

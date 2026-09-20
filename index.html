@@ -9,7 +9,7 @@
   <meta property="og:description" content="Hardness analysis, isogeny and elliptic-curve systems, post-quantum migration, and protocol review.">
   <meta property="og:type" content="website">
   <title>Isogeny Labs — Cryptography research and engineering</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230d0f18'/%3E%3Cg fill='none' stroke='%237b5cff' stroke-width='2'%3E%3Cpath d='M20 8 9 14v12l11 6 11-6V14z'/%3E%3Cpath d='M20 8v24M9 14l22 12M31 14 9 26'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./script.js"></script>
 </head>
@@ -19,7 +19,7 @@
     <a class="brand" href="#" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
     <nav class="navigation" id="navigation" aria-label="Main navigation">
-      <a href="#work">What we do</a><a href="#approach">How we work</a><a href="#foundations">Foundations</a>
+      <a href="#work">What we do</a><a href="#approach">How we work</a><a href="#foundations">Foundations</a><a href="./cryptanalysis/index.html">Cryptanalysis</a>
       <a class="nav-cta" href="#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
     </nav>
   </header>
@@ -44,6 +44,20 @@
       <div class="standards-panel"><div class="panel-top"><span>PRIMITIVES WE WORK WITH</span><span aria-hidden="true">[ PQC ]</span></div><div class="standard"><div><span class="standard-type">KEY ESTABLISHMENT</span><h3>ML-KEM</h3><p>Module-lattice key encapsulation</p></div><span class="fips">FIPS 203</span></div><div class="standard"><div><span class="standard-type">DIGITAL SIGNATURES</span><h3>ML-DSA</h3><p>Module-lattice signatures</p></div><span class="fips">FIPS 204</span></div><div class="standard"><div><span class="standard-type">ISOGENY SIGNATURES</span><h3>SQIsign</h3><p>Quaternion-order isogeny signatures</p></div><span class="fips">NIST R2</span></div><p class="panel-note">Standards define the algorithms.<br>The assumptions underneath still need scrutiny.</p></div>
     </section>
     <section class="approach section-pad" id="approach" aria-labelledby="approach-title"><div class="section-intro"><p class="eyebrow"><span class="section-index">03 /</span> HOW WE WORK</p><div class="intro-main"><h2 id="approach-title">Stated assumptions.<br>Measured results.</h2><p>Clear scope, close collaboration, and conclusions backed by something you can rerun. We work alongside your engineers, with a useful output at every stage.</p></div></div><ol class="steps"><li><div class="step-top"><span>01</span><span class="step-line"></span></div><h3>Model</h3><p>Write down the system, the adversary, and the assumptions. Agree on what would count as a break.</p></li><li><div class="step-top"><span>02</span><span class="step-line"></span></div><h3>Analyze</h3><p>Attack the construction on paper and in code. Measure the cost of the best attack we can build.</p></li><li><div class="step-top"><span>03</span><span class="step-line"></span></div><h3>Build</h3><p>Implement against the analysis, with test vectors, benchmarks, and known-answer checks.</p></li><li><div class="step-top"><span>04</span><span class="step-line"></span></div><h3>Transfer</h3><p>Hand over the write-up, the code, and the reasoning so your team can carry it forward.</p></li></ol></section>
+    <section class="library-teaser section-pad" id="library" aria-labelledby="library-teaser-title">
+      <div>
+        <p class="eyebrow"><span class="small-cross">+</span> OPEN REFERENCE</p>
+        <h2 id="library-teaser-title">The cryptanalysis<br>library.</h2>
+        <p>We keep a public write-up of the attacks our analysis work is measured against &mdash; what each one needs, what it costs, and exactly where it stops applying. No sign-up, no summary of a summary: every page states its assumptions and cites the primary sources.</p>
+        <a class="button button-accent" href="./cryptanalysis/index.html">Browse the library <span aria-hidden="true">&rarr;</span></a>
+      </div>
+      <ul class="teaser-list">
+        <li><a href="./cryptanalysis/pollard-rho.html"><span>01</span> Pollard&rsquo;s rho and parallel collision search</a></li>
+        <li><a href="./cryptanalysis/summation-polynomials.html"><span>02</span> Summation polynomials and index calculus</a></li>
+        <li><a href="./cryptanalysis/hidden-number-problem.html"><span>03</span> The hidden number problem and nonce leakage</a></li>
+        <li><a href="./cryptanalysis/sidh-torsion-attacks.html"><span>04</span> The SIDH torsion-point attacks</a></li>
+      </ul>
+    </section>
     <section class="engagement section-pad" id="engagement" aria-labelledby="engagement-title"><div class="engagement-heading"><p class="eyebrow">YOUR NEXT MOVE</p><h2 id="engagement-title">Bring us the part<br>you are unsure about.</h2><p>A first conversation starts with your construction, your constraints, and the claim you need to be able to defend.</p></div><div class="engagement-right"><h3>What should we look at?</h3><ul><li><span>01</span> How hard is this problem, really?</li><li><span>02</span> Are these parameters the right ones?</li><li><span>03</span> Can you build and validate it with us?</li></ul><div class="contact-slot" id="contact-slot"><span class="contact-label">WORK WITH ISOGENY LABS</span><p>Contact details coming soon.</p></div></div></section>
   </main>
   <footer class="site-footer"><div class="footer-top"><a class="brand" href="#" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a><p>Cryptographic analysis.<br>Systems that hold up.</p><a class="text-link light" href="#">Back to top <span aria-hidden="true">↑</span></a></div><div class="footer-bottom"><span>© <span id="year">2026</span> Isogeny Labs</span><span>Hardness analysis · Isogeny systems · Post-quantum migration</span></div></footer>
