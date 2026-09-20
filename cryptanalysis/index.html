@@ -33,8 +33,8 @@
       <h1 id="library-title">How these problems<br>are actually attacked.</h1>
       <p class="library-standfirst">A security level is a claim about work. This library collects the attacks that claim is measured against — what each one needs, what it costs, and precisely where it stops being relevant. Every page states its assumptions and points at the primary sources rather than restating folklore.</p>
       <dl class="doc-facts library-facts">
-        <div class="fact"><dt>Techniques written up</dt><dd>6</dd></div>
-        <div class="fact"><dt>Queued</dt><dd>6</dd></div>
+        <div class="fact"><dt>Techniques written up</dt><dd>8</dd></div>
+        <div class="fact"><dt>Queued</dt><dd>4</dd></div>
         <div class="fact"><dt>Scope</dt><dd>Public-key hardness assumptions, with an ECC and isogeny bias</dd></div>
       </dl>
     </section>
@@ -110,10 +110,12 @@
               <span class="technique-cost">Subexponential on vulnerable binary curves</span>
             </a>
           </li>
-          <li class="technique technique-planned">
-            <h3>The number field sieve</h3>
-            <p>The subexponential L(1/3) algorithm behind factoring and prime-field discrete-log records, and what its precomputation phase means for reused parameters.</p>
-            <span class="technique-cost">Not written yet</span>
+          <li class="technique">
+            <a href="number-field-sieve.html">
+              <h3>The number field sieve</h3>
+              <p>The L(1/3) algorithm behind every factoring and prime-field discrete-log record &mdash; and the reason RSA and finite-field Diffie&ndash;Hellman need 3072-bit parameters to match a 256-bit curve.</p>
+              <span class="technique-cost">L<sub>N</sub>[1/3, 1.923] for general N</span>
+            </a>
           </li>
           <li class="technique technique-planned">
             <h3>Gr&ouml;bner-basis solving and first fall degree</h3>
@@ -157,10 +159,12 @@
               <span class="technique-cost">Polynomial time; SIKEp434 in about an hour</span>
             </a>
           </li>
-          <li class="technique technique-planned">
-            <h3>Kuperberg's algorithm and CSIDH</h3>
-            <p>Subexponential quantum attacks on the class-group action, and the parameter dispute they caused.</p>
-            <span class="technique-cost">Not written yet</span>
+          <li class="technique">
+            <a href="kuperberg-csidh.html">
+              <h3>Kuperberg and CSIDH</h3>
+              <p>Commutativity buys CSIDH its small keys and non-interactive key exchange, and costs it a subexponential quantum attack &mdash; whose concrete cost is still disputed.</p>
+              <span class="technique-cost">Classical p<sup>1/4</sup>; quantum 2<sup>O(&radic;log N)</sup></span>
+            </a>
           </li>
           <li class="technique technique-planned">
             <h3>Meet-in-the-middle and the supersingular path problem</h3>

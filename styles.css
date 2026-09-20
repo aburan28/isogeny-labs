@@ -109,3 +109,7 @@
 @media(max-width:1100px){.library-guide{gap:3rem}.library-teaser{gap:3rem}.doc,.library-hero,.family{padding-top:3rem}}
 @media(max-width:800px){.library-guide{grid-template-columns:1fr;gap:2.5rem}.library-teaser{grid-template-columns:1fr;gap:2.4rem}.technique-grid{grid-template-columns:1fr}.doc-facts{grid-template-columns:1fr 1fr}.family{padding-top:3.5rem;padding-bottom:3.5rem}}
 @media(max-width:540px){.doc-facts{grid-template-columns:1fr}.doc{padding-top:2.2rem}.doc-section{margin-top:2.6rem}.math{font-size:.875rem;padding:1rem}.library-hero h1{font-size:clamp(2.2rem,9vw,3rem)}.breadcrumb{margin-bottom:1.6rem}}
+.doc-facts dd a{border-bottom:1px solid #b9b8c6}
+.doc-facts dd a:hover{color:#421bc3;border-color:currentColor}
+.library-hero .doc-facts dd a{border-bottom-color:#43445a}
+.library-hero .doc-facts dd a:hover{color:#fff}
