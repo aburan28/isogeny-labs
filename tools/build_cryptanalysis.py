@@ -322,6 +322,30 @@ def validate(entries: list[dict], index: dict) -> list[str]:
             for block in section["blocks"]:
                 if not {"p", "ul", "ol", "steps", "math", "note"} & set(block):
                     errors.append(f"{where}: unknown block {sorted(block)}")
+
+    # A queued technique names the slug it will become, so writing it up is
+    # caught here rather than silently counted twice. Without this, adding
+    # content/cryptanalysis/<slug>.json while leaving the entry under
+    # `planned` renders both a real card and a "Not written yet" card for the
+    # same technique, and inflates the "Queued" count on the library index.
+    seen: dict[str, str] = {}
+    for family in index["families"]:
+        for planned in family.get("planned", []):
+            where = f'index.json: planned {planned["title"]!r}'
+            slug = planned.get("slug")
+            if not slug:
+                errors.append(f"{where}: no slug declared")
+                continue
+            if slug in slugs:
+                errors.append(
+                    f"{where}: already written up as {slug}.json "
+                    f"— remove it from the planned list"
+                )
+            if slug in seen:
+                errors.append(f"{where}: slug {slug!r} also queued under {seen[slug]}")
+            else:
+                seen[slug] = family["id"]
+
     return errors
 
 
