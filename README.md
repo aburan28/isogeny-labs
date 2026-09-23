@@ -18,23 +18,28 @@ relative, so the site also serves correctly from a subdirectory.
 
 ## Files
 
-- `index.html`: the home page — copy, services, primitives panel, and navigation.
-- `styles.css`: typography, responsive layouts, the indigo/violet theme, and the
-  document styles used by the library.
-- `script.js`: mobile navigation and copyright year, shared by every page. Every
-  element it touches is optional, so a page that omits one still loads cleanly.
+- `index.html`: the home page: current work, services, and contact.
+- `styles.css`: one stylesheet for every page. A single text column, Source Serif 4
+  for text and IBM Plex Mono for figures, with a dark scheme that follows the
+  reader's system setting.
+- `script.js`: fills in the copyright year, shared by every page.
 - `favicon.svg`: the site icon, referenced by every page.
 - `content/cryptanalysis/*.json`: the source of truth for the library.
 - `cryptanalysis/*.html`: the rendered library. **Generated — do not hand-edit.**
 - `tools/build_cryptanalysis.py`, `tools/check_links.py`: the generator and the
   link checker, both stdlib-only.
 
-The hero artwork is an inline SVG isogeny graph generated directly in the page —
-nodes are curves and edges are isogenies between them. There are no binary image
-assets, so nothing needs to be fetched or optimized.
+The stylesheet requests Source Serif 4 and IBM Plex Mono from Google Fonts; system
+fonts are used if that service is unavailable. Everything else is local, and there
+are no binary image assets.
 
-The stylesheet requests DM Sans and Space Grotesk from Google Fonts; system fonts
-are used if that service is unavailable. Everything else is local.
+### Writing for the site
+
+The site should read like it was written by the people doing the work. Prefer a
+measured figure, a named result, or a link to code over an adjective. Write plain
+sentences: no slogans, no taglines split across lines, and no section eyebrows or
+decorative numbering. If a number on the home page changes in the source
+repository, change it here too, and link to where it was measured.
 
 ## The cryptanalysis library
 
@@ -102,6 +107,5 @@ python3 tools/build_cryptanalysis.py --check   # generated pages are current
 python3 tools/check_links.py                   # references, anchors, duplicate ids
 ```
 
-For content changes, review the page at desktop and mobile widths and exercise the
-menu, the service disclosures, and keyboard navigation (including Escape to close
-the mobile menu).
+For content changes, review the pages at desktop and phone widths, in both light
+and dark mode.

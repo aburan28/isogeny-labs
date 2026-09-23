@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0d0f18">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
   <meta name="description" content="How the number field sieve factors integers and computes prime-field discrete logarithms in subexponential time, what the RSA-250 and DLP-240 records actually consumed, and why its per-prime precomputation phase broke export-grade Diffie-Hellman.">
-  <meta property="og:title" content="The number field sieve — Isogeny Labs">
+  <meta property="og:title" content="The number field sieve · Isogeny Labs">
   <meta property="og:description" content="How the number field sieve factors integers and computes prime-field discrete logarithms in subexponential time, what the RSA-250 and DLP-240 records actually consumed, and why its per-prime precomputation phase broke export-grade Diffie-Hellman.">
   <meta property="og:type" content="article">
-  <title>The number field sieve — Isogeny Labs</title>
+  <title>The number field sieve · Isogeny Labs</title>
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../styles.css">
   <script defer src="../script.js"></script>
@@ -16,34 +17,35 @@
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
-    <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
-    <nav class="navigation" id="navigation" aria-label="Main navigation">
-      <a href="../index.html#work">What we do</a><a href="../index.html#approach">How we work</a><a href="../index.html#foundations">Foundations</a><a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis</a>
-      <a class="nav-cta" href="../index.html#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
-    </nav>
-  </header>
-  <main id="main">
-    <article class="doc">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../index.html">Isogeny Labs</a> <span aria-hidden="true">/</span>
-        <a href="index.html">Cryptanalysis</a> <span aria-hidden="true">/</span>
-        <span aria-current="page">The number field sieve</span>
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
       </nav>
-      <header class="doc-header">
-        <p class="eyebrow"><span class="small-cross">+</span> INDEX CALCULUS AND DESCENT</p>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Cryptanalysis reference</a> /
+        <a href="index.html#index-calculus">Index calculus and descent</a>
+      </nav>
+      <header>
         <h1>The number field sieve</h1>
-        <p class="doc-standfirst">The NFS is the reason a 2048-bit RSA key and a 224-bit elliptic curve are said to offer comparable security. Both numbers come from the same place: one problem has a subexponential attack and the other does not, so the parameters diverge and keep diverging.</p>
+        <p class="standfirst">The NFS is the reason a 2048-bit RSA key and a 224-bit elliptic curve are said to offer comparable security. Both numbers come from the same place: one problem has a subexponential attack and the other does not, so the parameters diverge and keep diverging.</p>
       </header>
-      <dl class="doc-facts">
-        <div class="fact"><dt>Problems</dt><dd>Integer factorisation; discrete logarithm in F<sub>p</sub><sup>&times;</sup></dd></div>
-        <div class="fact"><dt>Cost</dt><dd>L<sub>N</sub>[1/3, (64/9)<sup>1/3</sup>] &asymp; L<sub>N</sub>[1/3, 1.923]</dd></div>
-        <div class="fact"><dt>Special-form cost</dt><dd>L<sub>N</sub>[1/3, (32/9)<sup>1/3</sup>] &asymp; L<sub>N</sub>[1/3, 1.526] (SNFS)</dd></div>
-        <div class="fact"><dt>Records</dt><dd>RSA-250 (829-bit factorisation) and DLP-240 (795-bit prime-field DL), both 2019&ndash;2020</dd></div>
-        <div class="fact"><dt>Structural hazard</dt><dd>Most of the DL work is per-prime precomputation, reusable across every session using that prime</dd></div>
+      <dl class="facts">
+        <div><dt>Problems</dt><dd>Integer factorisation; discrete logarithm in F<sub>p</sub><sup>&times;</sup></dd></div>
+        <div><dt>Cost</dt><dd>L<sub>N</sub>[1/3, (64/9)<sup>1/3</sup>] &asymp; L<sub>N</sub>[1/3, 1.923]</dd></div>
+        <div><dt>Special-form cost</dt><dd>L<sub>N</sub>[1/3, (32/9)<sup>1/3</sup>] &asymp; L<sub>N</sub>[1/3, 1.526] (SNFS)</dd></div>
+        <div><dt>Records</dt><dd>RSA-250 (829-bit factorisation) and DLP-240 (795-bit prime-field DL), both 2019&ndash;2020</dd></div>
+        <div><dt>Structural hazard</dt><dd>Most of the DL work is per-prime precomputation, reusable across every session using that prime</dd></div>
       </dl>
-      <nav class="doc-toc" aria-label="On this page">
-        <p class="eyebrow">On this page</p>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
         <ol>
         <li><a href="#what-subexponential-means-here">What subexponential means here</a></li>
         <li><a href="#the-mechanism">The mechanism</a></li>
@@ -52,19 +54,19 @@
         <li><a href="#the-boundary">The boundary</a></li>
         </ol>
       </nav>
-      <section class="doc-section" id="what-subexponential-means-here" aria-labelledby="what-subexponential-means-here-title">
-        <h2 id="what-subexponential-means-here-title"><span class="doc-section-number">01</span>What subexponential means here</h2>
+      <section id="what-subexponential-means-here" aria-labelledby="what-subexponential-means-here-title">
+        <h2 id="what-subexponential-means-here-title">What subexponential means here</h2>
         <p>Costs in this area are quoted in the <em>L</em>-notation, which interpolates between polynomial and exponential:</p>
         <div class="math">L<sub>N</sub>[&alpha;, c] = exp( (c + o(1)) &middot; (log N)<sup>&alpha;</sup> (log log N)<sup>1&minus;&alpha;</sup> )
           <span class="math-label">&alpha; = 0 is polynomial in log N; &alpha; = 1 is exponential in log N</span></div>
         <p>The number field sieve runs at &alpha; = 1/3, with <em>c</em> = (64/9)<sup>1/3</sup> &asymp; 1.923 in its general form. That exponent is what makes key sizes for RSA and finite-field Diffie&ndash;Hellman grow so much faster than elliptic-curve key sizes, where the best known attack is still at &alpha; = 1. The commonly quoted equivalences &mdash; 2048-bit RSA near a 224-bit curve, 3072-bit RSA near a 256-bit curve &mdash; are this asymptotic evaluated at real sizes, with the constants that record computations have calibrated.</p>
-        <aside class="doc-note"><span class="doc-note-label">Read the o(1)</span><p>The <em>o</em>(1) in the exponent is doing real work at cryptographic sizes, and it is not a small correction. Security-level equivalence tables are extrapolations from measured records, not evaluations of a closed formula. Treat the records as the data and the asymptotic as the shape.</p></aside>
+        <aside class="note"><p><span class="note-label">Read the o(1).</span> The <em>o</em>(1) in the exponent is doing real work at cryptographic sizes, and it is not a small correction. Security-level equivalence tables are extrapolations from measured records, not evaluations of a closed formula. Treat the records as the data and the asymptotic as the shape.</p></aside>
       </section>
-      <section class="doc-section" id="the-mechanism" aria-labelledby="the-mechanism-title">
-        <h2 id="the-mechanism-title"><span class="doc-section-number">02</span>The mechanism</h2>
+      <section id="the-mechanism" aria-labelledby="the-mechanism-title">
+        <h2 id="the-mechanism-title">The mechanism</h2>
         <p>The NFS is index calculus carried out in a number field rather than in the integers. To factor <em>N</em>, choose two irreducible polynomials with a common root modulo <em>N</em>; they define number rings that both map into &#x2124;/<em>N</em>&#x2124;. Search for elements that are smooth on <em>both</em> sides at once, and each such element gives a multiplicative relation valid modulo <em>N</em>. Enough relations produce a congruence of squares, and a non-trivial factor follows.</p>
         <p>Four phases, with sharply different engineering characters:</p>
-        <ol class="doc-steps">
+        <ol>
           <li><strong>Polynomial selection.</strong> Search for a pair of polynomials with unusually good smoothness yield. Cheap relative to the rest, and worth a lot &mdash; a better pair can shorten sieving by a large constant factor.</li>
           <li><strong>Sieving.</strong> Collect relations. Embarrassingly parallel, arbitrarily distributable, and the bulk of the raw CPU time.</li>
           <li><strong>Linear algebra.</strong> Solve the sparse system over the relation matrix, with block Wiedemann or block Lanczos. This phase does <em>not</em> distribute freely &mdash; it needs tightly coupled machines with fast interconnect, and it is the practical bottleneck at record sizes.</li>
@@ -72,8 +74,8 @@
         </ol>
         <p>The discrete-log variant over <strong>F</strong><sub><em>p</em></sub> follows the same structure and the same asymptotic. Where the modulus has a special form &mdash; as for Mersenne-like primes, or an RSA modulus built from special primes &mdash; the special number field sieve applies instead, at constant 1.526, which is a large advantage at fixed size.</p>
       </section>
-      <section class="doc-section" id="what-the-records-consumed" aria-labelledby="what-the-records-consumed-title">
-        <h2 id="what-the-records-consumed-title"><span class="doc-section-number">03</span>What the records consumed</h2>
+      <section id="what-the-records-consumed" aria-labelledby="what-the-records-consumed-title">
+        <h2 id="what-the-records-consumed-title">What the records consumed</h2>
         <p>The state of the art comes from a small number of well-documented computations, and their measured resource use is the honest input to parameter selection.</p>
         <ul>
           <li><strong>RSA-768</strong> (768-bit factorisation, 2009) by Kleinjung and collaborators: the first public factorisation at that size, and for a decade the reference point for "1024-bit is uncomfortably close".</li>
@@ -83,15 +85,15 @@
         </ul>
         <p>Two things are worth extracting from that history. The factoring and discrete-log costs at equal size are within a small factor of each other, so they should not be given different margins. And progress has come roughly equally from algorithmic refinement and from hardware, which is the argument for treating published records as a moving baseline rather than a fixed one.</p>
       </section>
-      <section class="doc-section" id="the-precomputation-hazard" aria-labelledby="the-precomputation-hazard-title">
-        <h2 id="the-precomputation-hazard-title"><span class="doc-section-number">04</span>The precomputation hazard</h2>
+      <section id="the-precomputation-hazard" aria-labelledby="the-precomputation-hazard-title">
+        <h2 id="the-precomputation-hazard-title">The precomputation hazard</h2>
         <p>For discrete logarithms the cost split matters more than the total. The expensive phases &mdash; polynomial selection, sieving, linear algebra &mdash; depend only on the prime <em>p</em>, not on the target. Once they are done for a given prime, each individual logarithm modulo that prime costs only a descent, which is comparatively cheap.</p>
         <p>Finite-field Diffie&ndash;Hellman deployments have historically shared a very small number of fixed primes across enormous numbers of servers. Adrian and collaborators exploited exactly this in the Logjam attack: a one-time precomputation against a standard 512-bit export-grade prime, after which individual connections downgraded to that group could be broken in about a minute. The same paper argued that a state-level precomputation against one of the handful of widely used 1024-bit primes was plausible, and that this would passively expose a large fraction of internet traffic.</p>
-        <aside class="doc-note"><span class="doc-note-label">The amortisation</span><p>A cost model that prices "one discrete log" misprices this attack by orders of magnitude. The right unit for a shared prime is the precomputation, amortised over every session that will ever use it &mdash; which for a standardised group is effectively unbounded.</p></aside>
+        <aside class="note"><p><span class="note-label">The amortisation.</span> A cost model that prices "one discrete log" misprices this attack by orders of magnitude. The right unit for a shared prime is the precomputation, amortised over every session that will ever use it &mdash; which for a standardised group is effectively unbounded.</p></aside>
         <p>There is a related hazard in the other direction. Fried, Gaudry, Heninger and Thom&eacute; demonstrated a 1024-bit prime with a hidden special form, for which SNFS applies: a discrete log in that group is within reach of ordinary academic resources, while the prime looks unremarkable to anyone who does not know the trapdoor. Unverifiable Diffie&ndash;Hellman parameters are therefore a real risk, not a theoretical one, and the mitigations are named, standardised groups (RFC 7919) or a move to elliptic curves.</p>
       </section>
-      <section class="doc-section" id="the-boundary" aria-labelledby="the-boundary-title">
-        <h2 id="the-boundary-title"><span class="doc-section-number">05</span>The boundary</h2>
+      <section id="the-boundary" aria-labelledby="the-boundary-title">
+        <h2 id="the-boundary-title">The boundary</h2>
         <p>The NFS needs smoothness &mdash; a notion of an element factoring into small pieces. That exists in number rings and in the multiplicative group of a finite field. It does not exist in the group of points on an elliptic curve, which is the entire reason ECC gets away with far smaller parameters; whether a usable substitute can be manufactured is the open question that <a href="summation-polynomials.html">summation polynomials</a> address.</p>
         <p>For a review, the practical consequences are narrow and checkable:</p>
         <ul>
@@ -102,37 +104,31 @@
         </ul>
         <p>Finally, the NFS is the part of the landscape that Shor's algorithm removes outright: factoring and finite-field discrete logs both fall to polynomial-time quantum algorithms, along with the elliptic-curve problem. Subexponential versus exponential is the classical distinction, and it does not survive into the quantum setting &mdash; which is why post-quantum migration replaces all of them at once rather than resizing any of them.</p>
       </section>
-      <section class="doc-section doc-references" id="references" aria-labelledby="references-title">
-        <h2 id="references-title"><span class="doc-section-number">06</span>Primary sources</h2>
-        <p>Read these rather than this page. Links open in a new tab.</p>
-        <ul class="reference-list">
-        <li><a href="https://link.springer.com/book/10.1007/BFb0091534" rel="noopener noreferrer" target="_blank">A. K. Lenstra and H. W. Lenstra, Jr. (eds.), "The development of the number field sieve", Lecture Notes in Mathematics 1554 (1993) <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://eprint.iacr.org/2010/006" rel="noopener noreferrer" target="_blank">T. Kleinjung et al., "Factorization of a 768-bit RSA modulus", CRYPTO 2010 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://eprint.iacr.org/2020/697" rel="noopener noreferrer" target="_blank">F. Boudot, P. Gaudry, A. Guillevic, N. Heninger, E. Thom&eacute; and P. Zimmermann, "Comparing the difficulty of factorization and discrete logarithm: a 240-digit experiment", CRYPTO 2020 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://weakdh.org/imperfect-forward-secrecy-ccs15.pdf" rel="noopener noreferrer" target="_blank">D. Adrian et al., "Imperfect forward secrecy: how Diffie-Hellman fails in practice" (Logjam), CCS 2015 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://eprint.iacr.org/2016/961" rel="noopener noreferrer" target="_blank">J. Fried, P. Gaudry, N. Heninger and E. Thom&eacute;, "A kilobit hidden SNFS discrete logarithm computation", EUROCRYPT 2017 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://www.rfc-editor.org/rfc/rfc7919" rel="noopener noreferrer" target="_blank">D. Gillmor, "Negotiated finite field Diffie-Hellman ephemeral parameters for TLS", RFC 7919 <span aria-hidden="true">↗</span></a></li>
-        </ul>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://link.springer.com/book/10.1007/BFb0091534">A. K. Lenstra and H. W. Lenstra, Jr. (eds.), "The development of the number field sieve", Lecture Notes in Mathematics 1554 (1993)</a></li>
+        <li><a href="https://eprint.iacr.org/2010/006">T. Kleinjung et al., "Factorization of a 768-bit RSA modulus", CRYPTO 2010</a></li>
+        <li><a href="https://eprint.iacr.org/2020/697">F. Boudot, P. Gaudry, A. Guillevic, N. Heninger, E. Thom&eacute; and P. Zimmermann, "Comparing the difficulty of factorization and discrete logarithm: a 240-digit experiment", CRYPTO 2020</a></li>
+        <li><a href="https://weakdh.org/imperfect-forward-secrecy-ccs15.pdf">D. Adrian et al., "Imperfect forward secrecy: how Diffie-Hellman fails in practice" (Logjam), CCS 2015</a></li>
+        <li><a href="https://eprint.iacr.org/2016/961">J. Fried, P. Gaudry, N. Heninger and E. Thom&eacute;, "A kilobit hidden SNFS discrete logarithm computation", EUROCRYPT 2017</a></li>
+        <li><a href="https://www.rfc-editor.org/rfc/rfc7919">D. Gillmor, "Negotiated finite field Diffie-Hellman ephemeral parameters for TLS", RFC 7919</a></li>
+        </ol>
       </section>
-      <section class="doc-related" aria-labelledby="related-title">
-        <h2 id="related-title" class="eyebrow">Related techniques</h2>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
         <ul>
-        <li><a href="summation-polynomials.html"><span>Index calculus and descent</span>Summation polynomials and elliptic-curve index calculus</a></li>
-        <li><a href="weil-descent.html"><span>Index calculus and descent</span>Weil descent and the GHS attack</a></li>
-        <li><a href="pollard-rho.html"><span>Generic group algorithms</span>Pollard's rho and the parallel collision search</a></li>
+        <li><a href="summation-polynomials.html">Summation polynomials and elliptic-curve index calculus</a> <span class="family-tag">(Index calculus and descent)</span></li>
+        <li><a href="weil-descent.html">Weil descent and the GHS attack</a> <span class="family-tag">(Index calculus and descent)</span></li>
+        <li><a href="pollard-rho.html">Pollard's rho and the parallel collision search</a> <span class="family-tag">(Generic group algorithms)</span></li>
         </ul>
       </section>
     </article>
   </main>
   <footer class="site-footer">
-    <div class="footer-top">
-      <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
-      <p>Cryptographic analysis.<br>Systems that hold up.</p>
-      <a class="text-link light" href="#main">Back to top <span aria-hidden="true">↑</span></a>
-    </div>
-    <div class="footer-bottom">
+    <div class="wrap">
       <span>© <span id="year">2026</span> Isogeny Labs</span>
-      <span>Hardness analysis · Isogeny systems · Post-quantum migration</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
     </div>
   </footer>
 </body>

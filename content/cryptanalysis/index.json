@@ -1,37 +1,34 @@
 {
-  "title": "Cryptanalysis techniques — Isogeny Labs",
-  "description": "A working reference on how cryptographic hardness assumptions are actually attacked: generic discrete-log algorithms, index calculus and descent, lattice attacks, and isogeny attacks — with concrete costs and stated limits.",
-  "eyebrow": "The cryptanalysis library",
-  "heading": "How these problems<br>are actually attacked.",
-  "standfirst": "A security level is a claim about work. This library collects the attacks that claim is measured against — what each one needs, what it costs, and precisely where it stops being relevant. Every page states its assumptions and points at the primary sources rather than restating folklore.",
-  "scope": "Public-key hardness assumptions, with an ECC and isogeny bias",
-  "guide_heading": "Read an attack the way<br>a parameter-setter does.",
+  "title": "Cryptanalysis reference · Isogeny Labs",
+  "description": "Notes on how public-key hardness assumptions are attacked: generic discrete-log algorithms, index calculus and descent, lattice attacks, and isogeny attacks, with costs, record computations, and the conditions under which each attack applies.",
+  "heading": "Cryptanalysis reference",
+  "standfirst": "Notes on the attacks that public-key parameters are sized against. Each page says what the attack needs, what it costs, what the largest computation on record used, and when the attack stops applying. Every page cites the original papers, and those are the thing to read if you need precision.",
+  "guide_heading": "How the pages are organised",
   "guide_blocks": [
     {
-      "p": "Most published attacks do not break anything. They move an exponent, or they require a structural coincidence that real parameters avoid, or they assume an oracle nobody can build. The useful question is never \"is this broken?\" but \"what does this attack cost against <em>my</em> parameters, and what would have to change for it to matter?\""
+      "p": "Most published attacks don't break deployed systems. They improve an exponent, or need a structural coincidence that sensible parameters avoid, or assume an oracle nobody has. So the question each page tries to answer is what the attack would cost against a particular set of parameters, and what would have to change for that cost to become affordable."
     },
     {
-      "p": "So each page here is organised around four things, in this order:"
+      "p": "Each page covers, in order:"
     },
     {
       "ul": [
-        "<strong>The problem instance.</strong> Exactly what the attacker is given, and what counts as success.",
-        "<strong>The mechanism.</strong> The one idea that makes the attack cheaper than brute force — usually a collision, a relation, or a structure-preserving map to an easier object.",
-        "<strong>The cost.</strong> An asymptotic bound, plus whatever the largest honest computation on record actually consumed.",
-        "<strong>The boundary.</strong> The hypothesis that makes the attack work, and therefore the parameter choice that makes it irrelevant."
+        "<strong>The problem instance:</strong> what the attacker is given and what counts as success.",
+        "<strong>The mechanism:</strong> the idea that makes the attack cheaper than brute force. It is usually a collision, a relation, or a map to an easier object.",
+        "<strong>The cost:</strong> the asymptotic bound, and what the largest published computation actually used.",
+        "<strong>The boundary:</strong> the hypothesis the attack depends on, and so the parameter choice that makes it irrelevant."
       ]
     },
     {
-      "note": "An asymptotic complexity is not a security level. A bound of O(&radic;n) group operations says nothing about memory, communication, or the constant in front — and it is those, not the exponent, that decide whether a computation is affordable. Where a record computation exists, its measured resource use is worth more than the bound.",
-      "note_label": "The standing caveat"
+      "note": "an asymptotic bound is not a security level. O(&radic;n) group operations says nothing about memory, communication, or the constant factor, and those decide whether a computation is affordable. Where a record computation exists, we give its measured cost alongside the bound.",
+      "note_label": "A caveat that applies throughout"
     }
   ],
   "families": [
     {
       "id": "generic",
       "label": "Generic group algorithms",
-      "heading": "Attacks that use nothing about the group.",
-      "intro": "These work against any cyclic group in which you can multiply and test equality. They set the ceiling every concrete discrete-log parameter is measured against, and Shoup's lower bound says no generic algorithm can do better than &radic;p.",
+      "intro": "These work in any cyclic group where you can compute the group operation and test equality. Shoup's lower bound says no generic algorithm can use fewer than about &radic;p operations, where <em>p</em> is the largest prime dividing the group order, so these algorithms set the baseline every discrete-log parameter is measured against.",
       "planned": [
         {
           "title": "Baby-step giant-step and kangaroos",
@@ -43,8 +40,7 @@
     {
       "id": "index-calculus",
       "label": "Index calculus and descent",
-      "heading": "Attacks that exploit the arithmetic underneath.",
-      "intro": "Index calculus collects multiplicative relations over a factor base and solves a linear system. It is why finite-field discrete logs are subexponential and RSA moduli must be large — and why the question of whether it reaches elliptic curves has occupied two decades of research.",
+      "intro": "Index calculus collects relations over a factor base and solves a linear system. It is the reason discrete logarithms in finite fields take subexponential time. Whether anything like it works on elliptic curves has been an open question since Semaev's 2004 paper.",
       "planned": [
         {
           "title": "Gr&ouml;bner-basis solving and first fall degree",
@@ -56,8 +52,7 @@
     {
       "id": "lattice",
       "label": "Lattice attacks",
-      "heading": "Attacks that turn partial information into a short vector.",
-      "intro": "When a secret is almost known — a few leaked bits, a slightly biased nonce, a small root of a modular equation — lattice reduction usually finishes the job. These are the attacks that break deployed systems whose underlying mathematics was never in question.",
+      "intro": "When a secret is partly known, from a few leaked bits, a biased nonce, or a small root of a modular equation, lattice reduction can often recover the rest. Many breaks of deployed ECDSA and RSA implementations come from this family rather than from any weakness in the underlying problem.",
       "planned": [
         {
           "title": "Coppersmith's method",
@@ -69,8 +64,7 @@
     {
       "id": "isogeny",
       "label": "Isogeny attacks",
-      "heading": "Attacks on the newest assumptions.",
-      "intro": "Isogeny problems are the youngest hardness assumptions in deployment-adjacent cryptography, and the only ones to have had a headline scheme broken outright after standardisation review had begun. That history is the argument for reading them carefully rather than the argument for avoiding them.",
+      "intro": "Isogeny problems are the newest of these assumptions. SIKE was broken outright in 2022, after it had reached the fourth round of NIST's standardisation process, which is a good reason to read the attacks on its successors closely.",
       "planned": [
         {
           "title": "Meet-in-the-middle and the supersingular path problem",

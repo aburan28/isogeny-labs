@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0d0f18">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
   <meta name="description" content="How Castryck-Decru, Maino-Martindale and Robert broke SIDH and SIKE in 2022 using higher-dimensional isogenies, what exactly the attack consumed, and why CSIDH and SQIsign are not affected.">
-  <meta property="og:title" content="The SIDH torsion-point attacks — Isogeny Labs">
+  <meta property="og:title" content="The SIDH torsion-point attacks · Isogeny Labs">
   <meta property="og:description" content="How Castryck-Decru, Maino-Martindale and Robert broke SIDH and SIKE in 2022 using higher-dimensional isogenies, what exactly the attack consumed, and why CSIDH and SQIsign are not affected.">
   <meta property="og:type" content="article">
-  <title>The SIDH torsion-point attacks — Isogeny Labs</title>
+  <title>The SIDH torsion-point attacks · Isogeny Labs</title>
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../styles.css">
   <script defer src="../script.js"></script>
@@ -16,34 +17,35 @@
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
-    <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation"><span>Menu</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18M3 17h18"/></svg></button>
-    <nav class="navigation" id="navigation" aria-label="Main navigation">
-      <a href="../index.html#work">What we do</a><a href="../index.html#approach">How we work</a><a href="../index.html#foundations">Foundations</a><a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis</a>
-      <a class="nav-cta" href="../index.html#engagement">Start a conversation <span aria-hidden="true">↗</span></a>
-    </nav>
-  </header>
-  <main id="main">
-    <article class="doc">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="../index.html">Isogeny Labs</a> <span aria-hidden="true">/</span>
-        <a href="index.html">Cryptanalysis</a> <span aria-hidden="true">/</span>
-        <span aria-current="page">SIDH torsion attacks</span>
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
       </nav>
-      <header class="doc-header">
-        <p class="eyebrow"><span class="small-cross">+</span> ISOGENY ATTACKS</p>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Cryptanalysis reference</a> /
+        <a href="index.html#isogeny">Isogeny attacks</a>
+      </nav>
+      <header>
         <h1>The SIDH torsion-point attacks</h1>
-        <p class="doc-standfirst">In July 2022 a scheme that had survived a decade of analysis and reached the fourth round of NIST standardisation was broken on a laptop. The attack did not attack the isogeny problem. It attacked the extra data SIDH had to publish to make key exchange work.</p>
+        <p class="standfirst">In July 2022 a scheme that had survived a decade of analysis and reached the fourth round of NIST standardisation was broken on a laptop. The attack did not attack the isogeny problem. It attacked the extra data SIDH had to publish to make key exchange work.</p>
       </header>
-      <dl class="doc-facts">
-        <div class="fact"><dt>Broken</dt><dd>SIDH and SIKE, all parameter sets</dd></div>
-        <div class="fact"><dt>Published</dt><dd>July&ndash;August 2022, three independent lines of work</dd></div>
-        <div class="fact"><dt>Cost</dt><dd>SIKEp434 in roughly an hour on one core; larger sets in hours to a day</dd></div>
-        <div class="fact"><dt>Mechanism</dt><dd>Kani's criterion; isogenies between higher-dimensional abelian varieties</dd></div>
-        <div class="fact"><dt>Not affected</dt><dd>CSIDH, CSI-FiSh, SQIsign, and the general supersingular isogeny problem</dd></div>
+      <dl class="facts">
+        <div><dt>Broken</dt><dd>SIDH and SIKE, all parameter sets</dd></div>
+        <div><dt>Published</dt><dd>July&ndash;August 2022, three independent lines of work</dd></div>
+        <div><dt>Cost</dt><dd>SIKEp434 in roughly an hour on one core; larger sets in hours to a day</dd></div>
+        <div><dt>Mechanism</dt><dd>Kani's criterion; isogenies between higher-dimensional abelian varieties</dd></div>
+        <div><dt>Not affected</dt><dd>CSIDH, CSI-FiSh, SQIsign, and the general supersingular isogeny problem</dd></div>
       </dl>
-      <nav class="doc-toc" aria-label="On this page">
-        <p class="eyebrow">On this page</p>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
         <ol>
         <li><a href="#what-sidh-published-and-why">What SIDH published, and why</a></li>
         <li><a href="#the-mechanism-gluing-in-dimension-two">The mechanism: gluing in dimension two</a></li>
@@ -52,18 +54,18 @@
         <li><a href="#what-to-take-from-it">What to take from it</a></li>
         </ol>
       </nav>
-      <section class="doc-section" id="what-sidh-published-and-why" aria-labelledby="what-sidh-published-and-why-title">
-        <h2 id="what-sidh-published-and-why-title"><span class="doc-section-number">01</span>What SIDH published, and why</h2>
+      <section id="what-sidh-published-and-why" aria-labelledby="what-sidh-published-and-why-title">
+        <h2 id="what-sidh-published-and-why-title">What SIDH published, and why</h2>
         <p>In SIDH the two parties walk different isogeny graphs from a common starting curve <em>E</em><sub>0</sub> over <strong>F</strong><sub><em>p</em><sup>2</sup></sub> with <em>p</em> + 1 = 2<sup><em>a</em></sup>3<sup><em>b</em></sup>. Alice computes a secret 2<sup><em>a</em></sup>-isogeny &phi;<sub><em>A</em></sub>: <em>E</em><sub>0</sub> &rarr; <em>E<sub>A</sub></em>, Bob a 3<sup><em>b</em></sup>-isogeny. To let each party recompute the other's walk on the other's curve, the protocol publishes not only <em>E<sub>A</sub></em> but the images of the other party's torsion basis:</p>
         <div class="math">Alice sends (E<sub>A</sub>, &phi;<sub>A</sub>(P<sub>B</sub>), &phi;<sub>A</sub>(Q<sub>B</sub>)) where &langle;P<sub>B</sub>, Q<sub>B</sub>&rangle; = E<sub>0</sub>[3<sup>b</sup>]
           <span class="math-label">The auxiliary torsion data &mdash; required for correctness, and fatal</span></div>
         <p>This was always understood to be extra information beyond a pure isogeny problem instance. Petit had shown in 2017 that unbalanced parameters with abundant torsion data were attackable, but the balanced parameters of SIKE stayed out of reach. For years the consensus was that the torsion images were an acceptable, well-studied risk.</p>
       </section>
-      <section class="doc-section" id="the-mechanism-gluing-in-dimension-two" aria-labelledby="the-mechanism-gluing-in-dimension-two-title">
-        <h2 id="the-mechanism-gluing-in-dimension-two-title"><span class="doc-section-number">02</span>The mechanism: gluing in dimension two</h2>
+      <section id="the-mechanism-gluing-in-dimension-two" aria-labelledby="the-mechanism-gluing-in-dimension-two-title">
+        <h2 id="the-mechanism-gluing-in-dimension-two-title">The mechanism: gluing in dimension two</h2>
         <p>Castryck and Decru's attack rests on Kani's criterion, a nineteenth-century-style result about when a configuration of isogenies between elliptic curves glues into an isogeny between abelian surfaces. Stated loosely: given a suitable commutative square of isogenies with matching degrees, the product <em>E</em><sub>1</sub> &times; <em>E</em><sub>2</sub> admits an isogeny to another product or to a Jacobian, and whether the codomain <em>splits</em> as a product of elliptic curves is a computable, observable property.</p>
         <p>That splitting behaviour is a decision oracle, and the attack is an adaptive search driven by it:</p>
-        <ol class="doc-steps">
+        <ol>
           <li>Guess the first few steps of the secret isogeny &phi;<sub><em>A</em></sub>.</li>
           <li>Use the published torsion images and the guess to build a Kani configuration &mdash; an isogeny in dimension two between abelian surfaces, computed with Richelot correspondences on genus-2 Jacobians.</li>
           <li>Test whether the codomain splits into a product of elliptic curves. It does exactly when the guess was correct.</li>
@@ -71,13 +73,13 @@
         </ol>
         <p>The original Castryck&ndash;Decru attack needed the endomorphism ring of the starting curve <em>E</em><sub>0</sub> to be known &mdash; which it is in SIKE, since <em>E</em><sub>0</sub> is a fixed special curve published in the specification. Maino and Martindale gave an independent attack removing that dependence, and Robert then proved the strongest form: with dimension-eight isogenies, <em>any</em> SIDH-style instance is broken in polynomial time, with no assumption on the starting curve. Three independent constructions, within weeks.</p>
       </section>
-      <section class="doc-section" id="what-it-cost-in-practice" aria-labelledby="what-it-cost-in-practice-title">
-        <h2 id="what-it-cost-in-practice-title"><span class="doc-section-number">03</span>What it cost in practice</h2>
+      <section id="what-it-cost-in-practice" aria-labelledby="what-it-cost-in-practice-title">
+        <h2 id="what-it-cost-in-practice-title">What it cost in practice</h2>
         <p>The published implementation was Magma code of a few hundred lines. Castryck and Decru reported recovering a SIKEp434 key &mdash; the NIST level 1 parameter set &mdash; in about an hour on a single core, with the larger parameter sets taking hours to roughly a day. Independent reimplementations reduced this to minutes.</p>
-        <aside class="doc-note"><span class="doc-note-label">Why there was no patch</span><p>Parameter inflation was never an option here. The attack is polynomial in the security parameter, so doubling the parameters roughly doubles the attack time. SIKE was withdrawn rather than resized, and the affected key-exchange design has not returned.</p></aside>
+        <aside class="note"><p><span class="note-label">Why there was no patch.</span> Parameter inflation was never an option here. The attack is polynomial in the security parameter, so doubling the parameters roughly doubles the attack time. SIKE was withdrawn rather than resized, and the affected key-exchange design has not returned.</p></aside>
       </section>
-      <section class="doc-section" id="what-was-not-broken" aria-labelledby="what-was-not-broken-title">
-        <h2 id="what-was-not-broken-title"><span class="doc-section-number">04</span>What was not broken</h2>
+      <section id="what-was-not-broken" aria-labelledby="what-was-not-broken-title">
+        <h2 id="what-was-not-broken-title">What was not broken</h2>
         <p>This distinction is the part most often lost in summary. The attack consumes the auxiliary torsion images. A scheme that does not publish them is not touched by it.</p>
         <ul>
           <li><strong>The supersingular isogeny path problem</strong> &mdash; given two supersingular curves, find an isogeny between them &mdash; is untouched. Best known classical attacks remain around &radic;<em>p</em>, via Delfs&ndash;Galbraith and meet-in-the-middle claw finding.</li>
@@ -86,8 +88,8 @@
         </ul>
         <p>The higher-dimensional machinery that broke SIDH also turned out to be constructive. Isogenies between abelian surfaces are now a standard tool for building isogeny protocols and for the verification and compression steps in newer SQIsign variants &mdash; the same technique used to attack became infrastructure.</p>
       </section>
-      <section class="doc-section" id="what-to-take-from-it" aria-labelledby="what-to-take-from-it-title">
-        <h2 id="what-to-take-from-it-title"><span class="doc-section-number">05</span>What to take from it</h2>
+      <section id="what-to-take-from-it" aria-labelledby="what-to-take-from-it-title">
+        <h2 id="what-to-take-from-it-title">What to take from it</h2>
         <p>Three lessons, all of which generalise past isogenies:</p>
         <ul>
           <li><strong>The published data is part of the assumption.</strong> SIDH's hardness assumption was never "the isogeny problem"; it was "the isogeny problem given these torsion images". That is a different, younger and much less studied assumption, and the gap between the two is where the break lived. The same audit question applies to any scheme: what exactly does a real transcript reveal, beyond the problem instance the security proof names?</li>
@@ -96,36 +98,30 @@
         </ul>
         <p>None of this is an argument against isogeny-based cryptography, and the fact that the break was found by the research community, publicly, before standardisation completed is the system working. It is an argument for reading what a scheme actually transmits, and for pricing a young assumption as young.</p>
       </section>
-      <section class="doc-section doc-references" id="references" aria-labelledby="references-title">
-        <h2 id="references-title"><span class="doc-section-number">06</span>Primary sources</h2>
-        <p>Read these rather than this page. Links open in a new tab.</p>
-        <ul class="reference-list">
-        <li><a href="https://eprint.iacr.org/2022/975" rel="noopener noreferrer" target="_blank">W. Castryck and T. Decru, "An efficient key recovery attack on SIDH", EUROCRYPT 2023 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://eprint.iacr.org/2022/1026" rel="noopener noreferrer" target="_blank">L. Maino and C. Martindale, "An attack on SIDH with arbitrary starting curve", EUROCRYPT 2023 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://eprint.iacr.org/2022/1038" rel="noopener noreferrer" target="_blank">D. Robert, "Breaking SIDH in polynomial time", EUROCRYPT 2023 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://eprint.iacr.org/2017/571" rel="noopener noreferrer" target="_blank">C. Petit, "Faster algorithms for isogeny problems using torsion point images", ASIACRYPT 2017 <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://eprint.iacr.org/2011/506" rel="noopener noreferrer" target="_blank">D. Jao and L. De Feo, "Towards quantum-resistant cryptosystems from supersingular elliptic curve isogenies", PQCrypto 2011 &mdash; the original SIDH <span aria-hidden="true">↗</span></a></li>
-        <li><a href="https://arxiv.org/abs/1310.7789" rel="noopener noreferrer" target="_blank">C. Delfs and S. D. Galbraith, "Computing isogenies between supersingular elliptic curves over F_p", Designs, Codes and Cryptography 78 (2016) <span aria-hidden="true">↗</span></a></li>
-        </ul>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://eprint.iacr.org/2022/975">W. Castryck and T. Decru, "An efficient key recovery attack on SIDH", EUROCRYPT 2023</a></li>
+        <li><a href="https://eprint.iacr.org/2022/1026">L. Maino and C. Martindale, "An attack on SIDH with arbitrary starting curve", EUROCRYPT 2023</a></li>
+        <li><a href="https://eprint.iacr.org/2022/1038">D. Robert, "Breaking SIDH in polynomial time", EUROCRYPT 2023</a></li>
+        <li><a href="https://eprint.iacr.org/2017/571">C. Petit, "Faster algorithms for isogeny problems using torsion point images", ASIACRYPT 2017</a></li>
+        <li><a href="https://eprint.iacr.org/2011/506">D. Jao and L. De Feo, "Towards quantum-resistant cryptosystems from supersingular elliptic curve isogenies", PQCrypto 2011 &mdash; the original SIDH</a></li>
+        <li><a href="https://arxiv.org/abs/1310.7789">C. Delfs and S. D. Galbraith, "Computing isogenies between supersingular elliptic curves over F_p", Designs, Codes and Cryptography 78 (2016)</a></li>
+        </ol>
       </section>
-      <section class="doc-related" aria-labelledby="related-title">
-        <h2 id="related-title" class="eyebrow">Related techniques</h2>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
         <ul>
-        <li><a href="pollard-rho.html"><span>Generic group algorithms</span>Pollard's rho and the parallel collision search</a></li>
-        <li><a href="summation-polynomials.html"><span>Index calculus and descent</span>Summation polynomials and elliptic-curve index calculus</a></li>
+        <li><a href="pollard-rho.html">Pollard's rho and the parallel collision search</a> <span class="family-tag">(Generic group algorithms)</span></li>
+        <li><a href="summation-polynomials.html">Summation polynomials and elliptic-curve index calculus</a> <span class="family-tag">(Index calculus and descent)</span></li>
         </ul>
       </section>
     </article>
   </main>
   <footer class="site-footer">
-    <div class="footer-top">
-      <a class="brand" href="../index.html" aria-label="Isogeny Labs home"><svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5 5 12v14l12 7 12-7V12z"/><path d="M17 5v28M5 12l24 14M29 12 5 26"/></g><circle cx="17" cy="5" r="3.2" fill="currentColor"/><circle cx="5" cy="26" r="3.2" fill="currentColor"/><circle cx="29" cy="26" r="3.2" fill="currentColor"/></svg><span class="brand-name">isogeny<span class="brand-security">LABS</span></span></a>
-      <p>Cryptographic analysis.<br>Systems that hold up.</p>
-      <a class="text-link light" href="#main">Back to top <span aria-hidden="true">↑</span></a>
-    </div>
-    <div class="footer-bottom">
+    <div class="wrap">
       <span>© <span id="year">2026</span> Isogeny Labs</span>
-      <span>Hardness analysis · Isogeny systems · Post-quantum migration</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
     </div>
   </footer>
 </body>
