@@ -69,7 +69,7 @@
         {
           "title": "Meet-in-the-middle and the supersingular path problem",
           "slug": "supersingular-path-problem",
-          "one_liner": "Delfs&ndash;Galbraith, claw finding, and what the &radic;p barrier means for SQIsign parameters."
+          "one_liner": "Delfs&ndash;Galbraith, Wesolowski's 2026 p<sup>1/3</sup> algorithm, and what its memory cost means for SQIsign parameters."
         }
       ]
     }

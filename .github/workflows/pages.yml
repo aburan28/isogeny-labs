@@ -25,8 +25,8 @@ jobs:
       - name: Check script syntax
         run: node --check script.js
 
-      - name: Check the cryptanalysis pages match their content files
-        run: python3 tools/build_cryptanalysis.py --check
+      - name: Check the generated pages match their content and recompute the worked examples
+        run: python3 tools/build_site.py --check
 
       - name: Check every page parses and its local references resolve
         run: python3 tools/check_links.py
@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html styles.css script.js favicon.svg _site/
-          cp -R cryptanalysis _site/
+          cp -R cryptanalysis notes schemes _site/
           # Pages runs Jekyll by default, which would skip paths it treats as special.
           touch _site/.nojekyll
 

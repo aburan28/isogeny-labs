@@ -1,0 +1,166 @@
+{
+  "slug": "ml-kem",
+  "position": 1,
+  "group": "key-establishment",
+  "title": "ML-KEM",
+  "short_title": "ML-KEM",
+  "one_liner": "The module-lattice key-encapsulation mechanism of FIPS 203, formerly CRYSTALS-Kyber.",
+  "description": "ML-KEM (FIPS 203, formerly CRYSTALS-Kyber): module learning with errors, the K-PKE encryption scheme, the Fujisaki-Okamoto transform with implicit rejection, parameter sets and sizes, and what has gone wrong in implementations.",
+  "standfirst": "ML-KEM is what replaces elliptic-curve Diffie&ndash;Hellman for agreeing on keys. It is fast, its keys and ciphertexts are about a kilobyte each, and its security rests on a lattice problem that no known quantum algorithm solves efficiently.",
+  "facts": {
+    "Standard": "FIPS 203, August 2024, from CRYSTALS-Kyber",
+    "Rests on": "Module learning with errors over Z<sub>3329</sub>[X]/(X<sup>256</sup> + 1)",
+    "Parameter sets": "ML-KEM-512, -768 and -1024, claimed at security categories 1, 3 and 5. NIST recommends ML-KEM-768 as the default",
+    "Sizes (ML-KEM-768)": "1,184-byte encapsulation key, 1,088-byte ciphertext, 32-byte shared secret",
+    "Deployed as": "Hybrids such as X25519MLKEM768 in TLS 1.3, which combine it with X25519"
+  },
+  "sections": [
+    {
+      "heading": "What a KEM does",
+      "blocks": [
+        {
+          "p": "A key-encapsulation mechanism has three algorithms. KeyGen makes an encapsulation key ek, which is public, and a decapsulation key dk, which is secret. Encaps(ek) produces a fresh random shared key K together with a ciphertext c. Decaps(dk, c) recovers K from c. In TLS 1.3 the client sends ek in its first message, the server replies with c, and both sides derive the session keys from K."
+        },
+        {
+          "p": "Unlike Diffie&ndash;Hellman, the two sides do different things, and there is no way for two parties to derive a shared key from each other's public keys alone. For a handshake that difference does not matter: one round trip carries the key share each way, exactly as with ECDH."
+        }
+      ]
+    },
+    {
+      "heading": "The hard problem",
+      "blocks": [
+        {
+          "p": "Learning with errors (LWE), introduced by Regev in 2005, asks: given a random matrix A and t = As + e, where s and e have small entries, find s. Without the error e this is linear algebra. With it, the best known methods reduce it to finding short vectors in a lattice, which is believed to be hard for classical and quantum computers alike."
+        },
+        {
+          "p": "ML-KEM uses the module version (MLWE). Every entry of A, s and e is a polynomial in the ring R<sub>q</sub> = Z<sub>q</sub>[X]/(X<sup>256</sup> + 1) with q = 3329, and A is a k &times; k matrix of such polynomials, with k = 2, 3 or 4. The structure makes keys small and arithmetic fast; Langlois and Stehl&eacute; showed that module lattices keep a worst-case to average-case reduction of the kind that underpins LWE."
+        },
+        {
+          "p": "The modulus is chosen for speed. Since 256 divides 3328 = q &minus; 1, the number &zeta; = 17 is a primitive 256th root of unity modulo q, and a number-theoretic transform splits X<sup>256</sup> + 1 into 128 quadratic factors. Multiplying two polynomials then takes a few thousand small multiplications, transforms included, instead of the 65,536 of the schoolbook method."
+        }
+      ]
+    },
+    {
+      "heading": "The encryption scheme underneath",
+      "blocks": [
+        {
+          "p": "ML-KEM is built on a simpler public-key encryption scheme, K-PKE, which encrypts a 32-byte message m. Small polynomials are sampled from a centred binomial distribution CBD<sub>&eta;</sub>, whose coefficients lie between &minus;&eta; and &eta;; the matrix A is expanded from a 32-byte seed &rho; with SHAKE128, so the public key carries the seed instead of the matrix."
+        },
+        {
+          "pre": "K-PKE.KeyGen\n  A ← expanded from seed ρ\n  s, e ← CBD(η1)                  small, secret\n  t = A·s + e\n  encryption key (t, ρ);  decryption key s\n\nK-PKE.Encrypt(t, ρ, m; randomness)\n  r ← CBD(η1);  e1, e2 ← CBD(η2)\n  u = Aᵀ·r + e1\n  v = tᵀ·r + e2 + ⌈q/2⌉·m          each bit of m becomes 0 or ⌈q/2⌉\n  ciphertext (Compress(u, du), Compress(v, dv))\n\nK-PKE.Decrypt(s, u, v)\n  w = v − sᵀ·u\n  m = each coefficient of w rounded to 0 or ⌈q/2⌉",
+          "label": "An outline of FIPS 203's K-PKE; the standard fixes every encoding, sampling and hashing step."
+        },
+        {
+          "p": "Decryption works because w = ⌈q/2⌉&middot;m + (e<sup>T</sup>r + e<sub>2</sub> &minus; s<sup>T</sup>e<sub>1</sub>) plus rounding from compression, and the bracketed error is a sum of products of small polynomials. It is almost always smaller than q/4 in every coefficient, so rounding recovers m. Almost always is not always: the chance that some coefficient overflows is the decapsulation failure rate, which FIPS 203 gives as 2<sup>&minus;138.8</sup>, 2<sup>&minus;164.8</sup> and 2<sup>&minus;174.8</sup> for the three parameter sets."
+        },
+        {
+          "p": "Compression drops low-order bits of u and v to shorten the ciphertext. It adds a little more error, which is part of the same failure budget."
+        }
+      ]
+    },
+    {
+      "heading": "From encryption to a KEM",
+      "blocks": [
+        {
+          "p": "K-PKE on its own is only secure against passive attackers: someone who can submit modified ciphertexts and watch what the decrypter does can learn the secret key. ML-KEM wraps it in a variant of the Fujisaki&ndash;Okamoto transform, which makes decryption check its own work:"
+        },
+        {
+          "pre": "Encaps(ek)\n  m ← 32 random bytes\n  (K, r) = G(m ‖ H(ek))\n  c = K-PKE.Encrypt(ek, m; r)\n  return (K, c)\n\nDecaps(dk, c)                     dk holds s, ek, H(ek) and a random z\n  m' = K-PKE.Decrypt(s, c)\n  (K', r') = G(m' ‖ H(ek))\n  c' = K-PKE.Encrypt(ek, m'; r')\n  if c' = c:  return K'\n  else:       return J(z ‖ c)        implicit rejection",
+          "label": "G, H and J are SHA3-512, SHA3-256 and SHAKE256."
+        },
+        {
+          "p": "Because all the encryption randomness is derived from m, the decrypter can re-encrypt and compare. A tampered ciphertext fails the comparison, and instead of reporting an error, Decaps returns a key derived from a secret value z and the ciphertext. The attacker gets a random-looking key either way and learns nothing from the difference; the handshake simply fails later, as it would with a wrong key. Hofheinz, H&ouml;velmanns and Kiltz give the modular analysis of transforms of this kind."
+        },
+        {
+          "p": "FIPS 203 also requires input checks that Kyber's specification did not include: an encapsulation key whose coefficients are not reduced modulo q must be rejected, and a decapsulation key must match the hash of the encapsulation key stored inside it."
+        }
+      ]
+    },
+    {
+      "heading": "Parameters and sizes",
+      "blocks": [
+        {
+          "table": {
+            "caption": "From FIPS 203, Tables 1 to 3. All three sets use n = 256 and q = 3329.",
+            "head": ["", "k", "&eta;<sub>1</sub>", "&eta;<sub>2</sub>", "d<sub>u</sub>", "d<sub>v</sub>", "Category", "Failure rate"],
+            "rows": [
+              ["ML-KEM-512", "2", "3", "2", "10", "4", "1", "2<sup>&minus;138.8</sup>"],
+              ["ML-KEM-768", "3", "2", "2", "10", "4", "3", "2<sup>&minus;164.8</sup>"],
+              ["ML-KEM-1024", "4", "2", "2", "11", "5", "5", "2<sup>&minus;174.8</sup>"]
+            ],
+            "numeric": [1, 2, 3, 4, 5, 6, 7]
+          }
+        },
+        {
+          "table": {
+            "caption": "Sizes in bytes, from FIPS 203, Table 3.",
+            "head": ["", "Encapsulation key", "Decapsulation key", "Ciphertext", "Shared secret"],
+            "rows": [
+              ["ML-KEM-512", "800", "1,632", "768", "32"],
+              ["ML-KEM-768", "1,184", "2,400", "1,088", "32"],
+              ["ML-KEM-1024", "1,568", "3,168", "1,568", "32"]
+            ],
+            "numeric": [1, 2, 3, 4]
+          }
+        },
+        {
+          "p": "A security category is a comparison, not a count of bits: category 1 means breaking the scheme takes at least as many resources as recovering an AES-128 key by search, category 3 an AES-192 key, and category 5 an AES-256 key. FIPS 203 recommends ML-KEM-768 as the default, as providing a large security margin at a reasonable cost."
+        }
+      ]
+    },
+    {
+      "heading": "Security in practice",
+      "blocks": [
+        {
+          "p": "The best known attacks on the mathematics are lattice reduction, in primal and dual forms, and their cost is estimated rather than measured: the estimates depend on models of how BKZ and lattice sieving scale, and on how memory is costed. Whether ML-KEM-512 comfortably meets category 1 was argued in public during standardisation, and the answer depends on those models. The <a href=\"../cryptanalysis/kuperberg-csidh.html\">page on Kuperberg's algorithm</a> discusses the same issue for quantum costs; any claimed security level is a claim about a cost model."
+        },
+        {
+          "p": "The failures so far have been in implementations. In 2024, KyberSlash showed that several implementations, including the reference code, divided by q using instructions whose timing depends on the secret, and recovered keys within minutes to hours on a Raspberry Pi 2 and on a Cortex-M4. The affected libraries were patched. Side channels and faults in decapsulation, where the secret is used, remain the thing to review."
+        },
+        {
+          "note": "ML-KEM is young as deployed cryptography goes, so TLS deployments combine it with X25519. The hybrid's shared secret is derived from both, and stays secure as long as either component does: a classical break of ML-KEM leaves X25519, and a quantum computer leaves ML-KEM.",
+          "note_label": "Why hybrids"
+        }
+      ]
+    },
+    {
+      "heading": "Where it stops",
+      "blocks": [
+        {
+          "p": "ML-KEM would fall to an efficient algorithm for module-LWE at these dimensions, classical or quantum. None is known, and the structure it adds over plain LWE has not yielded an attack on these parameters. Because ML-KEM is NIST's only standardised KEM, NIST selected HQC in 2025 as a second one based on different mathematics, as a backup in case a weakness is found in ML-KEM."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "NIST, FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard (2024)",
+      "href": "https://csrc.nist.gov/pubs/fips/203/final"
+    },
+    {
+      "text": "O. Regev, \"On lattices, learning with errors, random linear codes, and cryptography\", Journal of the ACM 56 (2009)",
+      "href": "https://doi.org/10.1145/1568318.1568324"
+    },
+    {
+      "text": "A. Langlois and D. Stehl&eacute;, \"Worst-case to average-case reductions for module lattices\", Designs, Codes and Cryptography 75 (2015)",
+      "href": "https://eprint.iacr.org/2012/090"
+    },
+    {
+      "text": "D. Hofheinz, K. H&ouml;velmanns and E. Kiltz, \"A modular analysis of the Fujisaki-Okamoto transformation\", TCC 2017",
+      "href": "https://eprint.iacr.org/2017/604"
+    },
+    {
+      "text": "D. J. Bernstein et al., \"KyberSlash: exploiting secret-dependent division timings in Kyber implementations\", TCHES 2025",
+      "href": "https://eprint.iacr.org/2024/1049"
+    },
+    {
+      "text": "NIST IR 8545, Status Report on the Fourth Round of the NIST Post-Quantum Cryptography Standardization Process (2025)",
+      "href": "https://nvlpubs.nist.gov/nistpubs/ir/2025/NIST.IR.8545.pdf"
+    },
+    {
+      "text": "IETF, \"Post-quantum hybrid ECDHE-MLKEM key agreement for TLSv1.3\" (draft-ietf-tls-ecdhe-mlkem)",
+      "href": "https://datatracker.ietf.org/doc/draft-ietf-tls-ecdhe-mlkem/"
+    }
+  ],
+  "related": ["ml-dsa", "notes/ecdlp", "cryptanalysis/kuperberg-csidh"]
+}

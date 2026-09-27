@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, and the attacks on it, with worked examples computed by the code that builds this site.">
+  <meta property="og:title" content="Notes · Isogeny Labs">
+  <meta property="og:description" content="Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, and the attacks on it, with worked examples computed by the code that builds this site.">
+  <meta property="og:type" content="article">
+  <title>Notes · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html" aria-current="page">Notes</a>
+        <a href="../schemes/index.html">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <header aria-labelledby="library-title">
+      <h1 id="library-title">Notes</h1>
+      <p class="standfirst">Longer explanations of the mathematics under the <a href="../cryptanalysis/index.html">cryptanalysis reference</a>. The worked examples run on groups small enough to follow by hand. They are computed by the code that builds this site, and every number on them is checked again each time it is built.</p>
+    </header>
+    <nav class="toc" aria-label="Parts">
+      <ol>
+        <li><a href="#elliptic-curves">Elliptic curves</a></li>
+        <li><a href="#worked-examples">Worked examples</a></li>
+        <li><a href="#explainers">Explainers</a></li>
+      </ol>
+    </nav>
+      <section id="elliptic-curves" aria-labelledby="elliptic-curves-title">
+        <h2 id="elliptic-curves-title">Elliptic curves</h2>
+        <p class="family-intro">What an elliptic curve is, why its points form a group, and why recovering a secret multiple of a point is hard enough to build cryptography on.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="elliptic-curves.html">Elliptic curves</a></h3>
+            <p>What an elliptic curve is, how two points are added, what changes over a finite field, and how a point is multiplied by a large integer.</p>
+            <p class="meta">Primer · worked on a curve with 103 points</p>
+          </li>
+          <li>
+            <h3><a href="ecdlp.html">The ECDLP</a></h3>
+            <p>The problem every elliptic-curve scheme rests on, the square-root bound that generic attacks cannot beat, and the checks that rule out the known shortcuts.</p>
+            <p class="meta">Primer · with the real sizes of five standard curves</p>
+          </li>
+        </ul>
+      </section>
+      <section id="worked-examples" aria-labelledby="worked-examples-title">
+        <h2 id="worked-examples-title">Worked examples</h2>
+        <p class="family-intro">Attacks run end to end on small instances, with every intermediate value shown. At these sizes the point is the mechanism, not the speed; each page says what changes at cryptographic sizes.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="pollard-rho-worked-example.html">Pollard's rho, worked</a></h3>
+            <p>One walk followed step by step until it repeats and gives up the key, then two thousand more measured against the prediction for a random function.</p>
+            <p class="meta">Worked example · a curve with 10,039 points</p>
+          </li>
+          <li>
+            <h3><a href="index-calculus-end-to-end.html">Index calculus, end to end</a></h3>
+            <p>The whole algorithm run twice with every number shown: first in the multiplicative group of a prime field, then on an elliptic curve over F<sub>p<sup>2</sup></sub> using Semaev's summation polynomial.</p>
+            <p class="meta">Worked example · F<sub>10163</sub><sup>&times;</sup> and a curve over F<sub>263<sup>2</sup></sub></p>
+          </li>
+        </ul>
+      </section>
+      <section id="explainers" aria-labelledby="explainers-title">
+        <h2 id="explainers-title">Explainers</h2>
+        <p class="family-intro">Longer pieces that compare approaches rather than walking through one.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="index-calculus-three-settings.html">Index calculus in three settings</a></h3>
+            <p>The same pipeline over three kinds of curve, and why the structure of the field decides how far it gets.</p>
+            <p class="meta">Explainer · prime fields, F<sub>2<sup>m</sup></sub>, and Koblitz curves compared</p>
+          </li>
+        </ul>
+      </section>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

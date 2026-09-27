@@ -1,0 +1,159 @@
+{
+  "slug": "sqisign",
+  "position": 2,
+  "group": "signatures",
+  "title": "SQIsign",
+  "short_title": "SQIsign",
+  "one_liner": "Isogeny-based signatures with the smallest keys and signatures of any post-quantum candidate, now in round 3 of NIST's additional-signatures process.",
+  "description": "SQIsign: signatures from supersingular isogenies and the Deuring correspondence. How the sigma protocol works, how the response isogeny is represented, sizes and timings for version 3.0, and how Wesolowski's 2026 p^(1/3) algorithm changed its parameters.",
+  "standfirst": "SQIsign's public key and signature together fit in under 300 bytes at the lowest security level, less than a single ML-DSA public key. It gets there with the most intricate mathematics of any candidate, and in 2026 a new attack forced its parameters up.",
+  "facts": {
+    "Status": "Round 3 of NIST's additional-signatures process (NIST IR 8610, May 2026); not a standard",
+    "Rests on": "Computing the endomorphism ring of a supersingular elliptic curve, equivalent to finding isogenies between supersingular curves",
+    "Sizes (version 3.0, level I)": "83-byte public key, 200-byte signature",
+    "Speed (version 3.0, level I)": "93.9 million cycles to sign, 12.1 million to verify, optimised code on an Intel Core i7-13700K",
+    "Prime (level I)": "p = 3&middot;2<sup>324</sup> &minus; 1, up from 5&middot;2<sup>248</sup> &minus; 1 in round 2"
+  },
+  "sections": [
+    {
+      "heading": "Why it matters",
+      "blocks": [
+        {
+          "p": "Every post-quantum signature standard so far costs kilobytes: ML-DSA-44 needs 3,732 bytes for a public key and a signature together, and SLH-DSA more. For certificate chains, constrained devices and anything that stores many signatures, that is a real cost. SQIsign's 283 bytes at level I is less than RSA-2048's 512."
+        },
+        {
+          "p": "It also rests on a different kind of problem. The endomorphism ring problem has nothing to do with lattices, codes, multivariate equations or hash functions, so a break of one of those would leave it untouched. That diversity is exactly what NIST's additional-signatures process is looking for."
+        },
+        {
+          "p": "The costs are signing speed, implementation complexity, and a security estimate that moved recently. Its designers list all three."
+        }
+      ]
+    },
+    {
+      "heading": "The hard problem",
+      "blocks": [
+        {
+          "p": "An endomorphism of an elliptic curve E is an isogeny from E to itself, and together they form its endomorphism ring End(E). For a supersingular curve over F<sub>p<sup>2</sup></sub>, End(E) is a maximal order in a quaternion algebra, and the Deuring correspondence matches curves with such orders, and isogenies between curves with ideals between orders. Computing End(E) from E alone is believed hard."
+        },
+        {
+          "p": "Knowing End(E) is powerful. Given the endomorphism rings of two curves, an isogeny between them can be computed in polynomial time, and Wesolowski proved in 2021, assuming the generalised Riemann hypothesis, that the endomorphism ring problem and the isogeny path problem are equivalent under reductions of polynomial expected time. A SQIsign key pair is a curve E<sub>pk</sub> whose endomorphism ring only the signer knows."
+        }
+      ]
+    },
+    {
+      "heading": "Signing",
+      "blocks": [
+        {
+          "p": "SQIsign is a sigma protocol made non-interactive with the Fiat&ndash;Shamir transform. The signer proves it knows End(E<sub>pk</sub>) without revealing it:"
+        },
+        {
+          "steps": [
+            "<strong>Commit.</strong> Generate a random curve E<sub>com</sub> together with its endomorphism ring, by walking a secret random isogeny from a public starting curve.",
+            "<strong>Challenge.</strong> Hash the message and the commitment into a challenge isogeny from E<sub>pk</sub> to a new curve E<sub>chl</sub>. Knowing End(E<sub>pk</sub>), the signer can now work out End(E<sub>chl</sub>).",
+            "<strong>Respond.</strong> Knowing the endomorphism rings of both E<sub>com</sub> and E<sub>chl</sub>, compute an isogeny between them, and publish it.",
+            "<strong>Verify.</strong> Check that the published isogeny really goes from E<sub>com</sub> to E<sub>chl</sub>."
+          ]
+        },
+        {
+          "p": "A forger without End(E<sub>pk</sub>) cannot find the response. There is one shortcut the protocol has to close: a cheater who built E<sub>com</sub> from E<sub>pk</sub> itself could answer by composing isogenies without knowing anything. The fix is to make sure the challenge is never a piece of the response; in version 3.0 the two have coprime degrees by construction."
+        },
+        {
+          "p": "The hard engineering is in the response. It is an isogeny of large degree, and it has to be both computed and written down compactly. The round-1 scheme used the KLPT algorithm and a representation that was slow to produce. Round 2 adopted the SQIsign2D-West approach: the response is sampled from a well-understood distribution and sent as the images of a few points, and the verifier checks it by computing an isogeny between two-dimensional abelian varieties, the same tool that broke SIDH, used here to build. Signing became nearly 20 times faster, at 103.0 million cycles, and verification more than 6 times faster."
+        }
+      ]
+    },
+    {
+      "heading": "The 2026 attack and version 3.0",
+      "blocks": [
+        {
+          "p": "For thirty years the best algorithms for the endomorphism ring problem took time about p<sup>1/2</sup>, and SQIsign's parameters were set on that basis. In 2026 Wesolowski gave a heuristic algorithm that runs in time and memory p<sup>1/3+o(1)</sup>: it searches for a short isogeny from a curve to its Galois conjugate by meet-in-the-middle over smooth-degree isogenies, and turns that isogeny into an endomorphism. The o(1) hides a superpolynomial factor, and the memory is as large as the time, so the effect on concrete parameters is much smaller than the exponent suggests. It is not zero."
+        },
+        {
+          "p": "Version 3.0 of the specification, submitted for round 3 in September 2026, raised the parameters in response. Its authors estimate the cost of the new attack under a memory limit of 2<sup>80</sup>, 2<sup>120</sup> and 2<sup>160</sup> stored entries for the three levels, and report total costs of about 2<sup>149.8</sup>, 2<sup>221.8</sup> and 2<sup>285.4</sup>, against NIST's targets of 2<sup>143</sup>, 2<sup>207</sup> and 2<sup>272</sup>. They call these parameters \"a middle-of-the-road approach\" and state plainly that concrete security is in flux, and that a version of the attack without its memory cost would require revisiting them."
+        },
+        {
+          "table": {
+            "caption": "Sizes in bytes, from the round-2 (version 2.0.1) and round-3 (version 3.0) specifications.",
+            "head": ["", "Round 2 public key", "Round 2 signature", "Round 3 public key", "Round 3 signature"],
+            "rows": [
+              ["Level I", "65", "148", "83", "200"],
+              ["Level III", "97", "224", "129", "306"],
+              ["Level V", "129", "292", "169", "406"]
+            ],
+            "numeric": [1, 2, 3, 4]
+          }
+        },
+        {
+          "p": "Version 3.0 also replaced the multiple-precision quaternion arithmetic with a fixed-precision representation, removed floating-point arithmetic and the dependency on GMP, and adopted a new algorithm for turning ideals into isogenies. Those changes more than paid for the larger primes in key generation and signing; verification became 1.5 to 2 times slower."
+        }
+      ]
+    },
+    {
+      "heading": "Performance",
+      "blocks": [
+        {
+          "table": {
+            "caption": "Millions of cycles for version 3.0's optimised implementation on an Intel Core i7-13700K, median of 1,000 runs, as published in the specification.",
+            "head": ["", "Key generation", "Signing", "Verification"],
+            "rows": [
+              ["Level I", "32.2", "93.9", "12.1"],
+              ["Level III", "102.1", "320.3", "31.5"],
+              ["Level V", "214.5", "674.7", "77.6"]
+            ],
+            "numeric": [1, 2, 3]
+          }
+        },
+        {
+          "p": "At a few gigahertz, level-I signing takes a few tens of milliseconds, far slower than ML-DSA, and verification a few milliseconds. The designers also publish figures for Apple M4 Pro, ARM Cortex-A76 and Cortex-M4; on the M4 Pro, level-I signing takes 60.0 million cycles."
+        }
+      ]
+    },
+    {
+      "heading": "What to watch",
+      "blocks": [
+        {
+          "ul": [
+            "<strong>Parameters.</strong> Refinements of Wesolowski's attack, and above all any version that avoids its memory cost, would move them again. There are plenty of candidate primes of the required shape to move to.",
+            "<strong>Side channels.</strong> The specification says a fully constant-time implementation has not yet been achieved. The move to fixed-precision arithmetic is the first step towards one.",
+            "<strong>The assumption.</strong> Forging a signature reduces to computing endomorphism rings when given certain hints, which is a variant of the problem rather than the problem itself; version 3.0's change to the response distribution changed those hints, and the designers argue in the specification that it does not weaken them.",
+            "<strong>The process.</strong> NIST expects round 3 to last about two years."
+          ]
+        },
+        {
+          "p": "SQIsign is not affected by the <a href=\"../cryptanalysis/sidh-torsion-attacks.html\">attacks that broke SIDH</a>: those needed the images of torsion points under a secret isogeny, and SQIsign does not publish them. Nor is it affected by <a href=\"../cryptanalysis/kuperberg-csidh.html\">Kuperberg's algorithm</a>, which needs a commutative group action. Its exposure is the classical algorithms for the endomorphism ring problem itself."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "SQIsign team, \"SQIsign: algorithm specifications and supporting documentation\", version 3.0 (September 2026)",
+      "href": "https://sqisign.org/spec/sqisign-20260901.pdf"
+    },
+    {
+      "text": "L. De Feo, D. Kohel, A. Leroux, C. Petit and B. Wesolowski, \"SQISign: compact post-quantum signatures from quaternions and isogenies\", ASIACRYPT 2020",
+      "href": "https://eprint.iacr.org/2020/1240"
+    },
+    {
+      "text": "A. Basso, L. De Feo, P. Dartois, A. Leroux, L. Maino, G. Pope, D. Robert and B. Wesolowski, \"SQIsign2D-West: the fast, the small, and the safer\" (2024)",
+      "href": "https://eprint.iacr.org/2024/760"
+    },
+    {
+      "text": "B. Wesolowski, \"The supersingular isogeny path and endomorphism ring problems are equivalent\", FOCS 2021",
+      "href": "https://eprint.iacr.org/2021/919"
+    },
+    {
+      "text": "B. Wesolowski, \"The supersingular isogeny problem in time and memory p<sup>1/3+o(1)</sup>\" (2026)",
+      "href": "https://eprint.iacr.org/2026/1486"
+    },
+    {
+      "text": "NIST IR 8610, Status Report on the Second Round of the Additional Digital Signature Schemes (2026)",
+      "href": "https://csrc.nist.gov/pubs/ir/8610/final"
+    },
+    {
+      "text": "SQIsign website, with sizes and benchmarks for each platform",
+      "href": "https://sqisign.org/"
+    }
+  ],
+  "related": ["ml-dsa", "cryptanalysis/sidh-torsion-attacks", "cryptanalysis/kuperberg-csidh"]
+}

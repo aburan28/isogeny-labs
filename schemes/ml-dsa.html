@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="ML-DSA (FIPS 204, formerly CRYSTALS-Dilithium): keys from module learning with errors, signing by Fiat-Shamir with aborts, verification with hints, parameter sets and sizes, hedged and deterministic signing, and what to review in an implementation.">
+  <meta property="og:title" content="ML-DSA · Isogeny Labs">
+  <meta property="og:description" content="ML-DSA (FIPS 204, formerly CRYSTALS-Dilithium): keys from module learning with errors, signing by Fiat-Shamir with aborts, verification with hints, parameter sets and sizes, hedged and deterministic signing, and what to review in an implementation.">
+  <meta property="og:type" content="article">
+  <title>ML-DSA · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Schemes</a> /
+        <a href="index.html#signatures">Signatures</a>
+      </nav>
+      <header>
+        <h1>ML-DSA</h1>
+        <p class="standfirst">ML-DSA is NIST's main replacement for RSA and ECDSA signatures. It signs and verifies quickly, but its keys and signatures run to kilobytes: an ML-DSA-44 signature is 2,420 bytes, against 64 for Ed25519.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Standard</dt><dd>FIPS 204, August 2024, from CRYSTALS-Dilithium</dd></div>
+        <div><dt>Rests on</dt><dd>Module learning with errors (for the key) and module short integer solutions (for forgery), over Z<sub>8380417</sub>[X]/(X<sup>256</sup> + 1)</dd></div>
+        <div><dt>Parameter sets</dt><dd>ML-DSA-44, -65 and -87, claimed at security categories 2, 3 and 5</dd></div>
+        <div><dt>Sizes (ML-DSA-65)</dt><dd>1,952-byte public key, 3,309-byte signature</dd></div>
+        <div><dt>Signing</dt><dd>Fiat&ndash;Shamir with aborts: on average 4.25, 5.1 or 3.85 attempts per signature, depending on the parameter set</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#keys">Keys</a></li>
+        <li><a href="#signing-fiat-shamir-with-aborts">Signing: Fiat&ndash;Shamir with aborts</a></li>
+        <li><a href="#verifying">Verifying</a></li>
+        <li><a href="#parameters-and-sizes">Parameters and sizes</a></li>
+        <li><a href="#using-it">Using it</a></li>
+        <li><a href="#where-it-stops">Where it stops</a></li>
+        </ol>
+      </nav>
+      <section id="keys" aria-labelledby="keys-title">
+        <h2 id="keys-title">Keys</h2>
+        <p>ML-DSA works in the ring R<sub>q</sub> = Z<sub>q</sub>[X]/(X<sup>256</sup> + 1) with q = 8,380,417 = 2<sup>23</sup> &minus; 2<sup>13</sup> + 1. The public matrix A has k &times; &ell; entries in R<sub>q</sub> and is expanded from a 32-byte seed &rho;. The secret is a pair of vectors s<sub>1</sub> and s<sub>2</sub> with small coefficients, between &minus;&eta; and &eta;, and the key is an MLWE sample:</p>
+        <div class="math">t = A&middot;s<sub>1</sub> + s<sub>2</sub>
+          <span class="math-label">Recovering s<sub>1</sub> from (A, t) is the module learning with errors problem.</span></div>
+        <p>To shorten the public key, t is split into high and low parts, t = t<sub>1</sub>&middot;2<sup>13</sup> + t<sub>0</sub>. The public key is (&rho;, t<sub>1</sub>); t<sub>0</sub> stays in the private key. The verifier will be missing those low bits, and the signature carries a small hint that makes up for them.</p>
+      </section>
+      <section id="signing-fiat-shamir-with-aborts" aria-labelledby="signing-fiat-shamir-with-aborts-title">
+        <h2 id="signing-fiat-shamir-with-aborts-title">Signing: Fiat&ndash;Shamir with aborts</h2>
+        <p>Signing follows the Schnorr pattern of commitment, challenge and response, with one addition that is the heart of the design:</p>
+        <pre class="listing">μ  = H(H(pk) ‖ message)
+ρ″ = H(K ‖ rnd ‖ μ)                     rnd: 32 fresh random bytes by default
+repeat:
+    y  ← mask vector from ρ″, coefficients below γ1
+    w  = A·y;   w1 = HighBits(w)          commitment
+    c̃  = H(μ ‖ w1);  c = SampleInBall(c̃)  τ coefficients equal to ±1, the rest 0
+    z  = y + c·s1                         response
+    reject if ‖z‖∞ ≥ γ1 − β  or  ‖LowBits(w − c·s2)‖∞ ≥ γ2 − β
+    h  = MakeHint(…)                     stands in for the missing t0
+    reject if ‖c·t0‖∞ ≥ γ2  or  h has more than ω ones
+signature (c̃, z, h)</pre>
+        <p class="listing-label">An outline of FIPS 204, Algorithm 7. The rejections restart the loop with a new mask.</p>
+        <p>Why reject? The response z = y + c&middot;s<sub>1</sub> is the mask shifted by a secret-dependent amount. If every z were released, their distribution would drift towards c&middot;s<sub>1</sub>, and enough signatures would reveal the key. Keeping only responses that fall in a range where every secret is equally likely to have produced them makes the distribution of z independent of s<sub>1</sub>. This is Lyubashevsky's Fiat&ndash;Shamir with aborts. The price is repetition: FIPS 204 gives the expected number of attempts as 4.25, 5.1 and 3.85 for the three parameter sets.</p>
+      </section>
+      <section id="verifying" aria-labelledby="verifying-title">
+        <h2 id="verifying-title">Verifying</h2>
+        <p>The verifier recomputes the commitment from public data. Since A&middot;z &minus; c&middot;t = A&middot;y &minus; c&middot;s<sub>2</sub>, which differs from w only by a small term, its high bits are w<sub>1</sub>, once the hint h has corrected for the low bits of t that the public key omits:</p>
+        <pre class="listing">w1&#x27; = UseHint(h, A·z − c·t1·2^13)
+accept if  ‖z‖∞ &lt; γ1 − β,  h has at most ω ones,  and  c̃ = H(μ ‖ w1&#x27;)</pre>
+        <p class="listing-label">An outline of FIPS 204, Algorithm 8.</p>
+        <p>A forger who can produce a valid (c̃, z, h) without the key has solved an instance of a module short integer solution problem, in the variant Kiltz, Lyubashevsky and Schaffner call SelfTargetMSIS; their analysis also covers the quantum random-oracle model.</p>
+      </section>
+      <section id="parameters-and-sizes" aria-labelledby="parameters-and-sizes-title">
+        <h2 id="parameters-and-sizes-title">Parameters and sizes</h2>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>From FIPS 204, Table 1. All three sets use q = 8,380,417 and drop d = 13 bits from t.</caption>
+          <thead><tr><th scope="col"></th><th scope="col">(k, &ell;)</th><th scope="col" class="num">&eta;</th><th scope="col" class="num">&tau;</th><th scope="col">&gamma;<sub>1</sub></th><th scope="col">&gamma;<sub>2</sub></th><th scope="col" class="num">&omega;</th><th scope="col" class="num">Attempts</th><th scope="col" class="num">Category</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">ML-DSA-44</th><td>(4, 4)</td><td class="num">2</td><td class="num">39</td><td>2<sup>17</sup></td><td>(q &minus; 1)/88</td><td class="num">80</td><td class="num">4.25</td><td class="num">2</td></tr>
+            <tr><th scope="row">ML-DSA-65</th><td>(6, 5)</td><td class="num">4</td><td class="num">49</td><td>2<sup>19</sup></td><td>(q &minus; 1)/32</td><td class="num">55</td><td class="num">5.1</td><td class="num">3</td></tr>
+            <tr><th scope="row">ML-DSA-87</th><td>(8, 7)</td><td class="num">2</td><td class="num">60</td><td>2<sup>19</sup></td><td>(q &minus; 1)/32</td><td class="num">75</td><td class="num">3.85</td><td class="num">5</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>Sizes in bytes, from FIPS 204, Table 2.</caption>
+          <thead><tr><th scope="col"></th><th scope="col" class="num">Public key</th><th scope="col" class="num">Private key</th><th scope="col" class="num">Signature</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">ML-DSA-44</th><td class="num">1,312</td><td class="num">2,560</td><td class="num">2,420</td></tr>
+            <tr><th scope="row">ML-DSA-65</th><td class="num">1,952</td><td class="num">4,032</td><td class="num">3,309</td></tr>
+            <tr><th scope="row">ML-DSA-87</th><td class="num">2,592</td><td class="num">4,896</td><td class="num">4,627</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>The categories are 2, 3 and 5 rather than 1, 3 and 5: category 2 is defined by the cost of finding a SHA-256 collision rather than by key search on AES-128. The <a href="index.html#signatures">catalogue</a> compares these sizes with the other signature schemes.</p>
+      </section>
+      <section id="using-it" aria-labelledby="using-it-title">
+        <h2 id="using-it-title">Using it</h2>
+        <ul>
+          <li><strong>Hedged by default.</strong> FIPS 204 mixes 32 fresh random bytes into every signature, alongside randomness derived from the key and message. The fresh randomness helps against side channels; the derived randomness protects against a faulty random-number generator. A fully deterministic variant is allowed when no randomness is available, but the standard warns against it where fault or side-channel attacks are a concern. Both produce signatures the same verifier accepts.</li>
+          <li><strong>Pure or pre-hash.</strong> Plain ML-DSA signs the message itself. HashML-DSA signs a hash of it, for when the message is too large to pass to the signing module; the two produce different signatures and must not be mixed up.</li>
+          <li><strong>Context strings.</strong> Both forms take an optional context string of up to 255 bytes, which binds a signature to its intended use.</li>
+        </ul>
+        <aside class="note"><p><span class="note-label">What to review.</span> The rejection loop runs a variable number of times, which is fine, because the number of attempts does not depend on the secret. What must not leak is anything about the rejected candidates: they are the values the rejection step exists to hide. Constant-time arithmetic inside each attempt and care with the discarded values are what to check in a review.</p></aside>
+      </section>
+      <section id="where-it-stops" aria-labelledby="where-it-stops-title">
+        <h2 id="where-it-stops-title">Where it stops</h2>
+        <p>ML-DSA would fall to efficient algorithms for module-LWE or module-SIS at these dimensions. As with ML-KEM, the best known attacks are lattice reduction, and security estimates depend on how that is costed. For a second signature standard on different assumptions, NIST has FIPS 205, SLH-DSA, based only on hash functions, and is evaluating further candidates, including <a href="sqisign.html">SQIsign</a>, in its additional-signatures process.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://csrc.nist.gov/pubs/fips/204/final">NIST, FIPS 204: Module-Lattice-Based Digital Signature Standard (2024)</a></li>
+        <li><a href="https://eprint.iacr.org/2017/633">L. Ducas, T. Lepoint, V. Lyubashevsky, P. Schwabe, G. Seiler and D. Stehl&eacute;, "CRYSTALS-Dilithium: digital signatures from module lattices" (2017)</a></li>
+        <li><a href="https://eprint.iacr.org/2011/537">V. Lyubashevsky, "Lattice signatures without trapdoors", EUROCRYPT 2012</a></li>
+        <li><a href="https://eprint.iacr.org/2017/916">E. Kiltz, V. Lyubashevsky and C. Schaffner, "A concrete treatment of Fiat-Shamir signatures in the quantum random-oracle model", EUROCRYPT 2018</a></li>
+        <li><a href="https://csrc.nist.gov/pubs/fips/205/final">NIST, FIPS 205: Stateless Hash-Based Digital Signature Standard (2024)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="ml-kem.html">ML-KEM</a> <span class="family-tag">(Key establishment)</span></li>
+        <li><a href="sqisign.html">SQIsign</a> <span class="family-tag">(Signatures)</span></li>
+        <li><a href="../cryptanalysis/hidden-number-problem.html">The hidden number problem and ECDSA nonce leakage</a> <span class="family-tag">(Cryptanalysis reference)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

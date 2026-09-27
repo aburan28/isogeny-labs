@@ -91,7 +91,7 @@
             "<strong>CSIDH and CSI-FiSh</strong> use a commutative class-group action, so the attack applies and sets their quantum parameters.",
             "<strong>SIDH and SIKE</strong> used the non-commutative supersingular graph over <strong>F</strong><sub><em>p</em><sup>2</sup></sub>, so Kuperberg never applied to them &mdash; they fell to something else entirely, the <a href=\"sidh-torsion-attacks.html\">torsion-point attacks</a>.",
             "<strong>SQIsign</strong> is likewise non-commutative, resting on the endomorphism-ring problem via the Deuring correspondence. Kuperberg does not reach it.",
-            "The <strong>general supersingular isogeny path problem</strong> has no known subexponential quantum attack; claw-finding approaches give about <em>p</em><sup>1/3</sup> quantum against &radic;<em>p</em> classical, with severe memory costs that argue against the quantum advantage being real."
+            "The <strong>general supersingular isogeny path problem</strong> over F<sub><em>p</em><sup>2</sup></sub> has no known subexponential quantum attack. Classically, Wesolowski's 2026 algorithm brought the best exponent from <em>p</em><sup>1/2</sup> to <em>p</em><sup>1/3+o(1)</sup> in both time and memory; quantum claw-finding bounds of the same shape exist, but only as query counts in idealised models with free quantum memory."
           ]
         },
         {
@@ -128,6 +128,10 @@
     {
       "text": "J. Ch&aacute;vez-Saab, J.-J. Chi-Dom&iacute;nguez, S. Jaques and F. Rodr&iacute;guez-Henr&iacute;quez, \"The SQALE of CSIDH: sublinear V&eacute;lu quantum-resistant isogeny action with low exponents\", JCEN 12 (2022)",
       "href": "https://eprint.iacr.org/2020/1520"
+    },
+    {
+      "text": "B. Wesolowski, \"The supersingular isogeny problem in time and memory p<sup>1/3+o(1)</sup>\" (2026)",
+      "href": "https://eprint.iacr.org/2026/1486"
     }
   ],
   "related": [

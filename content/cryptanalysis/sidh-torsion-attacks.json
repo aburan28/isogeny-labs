@@ -73,7 +73,7 @@
         },
         {
           "ul": [
-            "<strong>The supersingular isogeny path problem</strong> &mdash; given two supersingular curves, find an isogeny between them &mdash; is untouched. Best known classical attacks remain around &radic;<em>p</em>, via Delfs&ndash;Galbraith and meet-in-the-middle claw finding.",
+            "<strong>The supersingular isogeny path problem</strong> &mdash; given two supersingular curves, find an isogeny between them &mdash; is untouched by the torsion attacks. It has since moved for a different reason: in 2026 Wesolowski gave a heuristic algorithm using time and memory <em>p</em><sup>1/3+o(1)</sup>, where for thirty years the best had been about <em>p</em><sup>1/2</sup>. The o(1) hides a superpolynomial factor and the memory is enormous, so concrete parameters are affected far less than the exponent suggests; SQIsign raised its parameters in response.",
             "<strong>CSIDH and CSI-FiSh</strong> use a commutative class-group action and publish no torsion images. Their security question is different and older: Kuperberg's subexponential quantum algorithm for the abelian hidden shift problem, and the ongoing dispute over what parameter sizes it implies.",
             "<strong>SQIsign</strong>, the isogeny signature scheme still in NIST's additional-signatures process, rests on the endomorphism-ring problem and the Deuring correspondence, not on published torsion images."
           ]
@@ -126,6 +126,10 @@
     {
       "text": "C. Delfs and S. D. Galbraith, \"Computing isogenies between supersingular elliptic curves over F_p\", Designs, Codes and Cryptography 78 (2016)",
       "href": "https://arxiv.org/abs/1310.7789"
+    },
+    {
+      "text": "B. Wesolowski, \"The supersingular isogeny problem in time and memory p<sup>1/3+o(1)</sup>\" (2026)",
+      "href": "https://eprint.iacr.org/2026/1486"
     }
   ],
   "related": ["pollard-rho", "summation-polynomials"]

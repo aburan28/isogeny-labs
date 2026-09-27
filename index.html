@@ -22,6 +22,8 @@
       <nav class="site-nav" aria-label="Main">
         <a href="#work">Work</a>
         <a href="#services">Services</a>
+        <a href="./notes/index.html">Notes</a>
+        <a href="./schemes/index.html">Schemes</a>
         <a href="./cryptanalysis/index.html">Cryptanalysis reference</a>
         <a href="#contact">Contact</a>
       </nav>
@@ -75,6 +77,18 @@
             <li><a href="./cryptanalysis/number-field-sieve.html">The number field sieve</a></li>
             <li><a href="./cryptanalysis/hidden-number-problem.html">The hidden number problem and nonce leakage</a></li>
             <li><a href="./cryptanalysis/sidh-torsion-attacks.html">The SIDH torsion-point attacks</a> and <a href="./cryptanalysis/kuperberg-csidh.html">Kuperberg's algorithm against CSIDH</a></li>
+          </ul>
+        </li>
+        <li>
+          <h3>Notes and a catalogue of schemes</h3>
+          <p class="meta">On this site · worked examples recomputed on every build</p>
+          <p>Explanations of elliptic curves and the discrete logarithm problem, and worked examples of the attacks on it. The examples run on small groups: a Pollard rho walk followed step by step to its collision and then measured over two thousand walks, and index calculus carried out end to end, both in a prime field and on an elliptic curve over F<sub>p<sup>2</sup></sub> with Semaev's summation polynomial. The code that builds the site computes every number on those pages and checks each result before printing it.</p>
+          <p>The catalogue covers the schemes in use and the ones replacing them, with full pages on ML-KEM, ML-DSA and SQIsign, including how SQIsign's parameters changed after Wesolowski's 2026 attack.</p>
+          <ul>
+            <li><a href="./notes/elliptic-curves.html">Elliptic curves, from the equation to the group</a> and <a href="./notes/ecdlp.html">the ECDLP</a></li>
+            <li><a href="./notes/pollard-rho-worked-example.html">Pollard's rho, worked on a small curve</a></li>
+            <li><a href="./notes/index-calculus-end-to-end.html">Index calculus, end to end</a></li>
+            <li><a href="./schemes/index.html">The catalogue of schemes</a>: <a href="./schemes/ml-kem.html">ML-KEM</a>, <a href="./schemes/ml-dsa.html">ML-DSA</a>, <a href="./schemes/sqisign.html">SQIsign</a></li>
           </ul>
         </li>
       </ol>
