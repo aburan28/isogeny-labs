@@ -72,7 +72,7 @@
       <section id="the-encryption-scheme-underneath" aria-labelledby="the-encryption-scheme-underneath-title">
         <h2 id="the-encryption-scheme-underneath-title">The encryption scheme underneath</h2>
         <p>ML-KEM is built on a simpler public-key encryption scheme, K-PKE, which encrypts a 32-byte message m. Small polynomials are sampled from a centred binomial distribution CBD<sub>&eta;</sub>, whose coefficients lie between &minus;&eta; and &eta;; the matrix A is expanded from a 32-byte seed &rho; with SHAKE128, so the public key carries the seed instead of the matrix.</p>
-        <pre class="listing">K-PKE.KeyGen
+        <pre class="listing" tabindex="0">K-PKE.KeyGen
   A ← expanded from seed ρ
   s, e ← CBD(η1)                  small, secret
   t = A·s + e
@@ -94,7 +94,7 @@ K-PKE.Decrypt(s, u, v)
       <section id="from-encryption-to-a-kem" aria-labelledby="from-encryption-to-a-kem-title">
         <h2 id="from-encryption-to-a-kem-title">From encryption to a KEM</h2>
         <p>K-PKE on its own is only secure against passive attackers: someone who can submit modified ciphertexts and watch what the decrypter does can learn the secret key. ML-KEM wraps it in a variant of the Fujisaki&ndash;Okamoto transform, which makes decryption check its own work:</p>
-        <pre class="listing">Encaps(ek)
+        <pre class="listing" tabindex="0">Encaps(ek)
   m ← 32 random bytes
   (K, r) = G(m ‖ H(ek))
   c = K-PKE.Encrypt(ek, m; r)
@@ -112,7 +112,7 @@ Decaps(dk, c)                     dk holds s, ek, H(ek) and a random z
       </section>
       <section id="parameters-and-sizes" aria-labelledby="parameters-and-sizes-title">
         <h2 id="parameters-and-sizes-title">Parameters and sizes</h2>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>From FIPS 203, Tables 1 to 3. All three sets use n = 256 and q = 3329.</caption>
           <thead><tr><th scope="col"></th><th scope="col" class="num">k</th><th scope="col" class="num">&eta;<sub>1</sub></th><th scope="col" class="num">&eta;<sub>2</sub></th><th scope="col" class="num">d<sub>u</sub></th><th scope="col" class="num">d<sub>v</sub></th><th scope="col" class="num">Category</th><th scope="col" class="num">Failure rate</th></tr></thead>
@@ -123,7 +123,7 @@ Decaps(dk, c)                     dk holds s, ek, H(ek) and a random z
           </tbody>
         </table>
         </div>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Sizes in bytes, from FIPS 203, Table 3.</caption>
           <thead><tr><th scope="col"></th><th scope="col" class="num">Encapsulation key</th><th scope="col" class="num">Decapsulation key</th><th scope="col" class="num">Ciphertext</th><th scope="col" class="num">Shared secret</th></tr></thead>

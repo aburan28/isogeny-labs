@@ -232,3 +232,12 @@ main.wrap { padding-top: 3rem; }
 .trait-origin { display: inline-block; font: .72rem var(--mono); color: var(--muted); margin-left: .5rem; }
 .trait-body { padding-left: 1rem; }
 #trait-count { font: .8rem var(--mono); color: var(--muted); }
+
+.contact-fields label { display: block; margin: 1.2rem 0; }
+.contact-fields input, .contact-fields textarea, .contact-fields select { display: block; width: 100%; font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--muted); padding: .6rem; border-radius: .2rem; }
+.contact-consent { display: flex; align-items: baseline; gap: .6rem; margin: 1.5rem 0; }
+#contact-form button { font: inherit; padding: .6rem 1.2rem; color: var(--paper); background: var(--ink); border: 1px solid var(--ink); cursor: pointer; }
+#contact-form button:disabled { opacity: .65; cursor: wait; }
+.contact-error { padding: .8rem; border-left: 3px solid var(--link); }
+.contact-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+#contact-form code { overflow-wrap: anywhere; }

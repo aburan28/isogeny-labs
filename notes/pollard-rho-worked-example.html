@@ -70,7 +70,7 @@
           <li>x &equiv; 2: add Q, so b increases by 1.</li>
         </ul>
         <p>The rule depends only on the current point, so once the walk reaches a point it has seen before, it repeats everything that followed. Start from random a<sub>0</sub> and b<sub>0</sub>:</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>The walk from X<sub>0</sub>, with the rows around the repeat. Each row's last column is the step that produced the next row.</caption>
           <thead><tr><th scope="col" class="num">i</th><th scope="col">X<sub>i</sub></th><th scope="col" class="num">a<sub>i</sub></th><th scope="col" class="num">b<sub>i</sub></th><th scope="col" class="num">x mod 3</th><th scope="col">next step</th></tr></thead>
@@ -112,7 +112,7 @@
       <section id="how-long-walks-take" aria-labelledby="how-long-walks-take-title">
         <h2 id="how-long-walks-take-title">How long walks take</h2>
         <p>The 126-step prediction assumes the walk behaves like a random function. Whether it does is a property of the rule, and it can be measured. For each of two rules the code ran 1,000 walks, each with a fresh random target and starting point, and counted the steps until the first repeated point.</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Steps until the first repeated point, divided by &radic;n, over 1,000 random targets and starting points for each walk.</caption>
           <thead><tr><th scope="col">Walk</th><th scope="col" class="num">Mean</th><th scope="col" class="num">Standard error</th></tr></thead>

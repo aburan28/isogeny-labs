@@ -67,7 +67,7 @@
       <section id="signing-fiat-shamir-with-aborts" aria-labelledby="signing-fiat-shamir-with-aborts-title">
         <h2 id="signing-fiat-shamir-with-aborts-title">Signing: Fiat&ndash;Shamir with aborts</h2>
         <p>Signing follows the Schnorr pattern of commitment, challenge and response, with one addition that is the heart of the design:</p>
-        <pre class="listing">μ  = H(H(pk) ‖ message)
+        <pre class="listing" tabindex="0">μ  = H(H(pk) ‖ message)
 ρ″ = H(K ‖ rnd ‖ μ)                     rnd: 32 fresh random bytes by default
 repeat:
     y  ← mask vector from ρ″, coefficients below γ1
@@ -84,14 +84,14 @@ signature (c̃, z, h)</pre>
       <section id="verifying" aria-labelledby="verifying-title">
         <h2 id="verifying-title">Verifying</h2>
         <p>The verifier recomputes the commitment from public data. Since A&middot;z &minus; c&middot;t = A&middot;y &minus; c&middot;s<sub>2</sub>, which differs from w only by a small term, its high bits are w<sub>1</sub>, once the hint h has corrected for the low bits of t that the public key omits:</p>
-        <pre class="listing">w1&#x27; = UseHint(h, A·z − c·t1·2^13)
+        <pre class="listing" tabindex="0">w1&#x27; = UseHint(h, A·z − c·t1·2^13)
 accept if  ‖z‖∞ &lt; γ1 − β,  h has at most ω ones,  and  c̃ = H(μ ‖ w1&#x27;)</pre>
         <p class="listing-label">An outline of FIPS 204, Algorithm 8.</p>
         <p>A forger who can produce a valid (c̃, z, h) without the key has solved an instance of a module short integer solution problem, in the variant Kiltz, Lyubashevsky and Schaffner call SelfTargetMSIS; their analysis also covers the quantum random-oracle model.</p>
       </section>
       <section id="parameters-and-sizes" aria-labelledby="parameters-and-sizes-title">
         <h2 id="parameters-and-sizes-title">Parameters and sizes</h2>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>From FIPS 204, Table 1. All three sets use q = 8,380,417 and drop d = 13 bits from t.</caption>
           <thead><tr><th scope="col"></th><th scope="col">(k, &ell;)</th><th scope="col" class="num">&eta;</th><th scope="col" class="num">&tau;</th><th scope="col">&gamma;<sub>1</sub></th><th scope="col">&gamma;<sub>2</sub></th><th scope="col" class="num">&omega;</th><th scope="col" class="num">Attempts</th><th scope="col" class="num">Category</th></tr></thead>
@@ -102,7 +102,7 @@ accept if  ‖z‖∞ &lt; γ1 − β,  h has at most ω ones,  and  c̃ = H(μ 
           </tbody>
         </table>
         </div>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Sizes in bytes, from FIPS 204, Table 2.</caption>
           <thead><tr><th scope="col"></th><th scope="col" class="num">Public key</th><th scope="col" class="num">Private key</th><th scope="col" class="num">Signature</th></tr></thead>

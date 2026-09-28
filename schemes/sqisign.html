@@ -84,7 +84,7 @@
         <h2 id="the-2026-attack-and-version-3-0-title">The 2026 attack and version 3.0</h2>
         <p>For thirty years the best algorithms for the endomorphism ring problem took time about p<sup>1/2</sup>, and SQIsign's parameters were set on that basis. In 2026 Wesolowski gave a heuristic algorithm that runs in time and memory p<sup>1/3+o(1)</sup>: it searches for a short isogeny from a curve to its Galois conjugate by meet-in-the-middle over smooth-degree isogenies, and turns that isogeny into an endomorphism. The o(1) hides a superpolynomial factor, and the memory is as large as the time, so the effect on concrete parameters is much smaller than the exponent suggests. It is not zero.</p>
         <p>Version 3.0 of the specification, submitted for round 3 in September 2026, raised the parameters in response. Its authors estimate the cost of the new attack under a memory limit of 2<sup>80</sup>, 2<sup>120</sup> and 2<sup>160</sup> stored entries for the three levels, and report total costs of about 2<sup>149.8</sup>, 2<sup>221.8</sup> and 2<sup>285.4</sup>, against NIST's targets of 2<sup>143</sup>, 2<sup>207</sup> and 2<sup>272</sup>. They call these parameters "a middle-of-the-road approach" and state plainly that concrete security is in flux, and that a version of the attack without its memory cost would require revisiting them.</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Sizes in bytes, from the round-2 (version 2.0.1) and round-3 (version 3.0) specifications.</caption>
           <thead><tr><th scope="col"></th><th scope="col" class="num">Round 2 public key</th><th scope="col" class="num">Round 2 signature</th><th scope="col" class="num">Round 3 public key</th><th scope="col" class="num">Round 3 signature</th></tr></thead>
@@ -99,7 +99,7 @@
       </section>
       <section id="performance" aria-labelledby="performance-title">
         <h2 id="performance-title">Performance</h2>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Millions of cycles for version 3.0's optimised implementation on an Intel Core i7-13700K, median of 1,000 runs, as published in the specification.</caption>
           <thead><tr><th scope="col"></th><th scope="col" class="num">Key generation</th><th scope="col" class="num">Signing</th><th scope="col" class="num">Verification</th></tr></thead>
