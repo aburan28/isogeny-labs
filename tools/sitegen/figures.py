@@ -261,3 +261,61 @@ def size_dotplot(rows: list[dict]) -> str:
         "The same numbers are in the table below.",
         "".join(parts),
     )
+
+
+def isogeny_graph(n: int, edges: list, hollow: list, walk: list, labels: dict, rng) -> str:
+    """A node-link drawing of an isogeny graph, laid out by a fixed-seed force simulation."""
+    pos = [[rng.below(1000) / 1000, rng.below(1000) / 1000] for _ in range(n)]
+    k = math.sqrt(1.0 / n)
+    temp = 0.1
+    for _ in range(400):
+        disp = [[0.0, 0.0] for _ in range(n)]
+        for i in range(n):
+            for j in range(i + 1, n):
+                dx, dy = pos[i][0] - pos[j][0], pos[i][1] - pos[j][1]
+                d = max(math.hypot(dx, dy), 1e-4)
+                f = k * k / d
+                disp[i][0] += dx / d * f; disp[i][1] += dy / d * f
+                disp[j][0] -= dx / d * f; disp[j][1] -= dy / d * f
+        for i, j in edges:
+            if i == j:
+                continue
+            dx, dy = pos[i][0] - pos[j][0], pos[i][1] - pos[j][1]
+            d = max(math.hypot(dx, dy), 1e-4)
+            f = d * d / k
+            disp[i][0] -= dx / d * f; disp[i][1] -= dy / d * f
+            disp[j][0] += dx / d * f; disp[j][1] += dy / d * f
+        for i in range(n):
+            dl = max(math.hypot(*disp[i]), 1e-9)
+            step = min(dl, temp)
+            pos[i][0] += disp[i][0] / dl * step
+            pos[i][1] += disp[i][1] / dl * step
+        temp *= 0.985
+    xs, ys = [p[0] for p in pos], [p[1] for p in pos]
+    width, height, pad = 600, 460, 30
+
+    def X(v):
+        return pad + (v - min(xs)) / (max(xs) - min(xs)) * (width - 2 * pad)
+
+    def Y(v):
+        return pad + (v - min(ys)) / (max(ys) - min(ys)) * (height - 2 * pad)
+
+    walk_edges = {tuple(sorted(e)) for e in zip(walk, walk[1:])}
+    parts = []
+    for i, j in edges:
+        if i == j:
+            parts.append(f'<circle class="rule" cx="{_fmt(X(xs[i]))}" cy="{_fmt(Y(ys[i]) - 11)}" r="10" stroke-width="1.5"/>')
+            continue
+        cls, w = ("accent", 3) if (i, j) in walk_edges else ("rule", 1.5)
+        parts.append(f'<line class="{cls}" x1="{_fmt(X(xs[i]))}" y1="{_fmt(Y(ys[i]))}" x2="{_fmt(X(xs[j]))}" y2="{_fmt(Y(ys[j]))}" stroke-width="{w}"/>')
+    for i in range(n):
+        cx, cy = _fmt(X(xs[i])), _fmt(Y(ys[i]))
+        if i in hollow:
+            parts.append(f'<circle cx="{cx}" cy="{cy}" r="5" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>')
+        else:
+            parts.append(f'<circle class="ink-fill" cx="{cx}" cy="{cy}" r="5"/>')
+    for idx in (walk[0], walk[-1]):
+        parts.append(f'<circle class="accent-fill" cx="{_fmt(X(xs[idx]))}" cy="{_fmt(Y(ys[idx]))}" r="6.5"/>')
+    for i, text in labels.items():
+        parts.append(f'<text class="label" x="{_fmt(X(xs[i]) + 10)}" y="{_fmt(Y(ys[i]) + 18)}">j = {text}</text>')
+    return svg(width, height, f"A graph with {n} vertices, each joined to its 2-isogeny neighbours, with a walk highlighted.", "".join(parts))

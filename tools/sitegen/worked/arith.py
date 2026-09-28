@@ -163,12 +163,19 @@ def ec_points(a: int, b: int, p: int) -> list[tuple[int, int]]:
 
 
 class Fp2:
-    def __init__(self, p: int) -> None:
+    def __init__(self, p: int, nonresidue: int | None = None, symbol: str = "t") -> None:
+        """F_p[t]/(t^2 - r). By default r is the smallest positive non-residue;
+        for p = 3 mod 4 a caller can pass nonresidue=-1 to get the usual F_p(i)."""
         self.p = p
-        r = 2
-        while legendre(r, p) != -1:
-            r += 1
+        if nonresidue is None:
+            r = 2
+            while legendre(r, p) != -1:
+                r += 1
+        else:
+            r = nonresidue % p
+            assert legendre(r, p) == -1, "t^2 - r must be irreducible"
         self.r = r
+        self.symbol = symbol
         self.squares = {x * x % p for x in range(p)}
 
     def add(self, x, y):
@@ -227,11 +234,12 @@ class Fp2:
 
     def fmt(self, x) -> str:
         u, v = x
+        s = self.symbol
         if v == 0:
             return str(u)
         if u == 0:
-            return f"{v}t"
-        return f"{u} + {v}t"
+            return f"{v}{s}"
+        return f"{u} + {v}{s}"
 
 
 class CurveFp2:
