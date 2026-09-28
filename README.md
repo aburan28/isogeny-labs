@@ -152,3 +152,7 @@ python3 tools/check_links.py                   # references, anchors, duplicate 
 
 For content changes, review the pages at desktop and phone widths, in both light
 and dark mode.
+
+### Curve traits guide
+
+`content/notes/curve-traits.json` defines all 22 DiSSECT traits plus eight foundations, the factorization comparison and six-phase study plan. The `traits` block renders searchable disclosures with source filters and deep links, progressively enhanced by `script.js`. Its F_101 example is recomputed by `tools/sitegen/worked/curve_traits.py`. Regenerate with the standard site build; existing CI and Pages deployment include the page.

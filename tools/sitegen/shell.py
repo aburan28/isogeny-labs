@@ -29,7 +29,7 @@ NAV = [
     ("contact", "index.html#contact", "Contact"),
 ]
 
-BLOCK_TYPES = {"p", "ul", "steps", "math", "note", "h3", "table", "pre", "svg", "dl", "computed"}
+BLOCK_TYPES = {"p", "ul", "steps", "math", "note", "h3", "table", "pre", "svg", "dl", "computed", "traits"}
 
 
 def T(value: str) -> str:
@@ -140,6 +140,13 @@ def render_blocks(blocks: list[dict], indent: str) -> str:
     for block in blocks:
         if "p" in block:
             out.append(f"{indent}<p>{block['p']}</p>")
+        elif "traits" in block:
+            out.append('<div id="filters" class="trait-filters" hidden><div><label for="trait-search">Search traits</label><input id="trait-search" type="search" placeholder="Trace, conductor, factorization…"></div><div><label for="trait-origin">Source</label><select id="trait-origin"><option value="all">All topics</option><option value="dissect">DiSSECT</option><option value="foundation">Foundations</option></select></div><button type="button" id="reset-traits">Clear filters</button></div><p id="trait-count" role="status" aria-live="polite">30 of 30 topics</p>')
+            for trait in block["traits"]:
+                number = trait["id"]
+                label = "Foundation" if trait["origin"] == "foundation" else "DiSSECT"
+                out.append(f'<details class="trait" id="trait-{number}" data-origin="{E(trait["origin"])}"><summary>{number}. {trait["title"]} <span class="trait-origin">{label}</span></summary><div class="trait-body"><p><strong>What it measures.</strong> {trait["meaning"]}</p><p><strong>Security connection and study task.</strong> {trait["task"]}</p><a href="#trait-{number}">Link to topic {number}</a></div></details>')
+            out.append('<p id="no-results" hidden>No matching topics. Try another term or clear the filters.</p>')
         elif "ul" in block:
             items = "".join(f"{indent}  <li>{item}</li>\n" for item in block["ul"])
             out.append(f"{indent}<ul>\n{items}{indent}</ul>")
@@ -183,6 +190,12 @@ def render_blocks(blocks: list[dict], indent: str) -> str:
 def validate_blocks(blocks: list[dict], where: str) -> list[str]:
     errors = []
     for block in blocks:
+        if "traits" in block:
+            traits = block["traits"]
+            if [t.get("id") for t in traits] != list(range(1, 31)):
+                errors.append(f"{where}: expected each trait ID 1–30 exactly once")
+            if sum(t.get("origin") == "dissect" for t in traits) != 22 or sum(t.get("origin") == "foundation" for t in traits) != 8:
+                errors.append(f"{where}: expected 22 DiSSECT entries and eight foundations")
         kinds = BLOCK_TYPES & set(block)
         if len(kinds) != 1:
             errors.append(f"{where}: block must have exactly one type, got {sorted(block)}")

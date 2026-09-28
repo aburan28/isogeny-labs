@@ -1,0 +1,458 @@
+{
+  "slug": "curve-traits",
+  "position": 3,
+  "group": "elliptic-curves",
+  "compute": "curve_traits",
+  "title": "Elliptic curve traits and their security connections",
+  "short_title": "Curve traits",
+  "one_liner": "All 22 DiSSECT traits and eight foundations, with factorization explained and a six-phase study plan.",
+  "index_meta": "Reference · 30 study topics",
+  "description": "Trace, CM discriminants, j-invariants, torsion and isogenies: what elliptic curve traits mean for cryptographic security.",
+  "standfirst": "A curve’s properties answer different questions. Some constrain discrete-logarithm security, some describe endomorphisms and isogenies, and others expose implementation or generation choices. This guide connects them without collapsing them into a single score.",
+  "facts": {
+    "Coverage": "22 published DiSSECT traits plus eight foundational quantities",
+    "Scope": "Educational interpretation, not a completed security evaluation",
+    "Example": "Recomputed from a small curve by the site build"
+  },
+  "sections": [
+    {
+      "heading": "Scope and coverage",
+      "blocks": [
+        {
+          "p": "DiSSECT&#x27;s AFRICACRYPT 2022 paper reports <strong>22 traits</strong>, all listed in Appendix A. Sedláček&#x27;s thesis, Appendix F.1, contains the same 22 entries with nonconsecutive labels such as a01, a12, a29 and i15. A high label does not imply that every intervening number is an entry."
+        },
+        {
+          "p": "This guide covers <strong>all 22 published entries plus eight explicitly added foundations</strong>, giving 30 numbered items. The additions make trace, j-invariant, field size, subgroup size, cofactor and endomorphisms explicit rather than burying them inside other traits. These are 30 study topics, not 30 independent measures of security or a claim that DiSSECT published 30 tests."
+        },
+        {
+          "p": "For each topic, separate mathematical structure, a demonstrated security mechanism, implementation dependence, and an unexplained statistical observation. An unusual curve is not thereby a weak curve."
+        }
+      ]
+    },
+    {
+      "heading": "How the quantities connect",
+      "blocks": [
+        {
+          "p": "Let E be an elliptic curve over F_q, q=p^m. Write N=#E(F_q), r=ord(G) for a chosen prime-order generator, and h=N/r. Reserve ell for a small auxiliary prime and s for an extension degree."
+        },
+        {
+          "p": "The central equations are"
+        },
+        {
+          "pre": "t = q + 1 - N,                  |t| <= 2 sqrt(q)\nN_twist = q + 1 + t             (quadratic twist, ordinary setting here)\npi^2 - [t]pi + [q] = 0\nD_pi = t^2 - 4q = v^2 d_K      (ordinary curves)\nZ[pi] ⊆ End(E) ⊆ O_K\ndisc(End(E)) = f^2 d_K,         f divides v."
+        },
+        {
+          "p": "Here pi is q-power Frobenius, d_K is a fundamental imaginary quadratic discriminant, v is the conductor of Z[pi], and f is the conductor of the actual endomorphism ring. <strong>v and f need not agree.</strong>"
+        },
+        {
+          "p": "For y²=x³+ax+b in characteristic greater than 3,"
+        },
+        {
+          "pre": "Delta_E = -16(4a³+27b²),\nj = 1728(4a³)/(4a³+27b²)."
+        },
+        {
+          "p": "Delta_E is a field element checking nonsingularity; D_pi is an integer describing Frobenius. They are different discriminants."
+        }
+      ]
+    },
+    {
+      "heading": "Explore all 30 topics",
+      "blocks": [
+        {
+          "traits": [
+            {
+              "id": 1,
+              "title": "Field q=p^m and representation",
+              "meaning": "Specifies coordinate arithmetic. Characteristic, extension degree, subfields and basis affect arithmetic and which mathematical reductions apply. Bit length alone does not establish security.",
+              "task": "Record p, m, field polynomial/basis, and the smallest field over which the equation is defined. Contrast prime fields with binary extension fields.",
+              "origin": "foundation"
+            },
+            {
+              "id": 2,
+              "title": "Group order N and its factorization",
+              "meaning": "Counts rational points. Pohlig–Hellman separates a cyclic DLP according to prime-power factors of the <strong>actual point order</strong>. A smooth order is unsuitable even when q is large.",
+              "task": "Verify N, retain prime factors with exponents, and identify what is proven versus still unfactored. Distinguish N from ord(G).",
+              "origin": "foundation"
+            },
+            {
+              "id": 3,
+              "title": "Selected subgroup order r",
+              "meaning": "Prime r sets the generic classical square-root work scale: roughly sqrt(r) group operations, before constants and usable symmetries.",
+              "task": "Check r is prime, G is nonzero and [r]G=O. Explain why approximately 256-bit r corresponds to roughly 128-bit generic work.",
+              "origin": "foundation"
+            },
+            {
+              "id": 4,
+              "title": "Cofactor h=N/r",
+              "meaning": "Measures the group outside the selected subgroup. A nontrivial h creates protocol obligations, not an automatic failure of the r-subgroup.",
+              "task": "State the protocol&#x27;s subgroup validation or cofactor handling rules. Verify N=hr.",
+              "origin": "foundation"
+            },
+            {
+              "id": 5,
+              "title": "Frobenius trace t",
+              "meaning": "Connects point count, twist, isogeny class and endomorphism algebra. Over F_p, t=1 means N=p, the anomalous case. Ordinarity is equivalent to p not dividing t.",
+              "task": "Derive N and twist order from t. Label the exact exceptional cases rather than assigning a continuous “weakness score” to t.",
+              "origin": "foundation"
+            },
+            {
+              "id": 6,
+              "title": "j-invariant",
+              "meaning": "Classifies curves up to isomorphism over an algebraic closure. Equal j does not imply isomorphism over the base field; twists are the key example. In characteristic &gt;3, j=0 and 1728 have extra geometric automorphisms.",
+              "task": "Compare a curve and its twist: same j, usually different orders. Check which automorphisms are actually defined over the working field.",
+              "origin": "foundation"
+            },
+            {
+              "id": 7,
+              "title": "Equation discriminant Delta_E",
+              "meaning": "Nonzero means the equation is nonsingular. Delta_E=0 gives a singular cubic, outside elliptic-curve group assumptions. Its numerical size or integer factorization is not an ECDLP hardness score.",
+              "task": "Verify nonzero in the field. Change to an isomorphic equation and see why a raw integer lift is representation dependent.",
+              "origin": "foundation"
+            },
+            {
+              "id": 8,
+              "title": "Actual endomorphism ring, conductor f and usable maps",
+              "meaning": "The ordinary endomorphism ring is an order in K. An efficiently evaluable map can help legitimate scalar multiplication; suitable symmetries can also reduce generic search constants. Ring existence does not establish map efficiency.",
+              "task": "Keep d_K, v, f and explicit maps in separate fields. Record map field of definition, degree, subgroup action and evaluation cost.",
+              "origin": "foundation"
+            },
+            {
+              "id": 9,
+              "title": "cofactor / a01",
+              "meaning": "Group invariant factors over F_(q^s).",
+              "task": "Write the group as Z/n1 × Z/n2 with n1 dividing n2. Unlike item 4, this describes the whole group, not just one quotient N/r. Check n1*n2=N_s and n1 divides q^s-1.",
+              "origin": "dissect"
+            },
+            {
+              "id": 10,
+              "title": "discriminant / a02",
+              "meaning": "Integer D_pi and its square/fundamental decomposition.",
+              "task": "Factor D_pi to separate v from d_K. This exposes CM structure; it does not factor a secret scalar. Do not infer the actual ring conductor f from v alone.",
+              "origin": "dissect"
+            },
+            {
+              "id": 11,
+              "title": "twist order / a03",
+              "meaning": "Quadratic-twist cardinality and prime factors.",
+              "task": "Relevant when an implementation can process twist points, especially x-only arithmetic. Compare r with the twist&#x27;s largest prime subgroup and review the protocol&#x27;s accepted inputs. Full point validation changes the relevance.",
+              "origin": "dissect"
+            },
+            {
+              "id": 12,
+              "title": "kn fact. / a04",
+              "meaning": "Factors of kN-1 and kN+1.",
+              "task": "Treat these as structural observations. For auxiliary-input DLP results, distinguish the subgroup r from N and require the precise additional-input assumptions; smooth r±1 alone does not break ordinary ECDH.",
+              "origin": "dissect"
+            },
+            {
+              "id": 13,
+              "title": "torsion extension / a05",
+              "meaning": "Fields containing some/all ell-torsion.",
+              "task": "For ell≠p, compare one nonzero torsion point with full E[ell]. The identity is always rational, so “some torsion” must exclude it. Relate extension degrees to Frobenius acting on a two-dimensional vector space.",
+              "origin": "dissect"
+            },
+            {
+              "id": 14,
+              "title": "conductor / a06",
+              "meaning": "Discriminant growth after base extension.",
+              "task": "Compute D_s/D_1 and separate this trait from f in item 8. It tracks changes in the Frobenius order and rational isogeny structure. Extending the field does not itself change the geometric endomorphism ring.",
+              "origin": "dissect"
+            },
+            {
+              "id": 15,
+              "title": "embedding / a07",
+              "meaning": "Multiplicative order of q modulo r, presented through its complement.",
+              "task": "Record the actual k=ord_r(q), not just (r-1)/k. Pairing transfer places the DLP in F_(q^k)*; security depends on that finite-field DLP as well as the source group. A universal cutoff on k is insufficient.",
+              "origin": "dissect"
+            },
+            {
+              "id": 16,
+              "title": "class number / a08",
+              "meaning": "Bounds for the imaginary quadratic field class number.",
+              "task": "Explain ideal classes and their relation to CM/isogenies. Distinguish h(d_K) from h(f²d_K), and both from subgroup cofactor h. Preserve lower/upper bounds rather than reporting them as exact values.",
+              "origin": "dissect"
+            },
+            {
+              "id": 17,
+              "title": "small prime order / a12",
+              "meaning": "Multiplicative order of a small ell modulo N.",
+              "task": "This is an order in (Z/NZ)*, not the order of a curve point. It is defined only when gcd(ell,N)=1. Relate it to scalar arithmetic; do not identify it with embedding degree unless the base is q.",
+              "origin": "dissect"
+            },
+            {
+              "id": 18,
+              "title": "division pol. / a22",
+              "meaning": "Factorization of an ell-division polynomial.",
+              "task": "Polynomial factors encode Frobenius orbits of torsion x-coordinates. Compare factor degrees with item 13. Recovering x does not necessarily recover y over the same field; retain the sign distinction.",
+              "origin": "dissect"
+            },
+            {
+              "id": 19,
+              "title": "volcano / a23",
+              "meaning": "Local ell-isogeny graph structure.",
+              "task": "Relate its levels to ell-adic conductor valuations and splitting in K. Distinguish total volcano depth from the starting curve&#x27;s level. A readily navigable local graph does not by itself solve a prime-subgroup DLP.",
+              "origin": "dissect"
+            },
+            {
+              "id": 20,
+              "title": "isogeny extension / a24",
+              "meaning": "Fields where some/all degree-ell isogenies are rational.",
+              "task": "A rational isogeny needs a Frobenius-stable kernel, not individually rational kernel points. Compare stable lines in E[ell] with fixed vectors: this explains why items 13 and 20 differ.",
+              "origin": "dissect"
+            },
+            {
+              "id": 21,
+              "title": "trace fact. / a25",
+              "meaning": "Prime factors of extension traces t_s.",
+              "task": "Factor signed traces and record zero separately. Smoothness of t_s does not imply smoothness of N_s. Use t_0=2, t_1=t, t_s=t*t_(s-1)-q*t_(s-2) to connect extensions.",
+              "origin": "dissect"
+            },
+            {
+              "id": 22,
+              "title": "isogeny neighbors / a28",
+              "meaning": "Roots of a specialized modular polynomial.",
+              "task": "Study adjacent j-invariants and compare with items 19–20. Distinct roots, repeated roots, rational kernels and distinct isogenies are not interchangeable counts, especially at special j.",
+              "origin": "dissect"
+            },
+            {
+              "id": 23,
+              "title": "q torsion / a29",
+              "meaning": "Torsion over Q of a chosen coefficient lift.",
+              "task": "Lifting residues a,b to integers chooses a new curve over Q. This is not a canonical inverse to reduction. Compare different lifts; finite-field ECDLP hardness does not follow from rational torsion size.",
+              "origin": "dissect"
+            },
+            {
+              "id": 24,
+              "title": "hamming x / i04",
+              "meaning": "Counts at specified coordinate Hamming weights.",
+              "task": "This depends on coordinate representation. Compare equivalent encodings or field bases. A biased point selector or implementation may care about the distribution; the distribution alone is not evidence of key leakage.",
+              "origin": "dissect"
+            },
+            {
+              "id": 25,
+              "title": "square 4p-1 / i06",
+              "meaning": "Squarefree kernels of 4p-1 and 4r-1.",
+              "task": "Record this as an exploratory arithmetic signature. It is neither N&#x27;s factorization nor generally the curve&#x27;s CM discriminant. Explain which integer the paper calls n here: the generator order.",
+              "origin": "dissect"
+            },
+            {
+              "id": 26,
+              "title": "pow distance / i07",
+              "meaning": "Order proximity to binary/word boundaries.",
+              "task": "Investigate uniform scalar generation and integer representation. Modular reduction of random bits can bias scalars; variable-length processing can leak through an implementation. Neither effect follows solely from proximity to a power of two.",
+              "origin": "dissect"
+            },
+            {
+              "id": 27,
+              "title": "multiples x / i08",
+              "meaning": "x-coordinate of the scalar-divided generator.",
+              "task": "Interpret G/k as [k^(-1) mod r]G when gcd(k,r)=1. A short coordinate may reveal how G was chosen; it does not reveal an unknown private scalar. Keep generator-specific traits separate from curve invariants.",
+              "origin": "dissect"
+            },
+            {
+              "id": 28,
+              "title": "x962 inv. / i13",
+              "meaning": "a³/b² in the base field.",
+              "task": "Use it to understand seed-to-coefficient generation. Where defined, j=1728(4u)/(4u+27) for u=a³/b². Thus u and j are algebraically dependent, not independent security signals. Handle b=0 separately.",
+              "origin": "dissect"
+            },
+            {
+              "id": 29,
+              "title": "brainpool overlap / i14",
+              "meaning": "Coefficient bit overlap statistic.",
+              "task": "Study generation-induced correlations and compare to the specified generation process. A predictable overlap can be expected behavior. It is not a secret-key relation. State bit ordering and the coefficient representation.",
+              "origin": "dissect"
+            },
+            {
+              "id": 30,
+              "title": "weierstrass / i15",
+              "meaning": "Equation coefficients a,b.",
+              "task": "Small coefficients can simplify arithmetic or reflect deliberate generation. Apply an isomorphism to separate coordinate appearance from curve structure. Small a or b is not a stand-alone weakness.",
+              "origin": "dissect"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "What factorization tells us",
+      "blocks": [
+        {
+          "table": {
+            "head": [
+              "Object being factored",
+              "What its factors tell us",
+              "Security conclusion permitted"
+            ],
+            "rows": [
+              [
+                "N and ord(G)",
+                "Decomposition into prime-power components",
+                "Directly relevant to Pohlig–Hellman. Use ord(G), not an unrelated group order, for the target problem."
+              ],
+              [
+                "N_twist",
+                "Available twist subgroup sizes",
+                "Protocol-dependent exposure if twist points are accepted."
+              ],
+              [
+                "r-1 and r+1",
+                "Divisors relevant to multiplicative orders and certain auxiliary-input settings",
+                "Check the exact protocol assumptions; not an unconditional improvement for an ordinary public-key DLP."
+              ],
+              [
+                "t_s",
+                "Divisibility patterns of Frobenius traces",
+                "Useful for structure and recurrence checks; no monotone “smoother means weaker” rule."
+              ],
+              [
+                "D_pi=v²d_K",
+                "Fundamental field discriminant and nonmaximality of Z[pi]",
+                "Endomorphism/isogeny information. Factorization does not establish an efficient extra map or its security effect."
+              ],
+              [
+                "D_s/D_1",
+                "Changes in the Frobenius order under extension",
+                "Structural information, not a private-key factorization."
+              ],
+              [
+                "psi_ell(x) over F_q",
+                "Degrees of irreducible polynomial factors",
+                "Fields of torsion coordinates and Frobenius orbits. This is polynomial factorization, not integer factorization."
+              ],
+              [
+                "Integer lifts of j, Delta_E, a or b",
+                "Properties of selected representatives",
+                "Generally not intrinsic hardness information."
+              ]
+            ]
+          }
+        },
+        {
+          "p": "The basic integer-versus-group distinction matters: a curve point is not an integer with a unique prime factorization. In elliptic-curve index calculus, expressing a point as a sum of factor-base points is a separate decomposition problem. Smoothness of D_pi or t does not establish an easy point decomposition."
+        }
+      ]
+    },
+    {
+      "heading": "A computed example",
+      "blocks": [
+        {
+          "computed": "example"
+        }
+      ]
+    },
+    {
+      "heading": "A six-phase study plan",
+      "blocks": [
+        {
+          "h3": "Phase 1 — Build one trustworthy curve record"
+        },
+        {
+          "p": "Cover items 1–7, 9, 11 and 15 first. Start with the worked example and several other tiny curves. Then use published parameters for representative prime-field curves as descriptive examples."
+        },
+        {
+          "p": "Deliverable: one page per curve with field, equation, generator, exact order relations, factorization status, trace, twist, j, nonsingularity and embedding-degree status. Each entry includes an explanation in words and one equation linking it to another entry."
+        },
+        {
+          "p": "Completion criteria: all point-count, subgroup and discriminant identities agree; incomplete factorization is visibly incomplete; every security claim names the mathematical or protocol assumption it needs."
+        },
+        {
+          "h3": "Phase 2 — Connect Frobenius, CM and isogenies"
+        },
+        {
+          "p": "Cover 8, 10, 13–14, 16 and 18–22. Use a tiny ordinary curve so torsion fields and local isogeny graphs can be inspected exactly."
+        },
+        {
+          "p": "Deliverable: a diagram with Frobenius at the center, branches to point count and twist, to the CM field and orders, and to torsion/isogeny field extensions. Accompany it with a small graph distinguishing volcano depth from a curve&#x27;s position."
+        },
+        {
+          "p": "Completion criteria: explain v versus f, field versus order class number, point versus kernel rationality, and polynomial factor degree versus full torsion-point field degree without conflating them."
+        },
+        {
+          "h3": "Phase 3 — Explain generation and representation"
+        },
+        {
+          "p": "Cover 17 and 23–30. Compare a curve with an isomorphic equation, another generator of the same subgroup, its quadratic twist and different integer lifts of its coefficients."
+        },
+        {
+          "p": "Deliverable: a table identifying which traits survive each change. Add a coefficient-generation diagram for X9.62 and Brainpool."
+        },
+        {
+          "p": "Completion criteria: distinguish a curve invariant, an isogeny invariant, a generator property, a coordinate property and a generation fingerprint. Do not label intended generation structure a weakness."
+        },
+        {
+          "h3": "Phase 4 — Audit the factorization claims"
+        },
+        {
+          "p": "Revisit 2, 10–12, 14–18, 21 and 25. Construct a concept worksheet with one row per factorization object from the preceding table."
+        },
+        {
+          "p": "Deliverable: an evidence ledger with the exact integer or polynomial, factors and exponents, remaining cofactor, proof/primality status, field, source and interpretation. For protocol-conditional results, list the additional information required."
+        },
+        {
+          "p": "Completion criteria: explain why smooth N is different from smooth t, why r±1 requires special care, and why easy polynomial factorization does not itself solve a prime-order DLP."
+        },
+        {
+          "h3": "Phase 5 — Compare distributions responsibly"
+        },
+        {
+          "p": "Use the complete 30-item record for descriptive comparison of public curve parameters. Match field sizes, curve families, subgroup conditions, generation rules and representation. Avoid treating t, N, D_pi and their deterministic transforms as independent observations."
+        },
+        {
+          "p": "Deliverable: a source-linked comparison report with separate conclusions for established mathematical constraints, implementation questions, expected generation effects and unexplained statistical deviations."
+        },
+        {
+          "p": "Completion criteria: predeclare comparisons, account for multiple testing, preserve missing values, and confirm unusual observations on independent samples. An outlier alone supports an investigation, not a reduced security-bit claim."
+        },
+        {
+          "h3": "Phase 6 — Bridge to binary and Koblitz curves"
+        },
+        {
+          "p": "The short-Weierstrass formulas above and the original inventory&#x27;s ordinary prime-field assumptions cannot simply be copied into characteristic two. Use the correct binary equation and invariants. Mark X9.62/Brainpool-specific tests inapplicable where appropriate."
+        },
+        {
+          "p": "For a curve defined over F_2 and studied over F_(2^m), separate the 2-power Frobenius sigma from q-power Frobenius pi=sigma^m. On F_(2^m)-rational points, pi is the identity; sigma can act nontrivially because the equation descends to F_2. This distinction explains why the smaller-field Frobenius supplies useful symmetry."
+        },
+        {
+          "p": "Deliverable: a separate binary-field adapter specification with minimal definition field, trace recurrence, subgroup structure, basis, Frobenius orbit lengths, map field of definition and applicable trait labels. Keep m=83 as the intended high-fidelity descriptive comparison point for the existing research, while making clear that no such evaluation was executed here."
+        },
+        {
+          "p": "Completion criteria: every formula states its characteristic and ordinarity assumptions. No representation reduction is reported as a measured improvement in relation collection or ECDLP security."
+        }
+      ]
+    },
+    {
+      "heading": "Evidence to retain",
+      "blocks": [
+        {
+          "p": "For each curve and trait retain: stable trait ID; source/version; applicability; raw value; normalized display value; defining field and representation; dependencies; exact/bounded/heuristic status; factorization completeness; verification method; mathematical interpretation; protocol assumptions; evidence URL; and whether any security consequence is established or merely a hypothesis."
+        },
+        {
+          "p": "Do not combine all 30 into a weighted “security score.” Use a structured report. Several traits are deterministic transforms of one another, some are representation dependent, and many have no established monotone connection to DLP hardness."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "Sedláček et al., DiSSECT, AFRICACRYPT 2022, Appendix A",
+      "href": "https://eprint.iacr.org/2022/943"
+    },
+    {
+      "text": "Vladimír Sedláček, On cryptographic weaknesses related to elliptic curves, Appendix F.1",
+      "href": "https://iris.unive.it/retrieve/9a6cda7e-bd55-4457-98ff-210886e00671/956406-1237431.pdf"
+    },
+    {
+      "text": "Andrew Sutherland, MIT 18.783, elliptic curve lecture notes",
+      "href": "https://math.mit.edu/classes/18.783/2023/lectures.html"
+    },
+    {
+      "text": "Lochter and Merkle, RFC 5639, Brainpool curves and generation",
+      "href": "https://www.rfc-editor.org/rfc/rfc5639.html"
+    }
+  ],
+  "related": [
+    "elliptic-curves",
+    "ecdlp"
+  ]
+}

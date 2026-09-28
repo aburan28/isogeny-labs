@@ -218,3 +218,17 @@ main.wrap { padding-top: 3rem; }
   .facts.compact > div { grid-template-columns: 1fr; }
   .glance th[scope="row"] { white-space: normal; }
 }
+
+/* Traits use the site's existing light/dark surface tokens. */
+[hidden] { display: none !important; }
+.trait-filters { display: flex; flex-wrap: wrap; gap: .8rem; align-items: end; padding: 1rem; background: var(--wash); margin: 1.5rem 0; }
+.trait-filters label { display: block; font-size: .9rem; }
+.trait-filters > div:first-child { flex: 1; min-width: 12rem; }
+.trait-filters input, .trait-filters select, .trait-filters button { font: inherit; font-size: .95rem; padding: .55rem; min-height: 44px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); max-width: 100%; }
+.trait-filters input { width: 100%; }
+.trait-filters button, .trait summary { cursor: pointer; }
+.trait { border-top: 1px solid var(--rule); padding: .9rem 0; scroll-margin-top: 1.5rem; }
+.trait summary { font-weight: 600; }
+.trait-origin { display: inline-block; font: .72rem var(--mono); color: var(--muted); margin-left: .5rem; }
+.trait-body { padding-left: 1rem; }
+#trait-count { font: .8rem var(--mono); color: var(--muted); }

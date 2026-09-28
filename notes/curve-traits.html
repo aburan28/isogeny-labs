@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Trace, CM discriminants, j-invariants, torsion and isogenies: what elliptic curve traits mean for cryptographic security.">
+  <meta property="og:title" content="Elliptic curve traits and their security connections · Isogeny Labs">
+  <meta property="og:description" content="Trace, CM discriminants, j-invariants, torsion and isogenies: what elliptic curve traits mean for cryptographic security.">
+  <meta property="og:type" content="article">
+  <title>Elliptic curve traits and their security connections · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html" aria-current="page">Notes</a>
+        <a href="../schemes/index.html">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Notes</a> /
+        <a href="index.html#elliptic-curves">Elliptic curves</a>
+      </nav>
+      <header>
+        <h1>Elliptic curve traits and their security connections</h1>
+        <p class="standfirst">A curve’s properties answer different questions. Some constrain discrete-logarithm security, some describe endomorphisms and isogenies, and others expose implementation or generation choices. This guide connects them without collapsing them into a single score.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Coverage</dt><dd>22 published DiSSECT traits plus eight foundational quantities</dd></div>
+        <div><dt>Scope</dt><dd>Educational interpretation, not a completed security evaluation</dd></div>
+        <div><dt>Example</dt><dd>Recomputed from a small curve by the site build</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#scope-and-coverage">Scope and coverage</a></li>
+        <li><a href="#how-the-quantities-connect">How the quantities connect</a></li>
+        <li><a href="#explore-all-30-topics">Explore all 30 topics</a></li>
+        <li><a href="#what-factorization-tells-us">What factorization tells us</a></li>
+        <li><a href="#a-computed-example">A computed example</a></li>
+        <li><a href="#a-six-phase-study-plan">A six-phase study plan</a></li>
+        <li><a href="#evidence-to-retain">Evidence to retain</a></li>
+        </ol>
+      </nav>
+      <section id="scope-and-coverage" aria-labelledby="scope-and-coverage-title">
+        <h2 id="scope-and-coverage-title">Scope and coverage</h2>
+        <p>DiSSECT&#x27;s AFRICACRYPT 2022 paper reports <strong>22 traits</strong>, all listed in Appendix A. Sedláček&#x27;s thesis, Appendix F.1, contains the same 22 entries with nonconsecutive labels such as a01, a12, a29 and i15. A high label does not imply that every intervening number is an entry.</p>
+        <p>This guide covers <strong>all 22 published entries plus eight explicitly added foundations</strong>, giving 30 numbered items. The additions make trace, j-invariant, field size, subgroup size, cofactor and endomorphisms explicit rather than burying them inside other traits. These are 30 study topics, not 30 independent measures of security or a claim that DiSSECT published 30 tests.</p>
+        <p>For each topic, separate mathematical structure, a demonstrated security mechanism, implementation dependence, and an unexplained statistical observation. An unusual curve is not thereby a weak curve.</p>
+      </section>
+      <section id="how-the-quantities-connect" aria-labelledby="how-the-quantities-connect-title">
+        <h2 id="how-the-quantities-connect-title">How the quantities connect</h2>
+        <p>Let E be an elliptic curve over F_q, q=p^m. Write N=#E(F_q), r=ord(G) for a chosen prime-order generator, and h=N/r. Reserve ell for a small auxiliary prime and s for an extension degree.</p>
+        <p>The central equations are</p>
+        <pre class="listing">t = q + 1 - N,                  |t| &lt;= 2 sqrt(q)
+N_twist = q + 1 + t             (quadratic twist, ordinary setting here)
+pi^2 - [t]pi + [q] = 0
+D_pi = t^2 - 4q = v^2 d_K      (ordinary curves)
+Z[pi] ⊆ End(E) ⊆ O_K
+disc(End(E)) = f^2 d_K,         f divides v.</pre>
+        <p>Here pi is q-power Frobenius, d_K is a fundamental imaginary quadratic discriminant, v is the conductor of Z[pi], and f is the conductor of the actual endomorphism ring. <strong>v and f need not agree.</strong></p>
+        <p>For y²=x³+ax+b in characteristic greater than 3,</p>
+        <pre class="listing">Delta_E = -16(4a³+27b²),
+j = 1728(4a³)/(4a³+27b²).</pre>
+        <p>Delta_E is a field element checking nonsingularity; D_pi is an integer describing Frobenius. They are different discriminants.</p>
+      </section>
+      <section id="explore-all-30-topics" aria-labelledby="explore-all-30-topics-title">
+        <h2 id="explore-all-30-topics-title">Explore all 30 topics</h2>
+<div id="filters" class="trait-filters" hidden><div><label for="trait-search">Search traits</label><input id="trait-search" type="search" placeholder="Trace, conductor, factorization…"></div><div><label for="trait-origin">Source</label><select id="trait-origin"><option value="all">All topics</option><option value="dissect">DiSSECT</option><option value="foundation">Foundations</option></select></div><button type="button" id="reset-traits">Clear filters</button></div><p id="trait-count" role="status" aria-live="polite">30 of 30 topics</p>
+<details class="trait" id="trait-1" data-origin="foundation"><summary>1. Field q=p^m and representation <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Specifies coordinate arithmetic. Characteristic, extension degree, subfields and basis affect arithmetic and which mathematical reductions apply. Bit length alone does not establish security.</p><p><strong>Security connection and study task.</strong> Record p, m, field polynomial/basis, and the smallest field over which the equation is defined. Contrast prime fields with binary extension fields.</p><a href="#trait-1">Link to topic 1</a></div></details>
+<details class="trait" id="trait-2" data-origin="foundation"><summary>2. Group order N and its factorization <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Counts rational points. Pohlig–Hellman separates a cyclic DLP according to prime-power factors of the <strong>actual point order</strong>. A smooth order is unsuitable even when q is large.</p><p><strong>Security connection and study task.</strong> Verify N, retain prime factors with exponents, and identify what is proven versus still unfactored. Distinguish N from ord(G).</p><a href="#trait-2">Link to topic 2</a></div></details>
+<details class="trait" id="trait-3" data-origin="foundation"><summary>3. Selected subgroup order r <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Prime r sets the generic classical square-root work scale: roughly sqrt(r) group operations, before constants and usable symmetries.</p><p><strong>Security connection and study task.</strong> Check r is prime, G is nonzero and [r]G=O. Explain why approximately 256-bit r corresponds to roughly 128-bit generic work.</p><a href="#trait-3">Link to topic 3</a></div></details>
+<details class="trait" id="trait-4" data-origin="foundation"><summary>4. Cofactor h=N/r <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Measures the group outside the selected subgroup. A nontrivial h creates protocol obligations, not an automatic failure of the r-subgroup.</p><p><strong>Security connection and study task.</strong> State the protocol&#x27;s subgroup validation or cofactor handling rules. Verify N=hr.</p><a href="#trait-4">Link to topic 4</a></div></details>
+<details class="trait" id="trait-5" data-origin="foundation"><summary>5. Frobenius trace t <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Connects point count, twist, isogeny class and endomorphism algebra. Over F_p, t=1 means N=p, the anomalous case. Ordinarity is equivalent to p not dividing t.</p><p><strong>Security connection and study task.</strong> Derive N and twist order from t. Label the exact exceptional cases rather than assigning a continuous “weakness score” to t.</p><a href="#trait-5">Link to topic 5</a></div></details>
+<details class="trait" id="trait-6" data-origin="foundation"><summary>6. j-invariant <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Classifies curves up to isomorphism over an algebraic closure. Equal j does not imply isomorphism over the base field; twists are the key example. In characteristic &gt;3, j=0 and 1728 have extra geometric automorphisms.</p><p><strong>Security connection and study task.</strong> Compare a curve and its twist: same j, usually different orders. Check which automorphisms are actually defined over the working field.</p><a href="#trait-6">Link to topic 6</a></div></details>
+<details class="trait" id="trait-7" data-origin="foundation"><summary>7. Equation discriminant Delta_E <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Nonzero means the equation is nonsingular. Delta_E=0 gives a singular cubic, outside elliptic-curve group assumptions. Its numerical size or integer factorization is not an ECDLP hardness score.</p><p><strong>Security connection and study task.</strong> Verify nonzero in the field. Change to an isomorphic equation and see why a raw integer lift is representation dependent.</p><a href="#trait-7">Link to topic 7</a></div></details>
+<details class="trait" id="trait-8" data-origin="foundation"><summary>8. Actual endomorphism ring, conductor f and usable maps <span class="trait-origin">Foundation</span></summary><div class="trait-body"><p><strong>What it measures.</strong> The ordinary endomorphism ring is an order in K. An efficiently evaluable map can help legitimate scalar multiplication; suitable symmetries can also reduce generic search constants. Ring existence does not establish map efficiency.</p><p><strong>Security connection and study task.</strong> Keep d_K, v, f and explicit maps in separate fields. Record map field of definition, degree, subgroup action and evaluation cost.</p><a href="#trait-8">Link to topic 8</a></div></details>
+<details class="trait" id="trait-9" data-origin="dissect"><summary>9. cofactor / a01 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Group invariant factors over F_(q^s).</p><p><strong>Security connection and study task.</strong> Write the group as Z/n1 × Z/n2 with n1 dividing n2. Unlike item 4, this describes the whole group, not just one quotient N/r. Check n1*n2=N_s and n1 divides q^s-1.</p><a href="#trait-9">Link to topic 9</a></div></details>
+<details class="trait" id="trait-10" data-origin="dissect"><summary>10. discriminant / a02 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Integer D_pi and its square/fundamental decomposition.</p><p><strong>Security connection and study task.</strong> Factor D_pi to separate v from d_K. This exposes CM structure; it does not factor a secret scalar. Do not infer the actual ring conductor f from v alone.</p><a href="#trait-10">Link to topic 10</a></div></details>
+<details class="trait" id="trait-11" data-origin="dissect"><summary>11. twist order / a03 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Quadratic-twist cardinality and prime factors.</p><p><strong>Security connection and study task.</strong> Relevant when an implementation can process twist points, especially x-only arithmetic. Compare r with the twist&#x27;s largest prime subgroup and review the protocol&#x27;s accepted inputs. Full point validation changes the relevance.</p><a href="#trait-11">Link to topic 11</a></div></details>
+<details class="trait" id="trait-12" data-origin="dissect"><summary>12. kn fact. / a04 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Factors of kN-1 and kN+1.</p><p><strong>Security connection and study task.</strong> Treat these as structural observations. For auxiliary-input DLP results, distinguish the subgroup r from N and require the precise additional-input assumptions; smooth r±1 alone does not break ordinary ECDH.</p><a href="#trait-12">Link to topic 12</a></div></details>
+<details class="trait" id="trait-13" data-origin="dissect"><summary>13. torsion extension / a05 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Fields containing some/all ell-torsion.</p><p><strong>Security connection and study task.</strong> For ell≠p, compare one nonzero torsion point with full E[ell]. The identity is always rational, so “some torsion” must exclude it. Relate extension degrees to Frobenius acting on a two-dimensional vector space.</p><a href="#trait-13">Link to topic 13</a></div></details>
+<details class="trait" id="trait-14" data-origin="dissect"><summary>14. conductor / a06 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Discriminant growth after base extension.</p><p><strong>Security connection and study task.</strong> Compute D_s/D_1 and separate this trait from f in item 8. It tracks changes in the Frobenius order and rational isogeny structure. Extending the field does not itself change the geometric endomorphism ring.</p><a href="#trait-14">Link to topic 14</a></div></details>
+<details class="trait" id="trait-15" data-origin="dissect"><summary>15. embedding / a07 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Multiplicative order of q modulo r, presented through its complement.</p><p><strong>Security connection and study task.</strong> Record the actual k=ord_r(q), not just (r-1)/k. Pairing transfer places the DLP in F_(q^k)*; security depends on that finite-field DLP as well as the source group. A universal cutoff on k is insufficient.</p><a href="#trait-15">Link to topic 15</a></div></details>
+<details class="trait" id="trait-16" data-origin="dissect"><summary>16. class number / a08 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Bounds for the imaginary quadratic field class number.</p><p><strong>Security connection and study task.</strong> Explain ideal classes and their relation to CM/isogenies. Distinguish h(d_K) from h(f²d_K), and both from subgroup cofactor h. Preserve lower/upper bounds rather than reporting them as exact values.</p><a href="#trait-16">Link to topic 16</a></div></details>
+<details class="trait" id="trait-17" data-origin="dissect"><summary>17. small prime order / a12 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Multiplicative order of a small ell modulo N.</p><p><strong>Security connection and study task.</strong> This is an order in (Z/NZ)*, not the order of a curve point. It is defined only when gcd(ell,N)=1. Relate it to scalar arithmetic; do not identify it with embedding degree unless the base is q.</p><a href="#trait-17">Link to topic 17</a></div></details>
+<details class="trait" id="trait-18" data-origin="dissect"><summary>18. division pol. / a22 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Factorization of an ell-division polynomial.</p><p><strong>Security connection and study task.</strong> Polynomial factors encode Frobenius orbits of torsion x-coordinates. Compare factor degrees with item 13. Recovering x does not necessarily recover y over the same field; retain the sign distinction.</p><a href="#trait-18">Link to topic 18</a></div></details>
+<details class="trait" id="trait-19" data-origin="dissect"><summary>19. volcano / a23 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Local ell-isogeny graph structure.</p><p><strong>Security connection and study task.</strong> Relate its levels to ell-adic conductor valuations and splitting in K. Distinguish total volcano depth from the starting curve&#x27;s level. A readily navigable local graph does not by itself solve a prime-subgroup DLP.</p><a href="#trait-19">Link to topic 19</a></div></details>
+<details class="trait" id="trait-20" data-origin="dissect"><summary>20. isogeny extension / a24 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Fields where some/all degree-ell isogenies are rational.</p><p><strong>Security connection and study task.</strong> A rational isogeny needs a Frobenius-stable kernel, not individually rational kernel points. Compare stable lines in E[ell] with fixed vectors: this explains why items 13 and 20 differ.</p><a href="#trait-20">Link to topic 20</a></div></details>
+<details class="trait" id="trait-21" data-origin="dissect"><summary>21. trace fact. / a25 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Prime factors of extension traces t_s.</p><p><strong>Security connection and study task.</strong> Factor signed traces and record zero separately. Smoothness of t_s does not imply smoothness of N_s. Use t_0=2, t_1=t, t_s=t*t_(s-1)-q*t_(s-2) to connect extensions.</p><a href="#trait-21">Link to topic 21</a></div></details>
+<details class="trait" id="trait-22" data-origin="dissect"><summary>22. isogeny neighbors / a28 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Roots of a specialized modular polynomial.</p><p><strong>Security connection and study task.</strong> Study adjacent j-invariants and compare with items 19–20. Distinct roots, repeated roots, rational kernels and distinct isogenies are not interchangeable counts, especially at special j.</p><a href="#trait-22">Link to topic 22</a></div></details>
+<details class="trait" id="trait-23" data-origin="dissect"><summary>23. q torsion / a29 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Torsion over Q of a chosen coefficient lift.</p><p><strong>Security connection and study task.</strong> Lifting residues a,b to integers chooses a new curve over Q. This is not a canonical inverse to reduction. Compare different lifts; finite-field ECDLP hardness does not follow from rational torsion size.</p><a href="#trait-23">Link to topic 23</a></div></details>
+<details class="trait" id="trait-24" data-origin="dissect"><summary>24. hamming x / i04 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Counts at specified coordinate Hamming weights.</p><p><strong>Security connection and study task.</strong> This depends on coordinate representation. Compare equivalent encodings or field bases. A biased point selector or implementation may care about the distribution; the distribution alone is not evidence of key leakage.</p><a href="#trait-24">Link to topic 24</a></div></details>
+<details class="trait" id="trait-25" data-origin="dissect"><summary>25. square 4p-1 / i06 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Squarefree kernels of 4p-1 and 4r-1.</p><p><strong>Security connection and study task.</strong> Record this as an exploratory arithmetic signature. It is neither N&#x27;s factorization nor generally the curve&#x27;s CM discriminant. Explain which integer the paper calls n here: the generator order.</p><a href="#trait-25">Link to topic 25</a></div></details>
+<details class="trait" id="trait-26" data-origin="dissect"><summary>26. pow distance / i07 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Order proximity to binary/word boundaries.</p><p><strong>Security connection and study task.</strong> Investigate uniform scalar generation and integer representation. Modular reduction of random bits can bias scalars; variable-length processing can leak through an implementation. Neither effect follows solely from proximity to a power of two.</p><a href="#trait-26">Link to topic 26</a></div></details>
+<details class="trait" id="trait-27" data-origin="dissect"><summary>27. multiples x / i08 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> x-coordinate of the scalar-divided generator.</p><p><strong>Security connection and study task.</strong> Interpret G/k as [k^(-1) mod r]G when gcd(k,r)=1. A short coordinate may reveal how G was chosen; it does not reveal an unknown private scalar. Keep generator-specific traits separate from curve invariants.</p><a href="#trait-27">Link to topic 27</a></div></details>
+<details class="trait" id="trait-28" data-origin="dissect"><summary>28. x962 inv. / i13 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> a³/b² in the base field.</p><p><strong>Security connection and study task.</strong> Use it to understand seed-to-coefficient generation. Where defined, j=1728(4u)/(4u+27) for u=a³/b². Thus u and j are algebraically dependent, not independent security signals. Handle b=0 separately.</p><a href="#trait-28">Link to topic 28</a></div></details>
+<details class="trait" id="trait-29" data-origin="dissect"><summary>29. brainpool overlap / i14 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Coefficient bit overlap statistic.</p><p><strong>Security connection and study task.</strong> Study generation-induced correlations and compare to the specified generation process. A predictable overlap can be expected behavior. It is not a secret-key relation. State bit ordering and the coefficient representation.</p><a href="#trait-29">Link to topic 29</a></div></details>
+<details class="trait" id="trait-30" data-origin="dissect"><summary>30. weierstrass / i15 <span class="trait-origin">DiSSECT</span></summary><div class="trait-body"><p><strong>What it measures.</strong> Equation coefficients a,b.</p><p><strong>Security connection and study task.</strong> Small coefficients can simplify arithmetic or reflect deliberate generation. Apply an isomorphism to separate coordinate appearance from curve structure. Small a or b is not a stand-alone weakness.</p><a href="#trait-30">Link to topic 30</a></div></details>
+<p id="no-results" hidden>No matching topics. Try another term or clear the filters.</p>
+      </section>
+      <section id="what-factorization-tells-us" aria-labelledby="what-factorization-tells-us-title">
+        <h2 id="what-factorization-tells-us-title">What factorization tells us</h2>
+        <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th scope="col">Object being factored</th><th scope="col">What its factors tell us</th><th scope="col">Security conclusion permitted</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">N and ord(G)</th><td>Decomposition into prime-power components</td><td>Directly relevant to Pohlig–Hellman. Use ord(G), not an unrelated group order, for the target problem.</td></tr>
+            <tr><th scope="row">N_twist</th><td>Available twist subgroup sizes</td><td>Protocol-dependent exposure if twist points are accepted.</td></tr>
+            <tr><th scope="row">r-1 and r+1</th><td>Divisors relevant to multiplicative orders and certain auxiliary-input settings</td><td>Check the exact protocol assumptions; not an unconditional improvement for an ordinary public-key DLP.</td></tr>
+            <tr><th scope="row">t_s</th><td>Divisibility patterns of Frobenius traces</td><td>Useful for structure and recurrence checks; no monotone “smoother means weaker” rule.</td></tr>
+            <tr><th scope="row">D_pi=v²d_K</th><td>Fundamental field discriminant and nonmaximality of Z[pi]</td><td>Endomorphism/isogeny information. Factorization does not establish an efficient extra map or its security effect.</td></tr>
+            <tr><th scope="row">D_s/D_1</th><td>Changes in the Frobenius order under extension</td><td>Structural information, not a private-key factorization.</td></tr>
+            <tr><th scope="row">psi_ell(x) over F_q</th><td>Degrees of irreducible polynomial factors</td><td>Fields of torsion coordinates and Frobenius orbits. This is polynomial factorization, not integer factorization.</td></tr>
+            <tr><th scope="row">Integer lifts of j, Delta_E, a or b</th><td>Properties of selected representatives</td><td>Generally not intrinsic hardness information.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>The basic integer-versus-group distinction matters: a curve point is not an integer with a unique prime factorization. In elliptic-curve index calculus, expressing a point as a sum of factor-base points is a separate decomposition problem. Smoothness of D_pi or t does not establish an easy point decomposition.</p>
+      </section>
+      <section id="a-computed-example" aria-labelledby="a-computed-example-title">
+        <h2 id="a-computed-example-title">A computed example</h2>
+        <p>For y² = x³ + 2x + 3 over F_101, the build enumerates every coordinate pair and adds the identity. It also counts a quadratic twist independently.</p>
+        <pre class="listing">N = 96 = 2^5 × 3
+t = 6
+N_twist = 108 = 2² × 3³
+D_pi = -368 = 4² × (−23)
+d_K = −23, v = 4
+Delta_E = 44 mod 101
+j = 74 mod 101</pre>
+        <p>The group order is smooth. The discriminant decomposition describes the CM field and the Frobenius order; it does not establish the actual endomorphism-ring conductor. Here f divides 4, but further information is required to determine f. A nonzero equation discriminant establishes nonsingularity, not cryptographic security.</p>
+        <aside class="note"><p><span class="note-label">Scope.</span> This is a computed teaching example. No full 30-trait evaluation of cryptographic-size curves or cryptanalytic performance experiment is claimed.</p></aside>
+      </section>
+      <section id="a-six-phase-study-plan" aria-labelledby="a-six-phase-study-plan-title">
+        <h2 id="a-six-phase-study-plan-title">A six-phase study plan</h2>
+        <h3 id="phase-1-build-one-trustworthy-curve-record">Phase 1 — Build one trustworthy curve record</h3>
+        <p>Cover items 1–7, 9, 11 and 15 first. Start with the worked example and several other tiny curves. Then use published parameters for representative prime-field curves as descriptive examples.</p>
+        <p>Deliverable: one page per curve with field, equation, generator, exact order relations, factorization status, trace, twist, j, nonsingularity and embedding-degree status. Each entry includes an explanation in words and one equation linking it to another entry.</p>
+        <p>Completion criteria: all point-count, subgroup and discriminant identities agree; incomplete factorization is visibly incomplete; every security claim names the mathematical or protocol assumption it needs.</p>
+        <h3 id="phase-2-connect-frobenius-cm-and-isogenies">Phase 2 — Connect Frobenius, CM and isogenies</h3>
+        <p>Cover 8, 10, 13–14, 16 and 18–22. Use a tiny ordinary curve so torsion fields and local isogeny graphs can be inspected exactly.</p>
+        <p>Deliverable: a diagram with Frobenius at the center, branches to point count and twist, to the CM field and orders, and to torsion/isogeny field extensions. Accompany it with a small graph distinguishing volcano depth from a curve&#x27;s position.</p>
+        <p>Completion criteria: explain v versus f, field versus order class number, point versus kernel rationality, and polynomial factor degree versus full torsion-point field degree without conflating them.</p>
+        <h3 id="phase-3-explain-generation-and-representation">Phase 3 — Explain generation and representation</h3>
+        <p>Cover 17 and 23–30. Compare a curve with an isomorphic equation, another generator of the same subgroup, its quadratic twist and different integer lifts of its coefficients.</p>
+        <p>Deliverable: a table identifying which traits survive each change. Add a coefficient-generation diagram for X9.62 and Brainpool.</p>
+        <p>Completion criteria: distinguish a curve invariant, an isogeny invariant, a generator property, a coordinate property and a generation fingerprint. Do not label intended generation structure a weakness.</p>
+        <h3 id="phase-4-audit-the-factorization-claims">Phase 4 — Audit the factorization claims</h3>
+        <p>Revisit 2, 10–12, 14–18, 21 and 25. Construct a concept worksheet with one row per factorization object from the preceding table.</p>
+        <p>Deliverable: an evidence ledger with the exact integer or polynomial, factors and exponents, remaining cofactor, proof/primality status, field, source and interpretation. For protocol-conditional results, list the additional information required.</p>
+        <p>Completion criteria: explain why smooth N is different from smooth t, why r±1 requires special care, and why easy polynomial factorization does not itself solve a prime-order DLP.</p>
+        <h3 id="phase-5-compare-distributions-responsibly">Phase 5 — Compare distributions responsibly</h3>
+        <p>Use the complete 30-item record for descriptive comparison of public curve parameters. Match field sizes, curve families, subgroup conditions, generation rules and representation. Avoid treating t, N, D_pi and their deterministic transforms as independent observations.</p>
+        <p>Deliverable: a source-linked comparison report with separate conclusions for established mathematical constraints, implementation questions, expected generation effects and unexplained statistical deviations.</p>
+        <p>Completion criteria: predeclare comparisons, account for multiple testing, preserve missing values, and confirm unusual observations on independent samples. An outlier alone supports an investigation, not a reduced security-bit claim.</p>
+        <h3 id="phase-6-bridge-to-binary-and-koblitz-curves">Phase 6 — Bridge to binary and Koblitz curves</h3>
+        <p>The short-Weierstrass formulas above and the original inventory&#x27;s ordinary prime-field assumptions cannot simply be copied into characteristic two. Use the correct binary equation and invariants. Mark X9.62/Brainpool-specific tests inapplicable where appropriate.</p>
+        <p>For a curve defined over F_2 and studied over F_(2^m), separate the 2-power Frobenius sigma from q-power Frobenius pi=sigma^m. On F_(2^m)-rational points, pi is the identity; sigma can act nontrivially because the equation descends to F_2. This distinction explains why the smaller-field Frobenius supplies useful symmetry.</p>
+        <p>Deliverable: a separate binary-field adapter specification with minimal definition field, trace recurrence, subgroup structure, basis, Frobenius orbit lengths, map field of definition and applicable trait labels. Keep m=83 as the intended high-fidelity descriptive comparison point for the existing research, while making clear that no such evaluation was executed here.</p>
+        <p>Completion criteria: every formula states its characteristic and ordinarity assumptions. No representation reduction is reported as a measured improvement in relation collection or ECDLP security.</p>
+      </section>
+      <section id="evidence-to-retain" aria-labelledby="evidence-to-retain-title">
+        <h2 id="evidence-to-retain-title">Evidence to retain</h2>
+        <p>For each curve and trait retain: stable trait ID; source/version; applicability; raw value; normalized display value; defining field and representation; dependencies; exact/bounded/heuristic status; factorization completeness; verification method; mathematical interpretation; protocol assumptions; evidence URL; and whether any security consequence is established or merely a hypothesis.</p>
+        <p>Do not combine all 30 into a weighted “security score.” Use a structured report. Several traits are deterministic transforms of one another, some are representation dependent, and many have no established monotone connection to DLP hardness.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://eprint.iacr.org/2022/943">Sedláček et al., DiSSECT, AFRICACRYPT 2022, Appendix A</a></li>
+        <li><a href="https://iris.unive.it/retrieve/9a6cda7e-bd55-4457-98ff-210886e00671/956406-1237431.pdf">Vladimír Sedláček, On cryptographic weaknesses related to elliptic curves, Appendix F.1</a></li>
+        <li><a href="https://math.mit.edu/classes/18.783/2023/lectures.html">Andrew Sutherland, MIT 18.783, elliptic curve lecture notes</a></li>
+        <li><a href="https://www.rfc-editor.org/rfc/rfc5639.html">Lochter and Merkle, RFC 5639, Brainpool curves and generation</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="elliptic-curves.html">Elliptic curves, from the equation to the group</a> <span class="family-tag">(Elliptic curves)</span></li>
+        <li><a href="ecdlp.html">The elliptic-curve discrete logarithm problem</a> <span class="family-tag">(Elliptic curves)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>
