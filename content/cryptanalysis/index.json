@@ -64,14 +64,7 @@
     {
       "id": "isogeny",
       "label": "Isogeny attacks",
-      "intro": "Isogeny problems are the newest of these assumptions. SIKE was broken outright in 2022, after it had reached the fourth round of NIST's standardisation process, which is a good reason to read the attacks on its successors closely.",
-      "planned": [
-        {
-          "title": "Meet-in-the-middle and the supersingular path problem",
-          "slug": "supersingular-path-problem",
-          "one_liner": "Delfs&ndash;Galbraith, claw finding, and what the &radic;p barrier means for SQIsign parameters."
-        }
-      ]
+      "intro": "Isogeny problems are the newest of these assumptions. SIKE was broken outright in 2022, after it had reached the fourth round of NIST's standardisation process, which is a good reason to read the attacks on its successors closely."
     }
   ]
 }

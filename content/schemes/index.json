@@ -1,0 +1,508 @@
+{
+  "title": "Schemes · Isogeny Labs",
+  "description": "A catalogue of cryptographic schemes, from RSA and elliptic curves to ML-KEM, ML-DSA, SLH-DSA and SQIsign: what each rests on, its standard, its sizes, the best known attack, and its status against quantum computers.",
+  "heading": "Schemes",
+  "standfirst": "What each widely used scheme rests on, what it costs, and where it stands against classical and quantum attacks. <a href=\"ml-kem.html\">ML-KEM</a>, <a href=\"ml-dsa.html\">ML-DSA</a> and <a href=\"sqisign.html\">SQIsign</a> have full pages; the rest are summarised here, with links to the attacks that set their parameters.",
+  "glance_heading": "At a glance",
+  "glance_blocks": [
+    {
+      "p": "\"Broken by Shor's algorithm\" means broken by a large fault-tolerant quantum computer, which does not exist yet. It is the reason for the move away from RSA and elliptic curves, and the reason key exchange moves first: traffic recorded today can be decrypted later, while a signature only has to resist forgery for as long as it is relied on."
+    }
+  ],
+  "groups": [
+    {
+      "id": "key-establishment",
+      "label": "Key establishment",
+      "short": "Key establishment",
+      "intro": "How two parties agree on a shared secret over a public channel: Diffie&ndash;Hellman key exchange, or a key-encapsulation mechanism (KEM), in which one side encrypts a fresh key to the other's public key.",
+      "entries": [
+        {
+          "id": "ecdh",
+          "name": "ECDH (X25519, P-256)",
+          "summary": "Diffie&ndash;Hellman on an elliptic curve. It is the standard key exchange in TLS 1.3, SSH and Signal, usually on Curve25519 as X25519.",
+          "rests_on_short": "Elliptic-curve discrete logarithm",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The elliptic-curve Diffie&ndash;Hellman problem, which as far as anyone knows is as hard as the <a href=\"../notes/ecdlp.html\">ECDLP</a>",
+            "Standards": "RFC 7748 (X25519 and X448); NIST SP 800-56A with the curves of SP 800-186",
+            "Sizes": "X25519: 32-byte public keys and shared secret. P-256: 33-byte compressed or 65-byte uncompressed public keys",
+            "Best known attack": "Pollard's rho: about 2<sup>126</sup> to 2<sup>128</sup> group operations for 256-bit curves",
+            "Quantum": "Shor's algorithm; Roetteler et al. estimate about 2,330 logical qubits for P-256"
+          },
+          "see": [
+            "notes/elliptic-curves",
+            "notes/ecdlp",
+            "cryptanalysis/pollard-rho"
+          ]
+        },
+        {
+          "id": "ffdh",
+          "name": "Finite-field Diffie&ndash;Hellman",
+          "summary": "Diffie and Hellman's original 1976 key exchange, in the multiplicative group of a prime field. Largely replaced by ECDH, which needs far smaller parameters for the same strength.",
+          "rests_on_short": "Discrete logarithm in F<sub>p</sub><sup>&times;</sup>",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The Diffie&ndash;Hellman problem in F<sub>p</sub><sup>&times;</sup>, attacked through the discrete logarithm",
+            "Standards": "RFC 7919 named groups for TLS; NIST SP 800-56A",
+            "Sizes": "ffdhe3072: 384-byte public values",
+            "Best known attack": "The number field sieve, largely a precomputation on the prime that is then reused for every key; this is what the Logjam attack exploited. The record is a 795-bit prime field (2019)",
+            "Quantum": "Shor's algorithm"
+          },
+          "see": [
+            "cryptanalysis/number-field-sieve"
+          ]
+        },
+        {
+          "id": "ml-kem",
+          "name": "ML-KEM",
+          "summary": "The module-lattice KEM standardised in 2024, formerly CRYSTALS-Kyber. It is what replaces ECDH, at first alongside it as a hybrid.",
+          "rests_on_short": "Module learning with errors",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Module learning with errors (MLWE)",
+            "Standards": "FIPS 203 (August 2024)",
+            "Sizes": "ML-KEM-768: 1,184-byte encapsulation key, 1,088-byte ciphertext",
+            "Best known attack": "Lattice reduction",
+            "Quantum": "No known attack beyond small speedups to lattice sieving"
+          },
+          "page": "ml-kem"
+        },
+        {
+          "id": "hqc",
+          "name": "HQC",
+          "summary": "A code-based KEM that NIST selected in March 2025 as a backup to ML-KEM, chosen because it rests on different mathematics.",
+          "rests_on_short": "Decoding quasi-cyclic codes",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Decoding random quasi-cyclic codes",
+            "Standards": "Selected in NIST IR 8545 (March 2025). NIST expects to publish a draft standard and to finalise it in 2027",
+            "Sizes": "HQC-128: 2,249-byte public key, 4,497-byte ciphertext",
+            "Best known attack": "Information-set decoding",
+            "Quantum": "No known efficient attack"
+          }
+        },
+        {
+          "id": "classic-mceliece",
+          "name": "Classic McEliece",
+          "summary": "McEliece's 1978 code-based system, the oldest public-key design still considered secure: very large public keys and very small ciphertexts.",
+          "rests_on_short": "Decoding binary Goppa codes",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Decoding a random-looking binary Goppa code",
+            "Standards": "Under ISO standardisation. NIST's 2025 report (IR 8545) dropped it from NIST's current process, citing limited interest and the risk of an incompatible parallel standard, and said NIST may later base a standard on ISO's",
+            "Sizes": "mceliece348864: 261,120-byte public key, 96-byte ciphertext",
+            "Best known attack": "Information-set decoding, which decades of work have improved only modestly",
+            "Quantum": "No known efficient attack"
+          }
+        },
+        {
+          "id": "csidh",
+          "name": "CSIDH",
+          "summary": "An isogeny-based key exchange with small keys and a property no lattice scheme offers: non-interactive key exchange, like Diffie&ndash;Hellman.",
+          "rests_on_short": "Inverting a class-group action",
+          "quantum_short": "Subexponential attack (Kuperberg)",
+          "facts": {
+            "Rests on": "Inverting a commutative class-group action on supersingular curves over F<sub>p</sub>",
+            "Standards": "None; a research scheme",
+            "Sizes": "CSIDH-512: 64-byte public keys",
+            "Best known attack": "Classically about p<sup>1/4</sup>; quantumly, Kuperberg's subexponential algorithm, whose concrete cost is disputed",
+            "Quantum": "Subexponential; CSIDH-512 is widely considered too small"
+          },
+          "see": [
+            "cryptanalysis/kuperberg-csidh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "signatures",
+      "label": "Signatures",
+      "short": "Signature",
+      "intro": "How a message is bound to a key, so that anyone with the public key can check it. Post-quantum signatures cost more bytes than the schemes they replace, by very different amounts:",
+      "chart": {
+        "caption": "Public key and signature sizes at the lowest standard security level of each scheme. SQIsign is at its round-3 parameters (version 3.0, September 2026); the ECDSA public key is compressed and its signature is the raw pair (r, s).",
+        "table_caption": "The values plotted above.",
+        "rows": [
+          {
+            "name": "Ed25519",
+            "public_key": 32,
+            "signature": 64,
+            "status": "RFC 8032, FIPS 186-5"
+          },
+          {
+            "name": "ECDSA P-256",
+            "public_key": 33,
+            "signature": 64,
+            "status": "FIPS 186-5"
+          },
+          {
+            "name": "SQIsign I",
+            "public_key": 83,
+            "signature": 200,
+            "status": "NIST round 3 candidate"
+          },
+          {
+            "name": "RSA-3072",
+            "public_key": 384,
+            "signature": 384,
+            "status": "RFC 8017, FIPS 186-5"
+          },
+          {
+            "name": "FN-DSA-512",
+            "public_key": 897,
+            "signature": 666,
+            "status": "FIPS 206 in preparation"
+          },
+          {
+            "name": "ML-DSA-44",
+            "public_key": 1312,
+            "signature": 2420,
+            "status": "FIPS 204"
+          },
+          {
+            "name": "SLH-DSA-128s",
+            "public_key": 32,
+            "signature": 7856,
+            "status": "FIPS 205"
+          },
+          {
+            "name": "SLH-DSA-128f",
+            "public_key": 32,
+            "signature": 17088,
+            "status": "FIPS 205"
+          }
+        ]
+      },
+      "entries": [
+        {
+          "id": "rsa",
+          "name": "RSA",
+          "kind": "Signature and encryption",
+          "summary": "The first widely deployed public-key system (1977), used for both signatures and encryption, and still common for signatures in web certificates.",
+          "rests_on_short": "Factoring",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The RSA problem, taking e-th roots modulo N = pq, which is no harder than factoring N",
+            "Standards": "PKCS #1 v2.2 (RFC 8017); FIPS 186-5 for signatures; SP 800-56B for key establishment",
+            "Sizes": "RSA-2048: 256-byte modulus and signature; RSA-3072: 384 bytes",
+            "Best known attack": "The number field sieve; the largest public factorisation is RSA-250, 829 bits, in 2020",
+            "Quantum": "Shor's algorithm"
+          },
+          "see": [
+            "cryptanalysis/number-field-sieve"
+          ]
+        },
+        {
+          "id": "ecdsa",
+          "name": "ECDSA",
+          "summary": "DSA on an elliptic curve, used in TLS certificates, hardware tokens, and the transactions of Bitcoin and Ethereum. Each signature uses a fresh secret nonce, and a nonce that leaks even a few bits loses the key.",
+          "rests_on_short": "Elliptic-curve discrete logarithm",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The ECDLP, and a uniformly random secret nonce for every signature",
+            "Standards": "FIPS 186-5; SEC 1; ANSI X9.62",
+            "Sizes": "P-256: 64-byte signature (r, s); 33-byte compressed public key",
+            "Best known attack": "Pollard's rho on the curve, about 2<sup>128</sup>. In practice, keys are lost to biased or leaked nonces through the hidden number problem",
+            "Quantum": "Shor's algorithm"
+          },
+          "see": [
+            "cryptanalysis/hidden-number-problem",
+            "notes/ecdlp"
+          ]
+        },
+        {
+          "id": "eddsa",
+          "name": "EdDSA (Ed25519, Ed448)",
+          "summary": "Schnorr-style signatures on Edwards curves, with the nonce derived deterministically from the key and message, which removes the most common way ECDSA keys are lost.",
+          "rests_on_short": "Elliptic-curve discrete logarithm",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The ECDLP on Curve25519 or Curve448",
+            "Standards": "RFC 8032; added to FIPS 186-5 in 2023",
+            "Sizes": "Ed25519: 32-byte public key, 64-byte signature",
+            "Best known attack": "Pollard's rho, about 2<sup>126</sup> for Ed25519. Deterministic signing is exposed to fault attacks instead",
+            "Quantum": "Shor's algorithm"
+          },
+          "see": [
+            "notes/elliptic-curves"
+          ]
+        },
+        {
+          "id": "schnorr-bip340",
+          "name": "Schnorr signatures (BIP-340)",
+          "summary": "Schnorr signatures on secp256k1, introduced to Bitcoin with the Taproot upgrade.",
+          "rests_on_short": "Elliptic-curve discrete logarithm",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The ECDLP on secp256k1",
+            "Standards": "Bitcoin Improvement Proposal 340",
+            "Sizes": "32-byte public key (x-coordinate only), 64-byte signature",
+            "Best known attack": "Pollard's rho, about 2<sup>127</sup> using the curve's extra automorphisms",
+            "Quantum": "Shor's algorithm"
+          },
+          "see": [
+            "notes/ecdlp"
+          ]
+        },
+        {
+          "id": "bls",
+          "name": "BLS signatures",
+          "summary": "Pairing-based signatures that aggregate: many signatures, even on different messages, combine into one short signature. Ethereum's consensus layer depends on this.",
+          "rests_on_short": "Diffie&ndash;Hellman in pairing groups",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The computational Diffie&ndash;Hellman problem in the groups of a pairing, in practice on the curve BLS12-381",
+            "Standards": "An IRTF CFRG draft (draft-irtf-cfrg-bls-signature)",
+            "Sizes": "In Ethereum's choice, 48-byte public keys and 96-byte signatures",
+            "Best known attack": "Rho on the curve groups, and the number field sieve in the pairing's target field, which has embedding degree 12",
+            "Quantum": "Shor's algorithm"
+          },
+          "see": [
+            "notes/ecdlp"
+          ]
+        },
+        {
+          "id": "ml-dsa",
+          "name": "ML-DSA",
+          "summary": "The module-lattice signature standardised in 2024, formerly CRYSTALS-Dilithium: NIST's main replacement for RSA and ECDSA signatures.",
+          "rests_on_short": "Module-LWE and module-SIS",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Module learning with errors for the key; module short integer solutions for forgery",
+            "Standards": "FIPS 204 (August 2024)",
+            "Sizes": "ML-DSA-65: 1,952-byte public key, 3,309-byte signature",
+            "Best known attack": "Lattice reduction",
+            "Quantum": "No known attack beyond small speedups to lattice sieving"
+          },
+          "page": "ml-dsa"
+        },
+        {
+          "id": "fn-dsa",
+          "name": "FN-DSA (Falcon)",
+          "summary": "Hash-and-sign signatures over NTRU lattices: the smallest public key and signature of NIST's lattice schemes, with a harder signing algorithm.",
+          "rests_on_short": "Short vectors in NTRU lattices",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Finding short solutions to linear equations over NTRU lattices (NTRU-SIS)",
+            "Standards": "FIPS 206, in preparation; NIST describes the process as under way",
+            "Sizes": "Falcon-512: 897-byte public key, 666-byte signature",
+            "Best known attack": "Lattice reduction. Signing samples a discrete Gaussian with floating-point arithmetic, which makes safe constant-time implementations harder than for ML-DSA",
+            "Quantum": "No known efficient attack"
+          }
+        },
+        {
+          "id": "slh-dsa",
+          "name": "SLH-DSA (SPHINCS+)",
+          "summary": "Signatures built from a hash function and nothing else. It is the most conservative assumption available, paid for in signature size and signing time.",
+          "rests_on_short": "Hash functions only",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Security properties of the hash function, SHA-2 or SHAKE",
+            "Standards": "FIPS 205 (August 2024)",
+            "Sizes": "SLH-DSA-128s: 32-byte public key, 7,856-byte signature. The 128f variant signs faster with 17,088-byte signatures",
+            "Best known attack": "Generic attacks on the hash function",
+            "Quantum": "Only generic speedups, which the parameters account for"
+          }
+        },
+        {
+          "id": "lms-xmss",
+          "name": "LMS and XMSS",
+          "summary": "Stateful hash-based signatures: small and fast, but each one-time key must never be used twice, so the signer has to keep reliable state.",
+          "rests_on_short": "Hash functions only",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Security properties of the hash function",
+            "Standards": "RFC 8554 (LMS) and RFC 8391 (XMSS); NIST SP 800-208, for uses such as firmware signing where state can be managed",
+            "Sizes": "Depend on the tree height and Winternitz parameter",
+            "Best known attack": "Generic attacks on the hash, or, in practice, a signer that reuses state",
+            "Quantum": "Only generic speedups"
+          }
+        },
+        {
+          "id": "sqisign",
+          "name": "SQIsign",
+          "summary": "Isogeny-based signatures with by far the smallest public key and signature of any post-quantum candidate, and slow, intricate signing.",
+          "rests_on_short": "Supersingular endomorphism rings",
+          "quantum_short": "No known efficient attack",
+          "facts": {
+            "Rests on": "Computing the endomorphism ring of a supersingular elliptic curve",
+            "Standards": "A round-3 candidate in NIST's additional-signatures process (NIST IR 8610, May 2026)",
+            "Sizes": "Version 3.0, level I: 83-byte public key, 200-byte signature",
+            "Best known attack": "Wesolowski's 2026 algorithm, in time and memory p<sup>1/3+o(1)</sup>; version 3.0 raised its parameters in response",
+            "Quantum": "No known efficient attack"
+          },
+          "page": "sqisign"
+        }
+      ]
+    },
+    {
+      "id": "symmetric",
+      "label": "Symmetric ciphers and hashes",
+      "short": "Symmetric",
+      "intro": "Schemes with no public key. They carry the bulk of the data once a key is agreed, and quantum computers threaten them far less: Grover's algorithm at most square-roots the cost of a key search, and parallelises badly.",
+      "entries": [
+        {
+          "id": "aes",
+          "name": "AES",
+          "kind": "Block cipher",
+          "summary": "The block cipher behind most bulk encryption, usually in GCM mode.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Key search sped up by Grover, not broken",
+          "facts": {
+            "Rests on": "Twenty-five years of cryptanalysis; there is no reduction to a number-theoretic problem",
+            "Standards": "FIPS 197",
+            "Sizes": "128-bit block; 128-, 192- or 256-bit key",
+            "Best known attack": "Biclique cryptanalysis recovers an AES-128 key in about 2<sup>126.1</sup> operations, four times faster than brute force. In practice, table-based software leaks through cache timing; use AES instructions or bitsliced code",
+            "Quantum": "NIST uses key search on AES-128 as the benchmark for its lowest post-quantum security category"
+          }
+        },
+        {
+          "id": "chacha20-poly1305",
+          "name": "ChaCha20-Poly1305",
+          "kind": "Authenticated cipher",
+          "summary": "A stream cipher and a one-time authenticator, designed to be fast and constant-time in software without special instructions.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Key search sped up by Grover, not broken",
+          "facts": {
+            "Rests on": "Cryptanalysis of the ChaCha permutation, and the security of Poly1305 as a one-time authenticator",
+            "Standards": "RFC 8439",
+            "Sizes": "256-bit key, 96-bit nonce, 128-bit tag",
+            "Best known attack": "Published attacks reach 7 of ChaCha's 20 rounds",
+            "Quantum": "Grover's algorithm on key search"
+          }
+        },
+        {
+          "id": "sha-2",
+          "name": "SHA-2",
+          "kind": "Hash function",
+          "summary": "The SHA-256 and SHA-512 family, used almost everywhere a hash is needed.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Generic speedups only",
+          "facts": {
+            "Rests on": "Cryptanalysis of the compression function",
+            "Standards": "FIPS 180-4",
+            "Sizes": "224- to 512-bit output",
+            "Best known attack": "None on the full functions; collisions exist only for reduced-round versions. The Merkle&ndash;Damg&aring;rd structure allows length extension, which is why keyed hashing uses HMAC",
+            "Quantum": "Generic speedups only"
+          }
+        },
+        {
+          "id": "sha-3",
+          "name": "SHA-3 and SHAKE",
+          "kind": "Hash function",
+          "summary": "Keccak, a sponge construction chosen by public competition in 2012. Its extendable-output forms SHAKE128 and SHAKE256 run inside ML-KEM, ML-DSA and SLH-DSA.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Generic speedups only",
+          "facts": {
+            "Rests on": "Cryptanalysis of the Keccak-f permutation",
+            "Standards": "FIPS 202",
+            "Sizes": "224- to 512-bit output, or any length for SHAKE",
+            "Best known attack": "Only reduced-round versions",
+            "Quantum": "Generic speedups only"
+          }
+        }
+      ]
+    },
+    {
+      "id": "retired",
+      "label": "Broken or retired",
+      "short": "Retired",
+      "intro": "Schemes that fell, and what finally ended them. Most of these failures were visible years before they became practical.",
+      "entries": [
+        {
+          "id": "sike",
+          "name": "SIKE",
+          "kind": "Key establishment",
+          "summary": "Supersingular isogeny key encapsulation, a fourth-round candidate in NIST's process, broken in 2022 in about an hour on a laptop.",
+          "rests_on_short": "Isogenies with torsion images",
+          "quantum_short": "Broken classically",
+          "facts": {
+            "Rests on": "An isogeny problem made easier by the torsion-point images the protocol publishes",
+            "What ended it": "The torsion-point attacks of Castryck and Decru, Maino and Martindale, and Robert, all in 2022",
+            "Status": "Withdrawn; the attack is polynomial-time, so larger parameters do not help"
+          },
+          "see": [
+            "cryptanalysis/sidh-torsion-attacks"
+          ]
+        },
+        {
+          "id": "rainbow",
+          "name": "Rainbow",
+          "kind": "Signature",
+          "summary": "A multivariate signature scheme and finalist in NIST's third round, broken in 2022.",
+          "rests_on_short": "Multivariate quadratic equations",
+          "quantum_short": "Broken classically",
+          "facts": {
+            "Rests on": "Solving structured systems of multivariate quadratic equations",
+            "What ended it": "Beullens' 2022 key-recovery attack, which broke the level-I parameters in about a weekend on a laptop",
+            "Status": "Not selected by NIST"
+          }
+        },
+        {
+          "id": "dsa",
+          "name": "DSA",
+          "kind": "Signature",
+          "summary": "The original Digital Signature Algorithm (1991), over a prime field.",
+          "rests_on_short": "Discrete logarithm in F<sub>p</sub><sup>&times;</sup>",
+          "quantum_short": "Broken by Shor's algorithm",
+          "facts": {
+            "Rests on": "The discrete logarithm in a subgroup of F<sub>p</sub><sup>&times;</sup>, and a random nonce per signature",
+            "What ended it": "Not an attack: FIPS 186-5 (2023) no longer approves DSA for generating signatures, only for verifying old ones",
+            "Status": "Retired in favour of ECDSA, EdDSA and ML-DSA"
+          },
+          "see": [
+            "cryptanalysis/hidden-number-problem"
+          ]
+        },
+        {
+          "id": "sha-1",
+          "name": "SHA-1",
+          "kind": "Hash function",
+          "summary": "The 160-bit predecessor of SHA-2.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Broken classically",
+          "facts": {
+            "What ended it": "The first public collision in 2017 (SHAttered), then chosen-prefix collisions in 2020, which make forged certificates practical",
+            "Status": "NIST plans to retire it from all uses by 31 December 2030"
+          }
+        },
+        {
+          "id": "md5",
+          "name": "MD5",
+          "kind": "Hash function",
+          "summary": "A 128-bit hash function from 1992.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Broken classically",
+          "facts": {
+            "What ended it": "Collisions found by Wang and collaborators in 2004, and chosen-prefix collisions from 2007; the Flame malware used one to forge a Microsoft code-signing certificate in 2012",
+            "Status": "Broken for any use that needs collision resistance"
+          }
+        },
+        {
+          "id": "des-3des",
+          "name": "DES and Triple DES",
+          "kind": "Block cipher",
+          "summary": "The 1977 block cipher standard and its tripled extension.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Broken classically",
+          "facts": {
+            "What ended it": "DES's 56-bit key was searched exhaustively in public in 1998. Triple DES's 64-bit block allows birthday attacks on long sessions, demonstrated as Sweet32 in 2016",
+            "Status": "NIST disallowed Triple DES for encryption after 2023"
+          }
+        },
+        {
+          "id": "rc4",
+          "name": "RC4",
+          "kind": "Stream cipher",
+          "summary": "A stream cipher once used in both TLS and WEP.",
+          "rests_on_short": "Resistance to cryptanalysis",
+          "quantum_short": "Broken classically",
+          "facts": {
+            "What ended it": "Biases in its keystream, which make plaintext recovery from many encryptions practical",
+            "Status": "Prohibited in TLS since 2015 (RFC 7465)"
+          }
+        }
+      ]
+    }
+  ]
+}

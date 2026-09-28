@@ -1,0 +1,229 @@
+{
+  "slug": "index-calculus-end-to-end",
+  "position": 2,
+  "group": "worked-examples",
+  "compute": "index_calculus",
+  "title": "Index calculus, end to end",
+  "short_title": "Index calculus, end to end",
+  "one_liner": "The whole algorithm run twice with every number shown: first in the multiplicative group of a prime field, then on an elliptic curve over F<sub>p<sup>2</sup></sub> using Semaev's summation polynomial.",
+  "index_meta": "Worked example · F<sub>{{a_p}}</sub><sup>&times;</sup> and a curve over F<sub>{{b_p}}<sup>2</sup></sub>",
+  "description": "Index calculus worked end to end: relation collection, linear algebra and descent in the multiplicative group of a prime field, then Gaudry's index calculus on an elliptic curve over F_p^2 with Semaev's summation polynomial, Weil restriction and a resultant.",
+  "standfirst": "Index calculus is the attack that makes RSA and finite-field Diffie&ndash;Hellman keys large, and the attack that elliptic curves are chosen to escape. This note runs it end to end, twice, on groups small enough to show every relation.",
+  "facts": {
+    "Part 1": "Find x with {{a_g}}<sup>x</sup> &equiv; {{a_h}} (mod {{a_p}}), using the primes up to {{a_bound}}",
+    "Part 2": "Find k with Q = kP on y<sup>2</sup> = x<sup>3</sup> + x + (1 + t) over F<sub>{{b_p}}<sup>2</sup></sub>, a group of {{b_n}} points",
+    "Checked": "Every logarithm on this page is verified by exponentiation or scalar multiplication each time the site is built",
+    "What it shows": "The mechanics. At these sizes neither part beats a generic attack, and Part 2 would not at any size; the last section says why"
+  },
+  "sections": [
+    {
+      "heading": "The idea",
+      "blocks": [
+        {
+          "p": "Choose a small set of group elements, the factor base. Find many random group elements whose logarithm you know and which can be written as products of factor-base elements; each one gives a linear equation in the unknown logarithms of the factor base. Solve those equations. Then write the target as a product of factor-base elements too, and its logarithm follows. The <a href=\"../cryptanalysis/number-field-sieve.html\">number field sieve</a> is a far more elaborate version of the same plan."
+        }
+      ]
+    },
+    {
+      "heading": "Part 1: the instance",
+      "blocks": [
+        {
+          "p": "The group is the nonzero integers modulo p = {{a_p}} under multiplication. This p is a safe prime: p &minus; 1 = 2 &middot; {{a_q}} with {{a_q}} prime, which will make the linear algebra simple. g = {{a_g}} generates the group. The target is h = {{a_h}}, and the task is to find x with {{a_g}}<sup>x</sup> &equiv; {{a_h}} (mod {{a_p}})."
+        },
+        {
+          "p": "The factor base is the primes up to {{a_bound}}: {{a_base}}. An integer is {{a_bound}}-smooth if all its prime factors are in that list."
+        }
+      ]
+    },
+    {
+      "heading": "Collecting relations",
+      "blocks": [
+        {
+          "p": "Pick a random exponent e, compute g<sup>e</sup> mod p as an ordinary integer between 1 and p &minus; 1, and try to factor it over the factor base. If it factors as &prod; &ell;<sub>i</sub><sup>c<sub>i</sub></sup>, then taking logarithms gives one linear equation:"
+        },
+        {
+          "math": "e &equiv; c<sub>1</sub>&middot;log 2 + c<sub>2</sub>&middot;log 3 + &hellip; + c<sub>6</sub>&middot;log 13 &nbsp; (mod {{a_pm1}})",
+          "label": "Logarithms to base g live modulo the group order, p &minus; 1."
+        },
+        {
+          "computed": "a_relations"
+        },
+        {
+          "p": "The search tried {{a_tried}} exponents and kept {{a_found}}, a rate of {{a_rate}}%. Exactly {{a_smooth_count}} of the {{a_pm1}} residues are {{a_bound}}-smooth, {{a_exact_rate}}%, so about {{a_expected_found}} hits were expected and this run found {{a_luck}}. The search stops as soon as its relations determine all {{a_base_size}} logarithms; here that took {{a_found}}."
+        }
+      ]
+    },
+    {
+      "heading": "Solving for the factor base",
+      "blocks": [
+        {
+          "p": "The equations hold modulo {{a_pm1}} = 2 &middot; {{a_q}}, which is not a prime, so they are solved in two pieces. Modulo {{a_q}} they are ordinary linear equations over a field, and Gaussian elimination gives each logarithm modulo {{a_q}}. Modulo 2 there is a shortcut: since g generates the group, log &ell; is even exactly when &ell; is a square modulo p, which the Legendre symbol decides. The Chinese remainder theorem then combines the two residues into the logarithm modulo {{a_pm1}}."
+        },
+        {
+          "computed": "a_logs"
+        }
+      ]
+    },
+    {
+      "heading": "The individual logarithm",
+      "blocks": [
+        {
+          "p": "The target itself is not smooth, so multiply it by a random known power of g until the product is. After {{a_s_tries}} tries, s = {{a_s}} works:"
+        },
+        {
+          "math": "{{a_h}} &middot; {{a_g}}<sup>{{a_s}}</sup> &equiv; {{a_target_value}} = {{a_target_factor}} &nbsp; (mod {{a_p}})",
+          "label": "So x + s is a sum of factor-base logarithms."
+        },
+        {
+          "math": "x &equiv; {{a_target_expr}} &minus; {{a_s}} &equiv; {{a_x}} &nbsp; (mod {{a_pm1}})",
+          "label": "The build checks that {{a_g}}<sup>{{a_x}}</sup> &equiv; {{a_h}} (mod {{a_p}})."
+        }
+      ]
+    },
+    {
+      "heading": "Why this is subexponential",
+      "blocks": [
+        {
+          "p": "The factor-base bound B is a trade-off. A larger B makes random residues more likely to be smooth, but adds unknowns, so more relations and a bigger linear system are needed. Balancing the two, using the known density of smooth numbers, gives a running time of L<sub>p</sub>[1/2, c] for this basic method: slower than polynomial, much faster than the &radic;p of a generic attack. The number field sieve reaches L<sub>p</sub>[1/3, 1.923] by making the numbers that must be smooth much smaller."
+        },
+        {
+          "p": "Everything above depends on one fact: an element of F<sub>p</sub><sup>&times;</sup> is also an integer, and integers factor. A point on an elliptic curve is not a product of anything. Part 2 is about what can be used instead."
+        }
+      ]
+    },
+    {
+      "heading": "Part 2: an elliptic curve",
+      "blocks": [
+        {
+          "p": "Gaudry's idea is to use a subfield. Over F<sub>q<sup>n</sup></sub>, take the factor base to be the points whose x-coordinate lies in the subfield F<sub>q</sub>, and try to write a random point as a sum of n of them. The smallest case is n = 2. Here q = {{b_p}}, and F<sub>{{b_p}}<sup>2</sup></sub> is built as F<sub>{{b_p}}</sub>(t) with t<sup>2</sup> = {{b_r}}, so its elements are u + vt with u and v in F<sub>{{b_p}}</sub>."
+        },
+        {
+          "p": "The curve is y<sup>2</sup> = x<sup>3</sup> + x + (1 + t). Its group has {{b_n}} points. That number is prime, it lies in the Hasse interval [{{b_hasse_lo}}, {{b_hasse_hi}}], and the build finds a point of that order; since the interval is narrower than the order, the curve has exactly {{b_n}} points. P = {{b_P}}, and the target is Q = {{b_Q}}."
+        },
+        {
+          "p": "The factor base: for each x in F<sub>{{b_p}}</sub>, the curve has two points with that x-coordinate or none. {{b_classes}} of the {{b_p}} values give points, {{b_points}} points in all, about the half that one would expect. Since log(&minus;P) = &minus;log P, each pair &plusmn;P contributes one unknown. Write P<sub>x</sub> for the member of the pair with x-coordinate x that the code treats as positive."
+        }
+      ]
+    },
+    {
+      "heading": "Decomposing one point",
+      "blocks": [
+        {
+          "p": "Take R = mP for a random m, here m = {{b_a}}. Its x-coordinate is x<sub>R</sub> = {{b_xR}}. The question is whether R = &plusmn;P<sub>x<sub>1</sub></sub> &plusmn; P<sub>x<sub>2</sub></sub> for some x<sub>1</sub>, x<sub>2</sub> in F<sub>{{b_p}}</sub>. Semaev's third summation polynomial answers exactly this: for the curve y<sup>2</sup> = x<sup>3</sup> + ax + b,"
+        },
+        {
+          "math": "S<sub>3</sub>(x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>) = (x<sub>1</sub> &minus; x<sub>2</sub>)<sup>2</sup>x<sub>3</sub><sup>2</sup> &minus; 2((x<sub>1</sub> + x<sub>2</sub>)(x<sub>1</sub>x<sub>2</sub> + a) + 2b)x<sub>3</sub> + (x<sub>1</sub>x<sub>2</sub> &minus; a)<sup>2</sup> &minus; 4b(x<sub>1</sub> + x<sub>2</sub>)",
+          "label": "S<sub>3</sub> vanishes exactly when there are points with these x-coordinates satisfying &plusmn;P<sub>1</sub> &plusmn; P<sub>2</sub> &plusmn; P<sub>3</sub> = O. The build checks this against the group law before using it."
+        },
+        {
+          "p": "The order of x<sub>1</sub> and x<sub>2</sub> does not matter, so rewrite S<sub>3</sub> in e<sub>1</sub> = x<sub>1</sub> + x<sub>2</sub> and e<sub>2</sub> = x<sub>1</sub>x<sub>2</sub>, which lowers the degrees:"
+        },
+        {
+          "math": "(e<sub>1</sub><sup>2</sup> &minus; 4e<sub>2</sub>)x<sub>3</sub><sup>2</sup> &minus; 2(e<sub>1</sub>(e<sub>2</sub> + a) + 2b)x<sub>3</sub> + (e<sub>2</sub> &minus; a)<sup>2</sup> &minus; 4be<sub>1</sub> = 0"
+        },
+        {
+          "p": "Now substitute x<sub>3</sub> = x<sub>R</sub> and the curve's a and b. Every coefficient is an element u + vt of F<sub>{{b_p}}<sup>2</sup></sub>, and the unknowns e<sub>1</sub>, e<sub>2</sub> are meant to lie in F<sub>{{b_p}}</sub>, so the equation holds only if the parts with and without t vanish separately. That splits one equation over F<sub>{{b_p}}<sup>2</sup></sub> into two over F<sub>{{b_p}}</sub>: this is the Weil restriction. For this R the two equations are"
+        },
+        {
+          "math": "C<sub>1</sub>: &nbsp; ({{b_alpha}})&middot;e<sub>2</sub> + {{b_beta}} = 0<br>C<sub>0</sub>: &nbsp; e<sub>2</sub><sup>2</sup> + ({{b_delta}})&middot;e<sub>2</sub> + {{b_phi}} = 0",
+          "label": "All coefficients modulo {{b_p}}. C<sub>1</sub> is linear in e<sub>2</sub> because the e<sub>2</sub><sup>2</sup> term of S<sub>3</sub> has no t part."
+        },
+        {
+          "p": "Eliminating e<sub>2</sub> between them, by taking the resultant, leaves one polynomial in e<sub>1</sub>. For the equations above it is &beta;<sup>2</sup> &minus; &alpha;&beta;&delta; + &alpha;<sup>2</sup>&phi;, where C<sub>1</sub> = &alpha;e<sub>2</sub> + &beta; and C<sub>0</sub> = e<sub>2</sub><sup>2</sup> + &delta;e<sub>2</sub> + &phi;:"
+        },
+        {
+          "math": "{{b_res}} = 0",
+          "label": "At this size the code simply tries all {{b_p}} values of e<sub>1</sub>; at real sizes one computes gcd(f, e<sub>1</sub><sup>q</sup> &minus; e<sub>1</sub>) instead."
+        },
+        {
+          "p": "It has {{b_roots_phrase}}. From C<sub>1</sub>, e<sub>2</sub> = {{b_e2}}. Then x<sub>1</sub> and x<sub>2</sub> are the roots of X<sup>2</sup> &minus; {{b_e1}}X + {{b_e2}}, which are {{b_x1}} and {{b_x2}}, both in F<sub>{{b_p}}</sub> and both with points on the curve. Checking the four sign choices gives R = {{b_shown_expr}}, and so the relation"
+        },
+        {
+          "math": "{{b_a}} &equiv; {{b_shown_log_expr}} &nbsp; (mod {{b_n_plain}})",
+          "label": "One equation in two unknowns, from one random multiple of P."
+        },
+        {
+          "p": "In general this step is a polynomial system: for n factor-base points it has n unknowns and degree 2<sup>n&minus;1</sup> in each, solved with Gr&ouml;bner bases rather than one resultant. The <a href=\"../cryptanalysis/summation-polynomials.html\">summation polynomials page</a> covers what that costs."
+        }
+      ]
+    },
+    {
+      "heading": "How often a point decomposes",
+      "blocks": [
+        {
+          "p": "The code repeated this for random multiples of P until it had {{b_rows_minus_cols}} more relations than unknowns. It took {{b_attempts}} attempts to find {{b_relations}} relations, a success rate of {{b_sampled_frac}}%."
+        },
+        {
+          "p": "At this size the true rate can be computed outright, by adding every pair of the {{b_members}} factor-base points and counting the distinct results. Exactly {{b_decomposable}} of the {{b_nonzero}} nonzero points are sums of two factor-base points: {{b_exact_frac}}%. Counting pairs alone, {{b_pairs}} of them, would suggest {{b_pairs_frac}}%, but different pairs can give the same sum; treating the sums as random points gives 1&nbsp;&minus;&nbsp;e<sup>&minus;{{b_pairs}}/{{b_nonzero}}</sup>&nbsp;=&nbsp;{{b_poisson_frac}}%, close to the exact figure. Gaudry's heuristic probability, 1/n! = 1/2, is the leading term of the same count. This run's {{b_sampled_frac}}% is within sampling error of the exact value."
+        }
+      ]
+    },
+    {
+      "heading": "The linear algebra",
+      "blocks": [
+        {
+          "computed": "b_relations_table"
+        },
+        {
+          "p": "Each relation involves at most two unknowns, so the matrix is extremely sparse:"
+        },
+        {
+          "computed": "b_sparsity"
+        },
+        {
+          "p": "Gaussian elimination modulo {{b_n}} gives the matrix rank {{b_rank}}, and determines {{b_determined}} of the {{b_cols}} logarithms uniquely; the build checks each by scalar multiplication. The other {{b_undetermined}} stay free even though there are more equations than unknowns. With two unknowns per equation, the relations form a graph on the factor base, and a logarithm is pinned down only when its part of the graph contains a suitable cycle; parts that are trees leave one degree of freedom each. Collecting more relations closes them. The descent below only needs two determined logarithms, so the code stops here."
+        }
+      ]
+    },
+    {
+      "heading": "The descent",
+      "blocks": [
+        {
+          "p": "Now bring in Q. Pick a random c and try to decompose Q + cP. After {{b_descent_tries}} tries, c = {{b_c}} gives Q + cP = {{b_desc_expr}}, with both logarithms known, so"
+        },
+        {
+          "math": "k &equiv; {{b_desc_log_expr}} &minus; c &equiv; {{b_desc_num_expr}} &equiv; {{b_k}} &nbsp; (mod {{b_n_plain}})",
+          "label": "The build checks that {{b_k}}P = Q."
+        }
+      ]
+    },
+    {
+      "heading": "What this does and does not show",
+      "blocks": [
+        {
+          "p": "It shows the pipeline: factor base, relations, sparse linear algebra, descent, and, on the elliptic side, the summation polynomial and the Weil restriction that turn point decomposition into polynomial solving over a smaller field."
+        },
+        {
+          "p": "It does not show a speedup. Pollard's rho on this group would expect about &radic;(&pi;n/2) &asymp; {{b_rho_steps}} steps, each one point addition. Index calculus used {{b_attempts}} decomposition attempts, each costing a resultant and a root search, plus the linear algebra. For n = 2, Gaudry's complexity &Otilde;(q<sup>2&minus;2/n</sup>) = &Otilde;(q) has the same exponent as rho's O(q<sup>n/2</sup>) = O(q), and the constants favour rho. The advantage starts at n = 3, where &Otilde;(q<sup>4/3</sup>) beats q<sup>3/2</sup>, and grows with n, but so does the degree of the polynomial systems, which is where the real difficulty lives."
+        },
+        {
+          "note": "Everything in Part 2 depends on F<sub>q<sup>2</sup></sub> having the subfield F<sub>q</sub> to put the factor base in. A curve over a prime field has no subfield, and no one has found a replacement factor base that works. That is why P-256, secp256k1 and Curve25519 are unaffected by this family of attacks, as the <a href=\"ecdlp.html\">ECDLP note</a> explains, and why the <a href=\"index-calculus-three-settings.html\">three settings</a> behave so differently.",
+          "note_label": "The boundary"
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "L. Adleman, \"A subexponential algorithm for the discrete logarithm problem with applications to cryptography\", FOCS 1979",
+      "href": "https://doi.org/10.1109/SFCS.1979.2"
+    },
+    {
+      "text": "I. Semaev, \"Summation polynomials and the discrete logarithm problem on elliptic curves\" (2004)",
+      "href": "https://eprint.iacr.org/2004/031"
+    },
+    {
+      "text": "P. Gaudry, \"Index calculus for abelian varieties of small dimension and the elliptic curve discrete logarithm problem\", Journal of Symbolic Computation 44 (2009)",
+      "href": "https://eprint.iacr.org/2004/073"
+    },
+    {
+      "text": "C. Diem, \"On the discrete logarithm problem in elliptic curves\", Compositio Mathematica 147 (2011)",
+      "href": "https://doi.org/10.1112/S0010437X10005075"
+    },
+    {
+      "text": "S. D. Galbraith and P. Gaudry, \"Recent progress on the elliptic curve discrete logarithm problem\", Designs, Codes and Cryptography 78 (2016)",
+      "href": "https://eprint.iacr.org/2015/1022"
+    }
+  ],
+  "related": ["index-calculus-three-settings", "cryptanalysis/summation-polynomials", "cryptanalysis/number-field-sieve", "ecdlp"]
+}

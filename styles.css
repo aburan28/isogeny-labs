@@ -12,6 +12,8 @@
   --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --measure: 42rem;
+  --series-1: #2a78d6;  /* chart series, validated against --paper in both schemes */
+  --series-2: #eb6834;
   --gutter: 1.25rem;
   color-scheme: light;
 }
@@ -24,6 +26,8 @@
     --rule: #37342f;
     --wash: #1f1d1a;
     --link: #e39a7f;
+    --series-1: #3987e5;
+    --series-2: #d95926;
     color-scheme: dark;
   }
 }
@@ -155,9 +159,62 @@ main.wrap { padding-top: 3rem; }
 .technique-list .queued h3, .technique-list .queued p { color: var(--muted); }
 .family-intro { color: var(--ink); }
 
+/* Notes and schemes: tables, listings, figures, and the catalogue */
+
+.table-wrap { overflow-x: auto; margin: 1.25rem 0 1.5rem; }
+.data { border-collapse: collapse; width: 100%; font-size: .95rem; }
+.data caption { caption-side: bottom; text-align: left; color: var(--muted); font-size: .95rem; font-style: italic; padding-top: .55rem; }
+.data th, .data td { text-align: left; vertical-align: baseline; padding: .4rem .9rem .4rem 0; border-bottom: 1px solid var(--rule); }
+.data th:last-child, .data td:last-child { padding-right: 0; }
+.data thead th { font-weight: 600; font-size: .85rem; color: var(--muted); border-bottom-color: var(--muted); }
+.data tbody th { font-weight: 400; }
+.data .num { font-family: var(--mono); font-size: .82rem; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 1%; }
+.data td { font-variant-numeric: tabular-nums; }
+
+.listing {
+  font-family: var(--mono); font-size: .8rem; line-height: 1.6; margin: 1.25rem 0; padding: .9rem 1.1rem;
+  background: var(--wash); border-left: 2px solid var(--rule); overflow-x: auto; white-space: pre;
+}
+.listing-label { color: var(--muted); font-size: .95rem; font-style: italic; margin-top: -.6rem; }
+
+.diagram { margin: 1.75rem 0; }
+.diagram svg { display: block; width: 100%; height: auto; max-height: 36rem; }
+.diagram figcaption { color: var(--muted); font-size: .95rem; font-style: italic; margin-top: .6rem; }
+.diagram .ink { stroke: var(--ink); fill: none; }
+.diagram .ink-fill { fill: var(--ink); }
+.diagram .muted { stroke: var(--muted); fill: none; }
+.diagram .muted-fill { fill: var(--muted); }
+.diagram .rule { stroke: var(--rule); fill: none; }
+.diagram .accent { stroke: var(--link); fill: none; }
+.diagram .accent-fill { fill: var(--link); }
+.diagram text { font-family: var(--mono); font-size: 16px; fill: var(--muted); }
+.diagram text.label { fill: var(--ink); }
+.diagram .series-1 { fill: var(--series-1); }
+.diagram .series-2 { fill: var(--series-2); }
+.diagram .ringed { stroke: var(--paper); stroke-width: 2; }
+.diagram .hit:hover .ringed { stroke: var(--ink); }
+
+.terms { margin: 1.25rem 0; border-top: 1px solid var(--rule); }
+.terms > div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--rule); }
+.terms dt { font-weight: 600; }
+.terms dd { margin: 0; }
+
+.catalogue { list-style: none; padding: 0; margin: 0; }
+.catalogue > li { padding: 1.25rem 0; border-top: 1px solid var(--rule); margin: 0; }
+.catalogue > li:last-child { border-bottom: 1px solid var(--rule); }
+.catalogue h3 { margin: 0 0 .35rem; }
+.catalogue > li > p { margin-bottom: .6rem; }
+.facts.compact { margin: .5rem 0; }
+.facts.compact > div { grid-template-columns: 9.5rem 1fr; padding: .35rem 0; font-size: 1rem; }
+.see { font-size: 1rem; margin: .6rem 0 0; color: var(--muted); }
+.glance { font-size: .92rem; }
+.glance th[scope="row"] { white-space: nowrap; }
+
 @media (max-width: 600px) {
   body { font-size: 1.0625rem; }
   h1 { font-size: 1.7rem; }
   .lede, .standfirst { font-size: 1.125rem; }
-  .facts > div { grid-template-columns: 1fr; gap: .1rem; }
+  .facts > div, .terms > div { grid-template-columns: 1fr; gap: .1rem; }
+  .facts.compact > div { grid-template-columns: 1fr; }
+  .glance th[scope="row"] { white-space: normal; }
 }

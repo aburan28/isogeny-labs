@@ -1,0 +1,126 @@
+{
+  "slug": "pollard-rho-worked-example",
+  "position": 1,
+  "group": "worked-examples",
+  "compute": "rho",
+  "title": "Pollard's rho, worked on a small curve",
+  "short_title": "Pollard's rho, worked",
+  "one_liner": "One walk followed step by step until it repeats and gives up the key, then two thousand more measured against the prediction for a random function.",
+  "index_meta": "Worked example · a curve with {{n}} points",
+  "description": "Pollard's rho method run on a small elliptic curve: the walk, the collision that reveals the discrete logarithm, the rho shape drawn to scale, and measured walk lengths for Pollard's original walk and Teske's r-adding walk.",
+  "standfirst": "The <a href=\"../cryptanalysis/pollard-rho.html\">attack page</a> gives the idea and the cost. This page runs it: on a curve with {{n}} points it follows one walk until it repeats, recovers the key from the repeat, and then measures how long such walks take on average.",
+  "facts": {
+    "Curve": "y<sup>2</sup> = x<sup>3</sup> + {{a}}x + {{b}} over F<sub>{{p}}</sub>",
+    "Group": "{{n}} points, a prime",
+    "This walk": "{{steps}} steps to its first repeated point; &radic;n &asymp; {{sqrt_n}}",
+    "Measured over {{trials}} walks each": "Pollard's original walk {{pollard_S}}&radic;n, a {{teske_r}}-adding walk {{teske_S}}&radic;n; a random function would take {{predicted_S}}&radic;n"
+  },
+  "sections": [
+    {
+      "heading": "The instance",
+      "blocks": [
+        {
+          "p": "The curve is y<sup>2</sup> = x<sup>3</sup> + {{a}}x + {{b}} over F<sub>{{p}}</sub>. It has {{n}} points, and since that number is prime every point other than O generates the whole group, so there is no smaller subgroup for <a href=\"../cryptanalysis/pohlig-hellman.html\">Pohlig&ndash;Hellman</a> to exploit. Rho is the right tool, and for a random walk on {{n}} points the birthday bound predicts a repeat after about &radic;(&pi;n/2) &asymp; {{expected_steps}} steps."
+        },
+        {
+          "p": "Take P = {{P}}. The code that builds this page picks a secret k at random and publishes Q = kP = {{Q}}. The walk below never sees k; it only adds points and compares them."
+        }
+      ]
+    },
+    {
+      "heading": "The walk",
+      "blocks": [
+        {
+          "p": "Each point the walk visits is written as a known combination X<sub>i</sub> = a<sub>i</sub>P + b<sub>i</sub>Q. Pollard's original rule looks at the x-coordinate modulo 3 and makes one of three moves, updating the coefficients to match:"
+        },
+        {
+          "ul": [
+            "x &equiv; 0: add P, so a increases by 1;",
+            "x &equiv; 1: double, so a and b both double;",
+            "x &equiv; 2: add Q, so b increases by 1."
+          ]
+        },
+        {
+          "p": "The rule depends only on the current point, so once the walk reaches a point it has seen before, it repeats everything that followed. Start from random a<sub>0</sub> and b<sub>0</sub>:"
+        },
+        {
+          "computed": "walk_table"
+        }
+      ]
+    },
+    {
+      "heading": "The repeat",
+      "blocks": [
+        {
+          "p": "At step {{j}} the walk returns to {{Xi}}, which it first reached at step {{i}}. That one point now has two representations:"
+        },
+        {
+          "math": "{{ai}}P + {{bi}}Q = {{aj}}P + {{bj}}Q &nbsp;&rArr;&nbsp; ({{bi}} &minus; {{bj}})Q = ({{aj}} &minus; {{ai}})P",
+          "label": "Subtracting the two representations of X<sub>{{i}}</sub> = X<sub>{{j}}</sub>."
+        },
+        {
+          "math": "k &equiv; {{num}} &middot; {{den}}<sup>&minus;1</sup> &equiv; {{num}} &middot; {{den_inv}} &equiv; {{recovered}} &nbsp; (mod {{n_plain}})",
+          "label": "Dividing is possible because n is prime and b<sub>{{i}}</sub> &ne; b<sub>{{j}}</sub>. The build checks that {{recovered}}P = Q."
+        },
+        {
+          "computed": "rho_figure"
+        },
+        {
+          "p": "This walk took {{steps}} steps, {{ratio}}&radic;n, against the {{expected_steps}} the birthday bound suggests. One walk is one sample; the next section measures the average."
+        }
+      ]
+    },
+    {
+      "heading": "Not storing the walk",
+      "blocks": [
+        {
+          "p": "The code behind this page keeps every visited point in a table, which is the clearest way to show where the repeat happens and costs nothing at this size. At 2<sup>128</sup> steps it is impossible. Floyd's and Brent's cycle-finding methods detect the repeat while storing only a couple of points. Parallel implementations instead report only distinguished points, those whose x-coordinate starts with a fixed number of zero bits, to a central server: two walks that merge reach the same distinguished point, the server sees it twice, and the logarithm follows exactly as above. That is the van Oorschot&ndash;Wiener method described on the <a href=\"../cryptanalysis/pollard-rho.html\">attack page</a>."
+        }
+      ]
+    },
+    {
+      "heading": "How long walks take",
+      "blocks": [
+        {
+          "p": "The {{expected_steps}}-step prediction assumes the walk behaves like a random function. Whether it does is a property of the rule, and it can be measured. For each of two rules the code ran {{trials}} walks, each with a fresh random target and starting point, and counted the steps until the first repeated point."
+        },
+        {
+          "computed": "stats_table"
+        },
+        {
+          "p": "Pollard's original rule is measurably worse than random: its walks run {{pollard_excess}}% longer. Teske identified the problem and proposed r-adding walks, which add one of r fixed random combinations of P and Q chosen by the current point. With r = {{teske_r}} the measured mean is {{teske_S}}, {{teske_excess}}% from the random-function value. A heuristic due to Brent and Pollard says an r-adding walk should be slower than random by a factor of 1/&radic;(1 &minus; 1/r), {{teske_penalty}}% for r = {{teske_r}}, and the measurement agrees with it to within its standard error."
+        },
+        {
+          "p": "This ratio, operations divided by &radic;n, is the number our <a href=\"https://github.com/aburan28/cryptanalysis\">discrete-log library</a> reports for every solver, so that different algorithms and implementations can be compared directly."
+        }
+      ]
+    },
+    {
+      "heading": "At real sizes",
+      "blocks": [
+        {
+          "p": "Nothing in the walk changes for a 256-bit curve except the numbers. The rule, the coefficients and the final division are the same. What changes is that &radic;(&pi;n/4) is about 2<sup>127.8</sup>, which no computation will reach; the table of standard curves is in the <a href=\"ecdlp.html\">note on the ECDLP</a>. In the other direction, a 60-bit group needs only about 2<sup>30</sup> steps, well within one computer's reach, and the public records sit between those extremes, near 114 bits."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "J. M. Pollard, \"Monte Carlo methods for index computation (mod p)\", Mathematics of Computation 32 (1978)",
+      "href": "https://www.ams.org/journals/mcom/1978-32-143/S0025-5718-1978-0491431-9/"
+    },
+    {
+      "text": "E. Teske, \"On random walks for Pollard's rho method\", Mathematics of Computation 70 (2001)",
+      "href": "https://www.ams.org/journals/mcom/2001-70-234/S0025-5718-00-01213-8/"
+    },
+    {
+      "text": "D. J. Bernstein, T. Lange and P. Schwabe, \"On the correct use of the negation map in the Pollard rho method\", PKC 2011",
+      "href": "https://cr.yp.to/elliptic/negation-20110102.pdf"
+    },
+    {
+      "text": "P. C. van Oorschot and M. J. Wiener, \"Parallel collision search with cryptanalytic applications\", Journal of Cryptology 12 (1999)",
+      "href": "https://link.springer.com/article/10.1007/PL00003816"
+    }
+  ],
+  "related": ["cryptanalysis/pollard-rho", "ecdlp", "index-calculus-end-to-end"]
+}

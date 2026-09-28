@@ -12,7 +12,7 @@
     "Problem": "Discrete logarithm in a cyclic group of prime order n",
     "Expected cost": "&radic;(&pi;n/2) &asymp; 1.25&radic;n group operations",
     "Memory": "Negligible per worker; distinguished-point storage when parallelised",
-    "Largest published solve": "114-bit prime-field curve (2009); 113-bit binary Koblitz curve (2014)",
+    "Largest published solves": "114-bit prime-field curve (2017, a curve with extra automorphisms); sect113r2, a 113-bit binary curve (2016)",
     "Relevance to 256-bit curves": "None. 2<sup>128</sup> operations is not reachable."
   },
   "sections": [
@@ -83,10 +83,10 @@
       "heading": "What record computations have cost",
       "blocks": [
         {
-          "p": "Published ECDLP records are the honest calibration data. A 112-bit prime-field instance (the <em>secp112r1</em> curve) was solved in 2009 by Bos, Kaihara, Kleinjung, Lenstra and Montgomery on a cluster of PlayStation 3 consoles, taking roughly six months of the cluster's time; the same team later reported a 114-bit solve. Wenger and Wolfger solved a 113-bit binary Koblitz instance on an FPGA cluster, and Bernstein, Lange and collaborators have run long-lived attacks on the 131-bit Certicom ECC2K-130 challenge without completing it."
+          "p": "Published ECDLP records are the honest calibration data. A 112-bit prime-field instance, the standard curve <em>secp112r1</em>, was solved in 2009 by Bos, Kaihara, Kleinjung, Lenstra and Montgomery on a cluster of PlayStation 3 consoles, at an expected cost of about 65 years of a single console. The prime-field record has since moved to 114 bits: Kusaka and collaborators solved a Barreto&ndash;Naehrig curve in 2017 with about 2,000 CPU cores over six months, using the curve's extra automorphisms to shorten the walk. On binary curves, Wenger and Wolfger solved a 113-bit Koblitz curve on an FPGA cluster in 2014 and the standard curve <em>sect113r1</em> in 2015, and Bernstein and collaborators solved <em>sect113r2</em> in 2016. The 131-bit Certicom challenge ECC2K-130, analysed by Bailey and collaborators in 2009 at an expected 2<sup>60.9</sup> iterations, is still unsolved."
         },
         {
-          "note": "Each additional bit of group order doubles the attacker's work, so the gap between a 113-bit solve and a 256-bit curve is a factor of about 2<sup>71</sup>. No engineering improvement, hardware platform or constant-factor trick closes a gap of that size. When a 256-bit curve fails, it will not be to rho.",
+          "note": "Rho's work grows with the square root of the group order, so every two bits of group order double the attacker's work, and the gap between a 114-bit solve and a 256-bit curve is a factor of about 2<sup>71</sup>. No engineering improvement, hardware platform or constant-factor trick closes a gap of that size. When a 256-bit curve fails, it will not be to rho.",
           "note_label": "The extrapolation"
         }
       ]
@@ -131,11 +131,31 @@
     },
     {
       "text": "J. W. Bos, M. E. Kaihara, T. Kleinjung, A. K. Lenstra and P. L. Montgomery, \"Solving a 112-bit prime elliptic curve discrete logarithm problem on game consoles using sloppy reduction\", IJACT 2 (2012)",
-      "href": "https://eprint.iacr.org/2009/541"
+      "href": "https://doi.org/10.1504/IJACT.2012.045590"
     },
     {
       "text": "E. Wenger and P. Wolfger, \"Solving the discrete logarithm of a 113-bit Koblitz curve with an FPGA cluster\", SAC 2014",
       "href": "https://eprint.iacr.org/2014/368"
+    },
+    {
+      "text": "D. J. Bernstein, T. Lange and P. Schwabe, \"On the correct use of the negation map in the Pollard rho method\", PKC 2011",
+      "href": "https://cr.yp.to/elliptic/negation-20110102.pdf"
+    },
+    {
+      "text": "T. Kusaka, S. Joichi, K. Ikuta, M. A.-A. Khandaker, Y. Nogami, S. Uehara, N. Yamai and S. Duquesne, \"Solving 114-bit ECDLP for a Barreto&ndash;Naehrig curve\", ICISC 2017",
+      "href": "https://hal.science/hal-01633653"
+    },
+    {
+      "text": "E. Wenger and P. Wolfger, \"Harder, better, faster, stronger: elliptic curve discrete logarithm computations on FPGAs\", Journal of Cryptographic Engineering 6 (2016)",
+      "href": "https://eprint.iacr.org/2015/143"
+    },
+    {
+      "text": "D. J. Bernstein, S. Engels, T. Lange, R. Niederhagen, C. Paar, P. Schwabe and R. Zimmermann, \"Faster elliptic-curve discrete logarithms on FPGAs\" (2016)",
+      "href": "https://eprint.iacr.org/2016/382"
+    },
+    {
+      "text": "D. V. Bailey et al., \"Breaking ECC2K-130\" (2009)",
+      "href": "https://eprint.iacr.org/2009/541"
     }
   ],
   "related": ["pohlig-hellman", "summation-polynomials", "hidden-number-problem"]

@@ -22,6 +22,8 @@
       <nav class="site-nav" aria-label="Main">
         <a href="../index.html#work">Work</a>
         <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html">Schemes</a>
         <a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis reference</a>
         <a href="../index.html#contact">Contact</a>
       </nav>
@@ -82,7 +84,7 @@
         <h2 id="what-was-not-broken-title">What was not broken</h2>
         <p>This distinction is the part most often lost in summary. The attack consumes the auxiliary torsion images. A scheme that does not publish them is not touched by it.</p>
         <ul>
-          <li><strong>The supersingular isogeny path problem</strong> &mdash; given two supersingular curves, find an isogeny between them &mdash; is untouched. Best known classical attacks remain around &radic;<em>p</em>, via Delfs&ndash;Galbraith and meet-in-the-middle claw finding.</li>
+          <li><strong>The supersingular isogeny path problem</strong> &mdash; given two supersingular curves, find an isogeny between them &mdash; is untouched by the torsion attacks. It has since moved for a different reason: in 2026 Wesolowski gave a heuristic algorithm using time and memory <em>p</em><sup>1/3+o(1)</sup>, where for thirty years the best had been about <em>p</em><sup>1/2</sup>. The o(1) hides a superpolynomial factor and the memory is enormous, so concrete parameters are affected far less than the exponent suggests; SQIsign raised its parameters in response.</li>
           <li><strong>CSIDH and CSI-FiSh</strong> use a commutative class-group action and publish no torsion images. Their security question is different and older: Kuperberg's subexponential quantum algorithm for the abelian hidden shift problem, and the ongoing dispute over what parameter sizes it implies.</li>
           <li><strong>SQIsign</strong>, the isogeny signature scheme still in NIST's additional-signatures process, rests on the endomorphism-ring problem and the Deuring correspondence, not on published torsion images.</li>
         </ul>
@@ -107,6 +109,7 @@
         <li><a href="https://eprint.iacr.org/2017/571">C. Petit, "Faster algorithms for isogeny problems using torsion point images", ASIACRYPT 2017</a></li>
         <li><a href="https://eprint.iacr.org/2011/506">D. Jao and L. De Feo, "Towards quantum-resistant cryptosystems from supersingular elliptic curve isogenies", PQCrypto 2011 &mdash; the original SIDH</a></li>
         <li><a href="https://arxiv.org/abs/1310.7789">C. Delfs and S. D. Galbraith, "Computing isogenies between supersingular elliptic curves over F_p", Designs, Codes and Cryptography 78 (2016)</a></li>
+        <li><a href="https://eprint.iacr.org/2026/1486">B. Wesolowski, "The supersingular isogeny problem in time and memory p<sup>1/3+o(1)</sup>" (2026)</a></li>
         </ol>
       </section>
       <section class="related" aria-labelledby="related-title">
