@@ -76,7 +76,7 @@
         <p>Pick a random exponent e, compute g<sup>e</sup> mod p as an ordinary integer between 1 and p &minus; 1, and try to factor it over the factor base. If it factors as &prod; &ell;<sub>i</sub><sup>c<sub>i</sub></sup>, then taking logarithms gives one linear equation:</p>
         <div class="math">e &equiv; c<sub>1</sub>&middot;log 2 + c<sub>2</sub>&middot;log 3 + &hellip; + c<sub>6</sub>&middot;log 13 &nbsp; (mod 10162)
           <span class="math-label">Logarithms to base g live modulo the group order, p &minus; 1.</span></div>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Every relation the search found, in order. Each says e &equiv; &Sigma; c<sub>i</sub>&middot;log(&ell;<sub>i</sub>) (mod 10162).</caption>
           <thead><tr><th scope="col" class="num">#</th><th scope="col" class="num">e</th><th scope="col" class="num">17<sup>e</sup> mod 10163</th><th scope="col">factorisation</th></tr></thead>
@@ -95,7 +95,7 @@
       <section id="solving-for-the-factor-base" aria-labelledby="solving-for-the-factor-base-title">
         <h2 id="solving-for-the-factor-base-title">Solving for the factor base</h2>
         <p>The equations hold modulo 10162 = 2 &middot; 5081, which is not a prime, so they are solved in two pieces. Modulo 5081 they are ordinary linear equations over a field, and Gaussian elimination gives each logarithm modulo 5081. Modulo 2 there is a shortcut: since g generates the group, log &ell; is even exactly when &ell; is a square modulo p, which the Legendre symbol decides. The Chinese remainder theorem then combines the two residues into the logarithm modulo 10162.</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>The factor base's logarithms: the linear algebra gives them mod 5081, the Legendre symbol gives them mod 2, and the Chinese remainder theorem combines the two. The build checks 17<sup>log</sup> = &ell; for every row.</caption>
           <thead><tr><th scope="col" class="num">&ell;</th><th scope="col" class="num">log mod 5081</th><th scope="col">square mod 10163?</th><th scope="col" class="num">log mod 2</th><th scope="col" class="num">log<sub>17</sub> &ell;</th></tr></thead>
@@ -154,7 +154,7 @@
       </section>
       <section id="the-linear-algebra" aria-labelledby="the-linear-algebra-title">
         <h2 id="the-linear-algebra-title">The linear algebra</h2>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>The first eight of the 151 relations. Each row is one random multiple mP that decomposed; P<sub>x</sub> is the factor-base point with x-coordinate x.</caption>
           <thead><tr><th scope="col" class="num">#</th><th scope="col" class="num">m</th><th scope="col">m &equiv; &hellip; (mod 69,383)</th></tr></thead>

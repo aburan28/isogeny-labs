@@ -67,7 +67,7 @@
         <div class="math">b = A s + e &nbsp;(mod q)
           <span class="math-label">An LWE instance: e is a vector of small errors</span></div>
         <p>and you must find s. Here is one with n = 6, m = 12 and q = 31. The entries of s and e are drawn from the centred binomial distribution with &eta; = 2, the same noise distribution ML-KEM uses, so each entry is between &minus;2 and 2 and most are 0 or &plusmn;1:</p>
-        <pre class="listing">14   1  27  30  25  11   |   4
+        <pre class="listing" tabindex="0">14   1  27  30  25  11   |   4
 23  16  27   8  26   5   |   2
  9  22  17  10  20  25   |  16
 17  26  26   1  11   1   |  25
@@ -98,7 +98,7 @@
       <section id="where-lll-stops" aria-labelledby="where-lll-stops-title">
         <h2 id="where-lll-stops-title">Where LLL stops</h2>
         <p>The attack works when the embedded error vector is short enough, relative to the lattice, that the reduction algorithm finds it. As the dimension grows with q and the noise fixed, the gap closes and LLL's approximation factor of about 1.02<sup>d</sup> is no longer good enough. Repeating the attack on fresh instances shows where that happens:</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>The primal attack with LLL (&delta; = 0.99) against LWE with q = 31, m = 2n, and centred binomial noise with &eta; = 2. 6 fresh instances per row. Success means the attack returned the secret and it was checked.</caption>
           <thead><tr><th scope="col" class="num">n</th><th scope="col" class="num">Lattice dimension</th><th scope="col">Secret recovered</th><th scope="col" class="num">Mean LLL swaps</th></tr></thead>

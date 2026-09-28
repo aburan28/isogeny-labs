@@ -106,7 +106,7 @@
       <section id="multiplying-a-point-by-an-integer" aria-labelledby="multiplying-a-point-by-an-integer-title">
         <h2 id="multiplying-a-point-by-an-integer-title">Multiplying a point by an integer</h2>
         <p>Adding P to itself k times would take k &minus; 1 additions, which is hopeless for a 256-bit k. Double-and-add reads k in binary, from the most significant bit: for each bit, double the running total, and add P when the bit is 1.</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Computing 77P from the bits of 77 = 1001101<sub>2</sub>, most significant first. Each row doubles the running total, and adds P when the bit is 1.</caption>
           <thead><tr><th scope="col" class="num">bit</th><th scope="col">operation</th><th scope="col">running total</th><th scope="col">point</th></tr></thead>

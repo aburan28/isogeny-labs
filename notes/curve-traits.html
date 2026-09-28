@@ -66,7 +66,7 @@
         <h2 id="how-the-quantities-connect-title">How the quantities connect</h2>
         <p>Let E be an elliptic curve over F_q, q=p^m. Write N=#E(F_q), r=ord(G) for a chosen prime-order generator, and h=N/r. Reserve ell for a small auxiliary prime and s for an extension degree.</p>
         <p>The central equations are</p>
-        <pre class="listing">t = q + 1 - N,                  |t| &lt;= 2 sqrt(q)
+        <pre class="listing" tabindex="0">t = q + 1 - N,                  |t| &lt;= 2 sqrt(q)
 N_twist = q + 1 + t             (quadratic twist, ordinary setting here)
 pi^2 - [t]pi + [q] = 0
 D_pi = t^2 - 4q = v^2 d_K      (ordinary curves)
@@ -74,7 +74,7 @@ Z[pi] ⊆ End(E) ⊆ O_K
 disc(End(E)) = f^2 d_K,         f divides v.</pre>
         <p>Here pi is q-power Frobenius, d_K is a fundamental imaginary quadratic discriminant, v is the conductor of Z[pi], and f is the conductor of the actual endomorphism ring. <strong>v and f need not agree.</strong></p>
         <p>For y²=x³+ax+b in characteristic greater than 3,</p>
-        <pre class="listing">Delta_E = -16(4a³+27b²),
+        <pre class="listing" tabindex="0">Delta_E = -16(4a³+27b²),
 j = 1728(4a³)/(4a³+27b²).</pre>
         <p>Delta_E is a field element checking nonsingularity; D_pi is an integer describing Frobenius. They are different discriminants.</p>
       </section>
@@ -115,7 +115,7 @@ j = 1728(4a³)/(4a³+27b²).</pre>
       </section>
       <section id="what-factorization-tells-us" aria-labelledby="what-factorization-tells-us-title">
         <h2 id="what-factorization-tells-us-title">What factorization tells us</h2>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <thead><tr><th scope="col">Object being factored</th><th scope="col">What its factors tell us</th><th scope="col">Security conclusion permitted</th></tr></thead>
           <tbody>
@@ -135,7 +135,7 @@ j = 1728(4a³)/(4a³+27b²).</pre>
       <section id="a-computed-example" aria-labelledby="a-computed-example-title">
         <h2 id="a-computed-example-title">A computed example</h2>
         <p>For y² = x³ + 2x + 3 over F_101, the build enumerates every coordinate pair and adds the identity. It also counts a quadratic twist independently.</p>
-        <pre class="listing">N = 96 = 2^5 × 3
+        <pre class="listing" tabindex="0">N = 96 = 2^5 × 3
 t = 6
 N_twist = 108 = 2² × 3³
 D_pi = -368 = 4² × (−23)

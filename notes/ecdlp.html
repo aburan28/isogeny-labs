@@ -65,7 +65,7 @@
         <h2 id="the-square-root-barrier-title">The square-root barrier</h2>
         <p>A generic algorithm is one that uses the group only through its operations: it can add points and test them for equality, and nothing else. Shoup and, before him, Nechaev proved that any generic algorithm needs on the order of &radic;n operations to solve the discrete logarithm problem in a group of prime order n. Baby-step giant-step meets that bound using &radic;n memory; Pollard's rho meets it using almost none, and parallelises perfectly.</p>
         <p>Every curve also has the symmetry P &harr; &minus;P, which lets rho work on pairs {P, &minus;P} and saves a factor of &radic;2. The expected cost for a curve whose group has prime order n is then about &radic;(&pi;n/4) group operations. For standard curves that works out as follows.</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Standard curves. Expected rho work is &radic;(&pi;n / 2|Aut|) group operations, where n is the prime subgroup order and |Aut| counts the automorphisms rho can exploit: 2 for &plusmn;P on every curve, 6 on secp256k1, whose extra endomorphism has order 3. Each order is checked at build time to be prime and to lie in its field's Hasse interval.</caption>
           <thead><tr><th scope="col">Curve</th><th scope="col" class="num">Field (bits)</th><th scope="col" class="num">Cofactor</th><th scope="col" class="num">Subgroup order n (bits)</th><th scope="col" class="num">Expected rho work</th></tr></thead>
@@ -83,7 +83,7 @@
       <section id="curves-to-avoid-and-how-to-check" aria-labelledby="curves-to-avoid-and-how-to-check-title">
         <h2 id="curves-to-avoid-and-how-to-check-title">Curves to avoid, and how to check</h2>
         <p>Beating &radic;n requires using something about the curve. Four properties are known to give attacks, and each can be checked from public data before a curve is used. The last column applies the checks to the 103-point curve from the primer.</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <thead><tr><th scope="col">Property</th><th scope="col">What it enables</th><th scope="col">The check</th><th scope="col">Toy curve</th></tr></thead>
           <tbody>

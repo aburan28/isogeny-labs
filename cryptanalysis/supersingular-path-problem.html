@@ -72,7 +72,7 @@
         <h2 id="a-measured-search-title">A measured search</h2>
         <p>The 2-isogeny graph for p = 10,007 has 835 vertices: &lfloor;p/12&rfloor; = 833, plus 2 because p &equiv; 11 mod 12. It was built by breadth-first search from j = 1728, finding each curve's three neighbours as roots of the modular polynomial &Phi;<sub>2</sub>. Every curve lies within 13 steps of j = 1728.</p>
         <p>In each of 40 trials a start curve was drawn at random, and a secret non-backtracking walk of 12 steps led from it to the target. Each search was then run to recover a path, and every path it returned was checked edge by edge against &Phi;<sub>2</sub>. The graph is small enough that every one of the 40 walks had a shortcut: the shortest paths found had median length 8 and never more than 10. The attacker only needs some path, not the secret one.</p>
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
         <table class="data">
           <caption>Distinct curves examined before the path was found, over 40 trials on the 835-vertex graph for p = 10,007.</caption>
           <thead><tr><th scope="col">Search</th><th scope="col" class="num">Mean</th><th scope="col" class="num">Median</th><th scope="col" class="num">Share of the graph</th></tr></thead>
