@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
-  <meta name="description" content="Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, and the attacks on it, with worked examples computed by the code that builds this site.">
+  <meta name="description" content="Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, the attacks on it, isogenies, and lattices, with worked examples computed by the code that builds this site.">
   <meta property="og:title" content="Notes · Isogeny Labs">
-  <meta property="og:description" content="Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, and the attacks on it, with worked examples computed by the code that builds this site.">
+  <meta property="og:description" content="Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, the attacks on it, isogenies, and lattices, with worked examples computed by the code that builds this site.">
   <meta property="og:type" content="article">
   <title>Notes · Isogeny Labs</title>
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -37,6 +37,7 @@
     <nav class="toc" aria-label="Parts">
       <ol>
         <li><a href="#elliptic-curves">Elliptic curves</a></li>
+        <li><a href="#lattices">Lattices</a></li>
         <li><a href="#worked-examples">Worked examples</a></li>
         <li><a href="#explainers">Explainers</a></li>
       </ol>
@@ -59,6 +60,17 @@
             <h3><a href="isogenies.html">Isogenies</a></h3>
             <p>Maps between elliptic curves, the graph they form on supersingular curves, and why a walk in that graph can be a secret key.</p>
             <p class="meta">Primer · the 2-isogeny graph for p = 431, computed and drawn</p>
+          </li>
+        </ul>
+      </section>
+      <section id="lattices" aria-labelledby="lattices-title">
+        <h2 id="lattices-title">Lattices</h2>
+        <p class="family-intro">The mathematics under ML-KEM and ML-DSA: lattices, short vectors, learning with errors, and the reduction algorithms used to attack them.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="lattices-and-lwe.html">Lattices and LWE</a></h3>
+            <p>What a lattice is, why adding small noise to linear equations makes them hard, and the lattice attack that recovers the secret when the dimension is small.</p>
+            <p class="meta">Primer &middot; an LWE secret recovered with LLL, and where LLL stops working</p>
           </li>
         </ul>
       </section>

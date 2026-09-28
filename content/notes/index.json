@@ -1,6 +1,6 @@
 {
   "title": "Notes · Isogeny Labs",
-  "description": "Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, and the attacks on it, with worked examples computed by the code that builds this site.",
+  "description": "Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, the attacks on it, isogenies, and lattices, with worked examples computed by the code that builds this site.",
   "heading": "Notes",
   "standfirst": "Longer explanations of the mathematics under the <a href=\"../cryptanalysis/index.html\">cryptanalysis reference</a>. The worked examples run on groups small enough to follow by hand. They are computed by the code that builds this site, and every number on them is checked again each time it is built.",
   "groups": [
@@ -8,6 +8,11 @@
       "id": "elliptic-curves",
       "label": "Elliptic curves",
       "intro": "What an elliptic curve is, why its points form a group, and why recovering a secret multiple of a point is hard enough to build cryptography on."
+    },
+    {
+      "id": "lattices",
+      "label": "Lattices",
+      "intro": "The mathematics under ML-KEM and ML-DSA: lattices, short vectors, learning with errors, and the reduction algorithms used to attack them."
     },
     {
       "id": "worked-examples",
