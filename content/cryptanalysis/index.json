@@ -28,14 +28,7 @@
     {
       "id": "generic",
       "label": "Generic group algorithms",
-      "intro": "These work in any cyclic group where you can compute the group operation and test equality. Shoup's lower bound says no generic algorithm can use fewer than about &radic;p operations, where <em>p</em> is the largest prime dividing the group order, so these algorithms set the baseline every discrete-log parameter is measured against.",
-      "planned": [
-        {
-          "title": "Baby-step giant-step and kangaroos",
-          "slug": "baby-step-giant-step",
-          "one_liner": "Deterministic &radic;n time-memory tradeoffs, and Pollard's lambda method for logarithms known to lie in a short interval."
-        }
-      ]
+      "intro": "These work in any cyclic group where you can compute the group operation and test equality. Shoup's lower bound says no generic algorithm can use fewer than about &radic;p operations, where <em>p</em> is the largest prime dividing the group order, so these algorithms set the baseline every discrete-log parameter is measured against."
     },
     {
       "id": "index-calculus",
