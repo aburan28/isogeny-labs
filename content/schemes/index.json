@@ -203,10 +203,7 @@
             "Best known attack": "Pollard's rho on the curve, about 2<sup>128</sup>. In practice, keys are lost to biased or leaked nonces through the hidden number problem",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "cryptanalysis/hidden-number-problem",
-            "notes/ecdlp"
-          ]
+          "page": "ecdsa"
         },
         {
           "id": "eddsa",
