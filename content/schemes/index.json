@@ -229,9 +229,7 @@
             "Best known attack": "Pollard's rho, about 2<sup>127</sup> using the curve's extra automorphisms",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "notes/ecdlp"
-          ]
+          "page": "schnorr"
         },
         {
           "id": "bls",
