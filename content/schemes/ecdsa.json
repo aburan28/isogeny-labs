@@ -1,0 +1,138 @@
+{
+  "slug": "ecdsa",
+  "position": 4,
+  "group": "signatures",
+  "compute": "ecdsa",
+  "title": "ECDSA",
+  "short_title": "ECDSA",
+  "one_liner": "DSA on an elliptic curve, and why its per-signature nonce has cost more keys than any attack on the curve.",
+  "description": "ECDSA: signing and verification, a full-size P-256 example, private-key recovery from two signatures that reuse a nonce, signature malleability, deterministic nonces (RFC 6979), and biased nonces and the hidden number problem.",
+  "standfirst": "ECDSA signs TLS certificates, hardware tokens and cryptocurrency transactions. Nobody has come close to solving the elliptic-curve discrete logarithm behind it, yet ECDSA keys are lost regularly, and almost always the same way: through the random number used once per signature.",
+  "facts": {
+    "Rests on": "The <a href=\"../notes/ecdlp.html\">ECDLP</a>, and a uniformly random secret nonce for every signature",
+    "Standards": "FIPS 186-5; SEC 1; ANSI X9.62; deterministic nonces in RFC 6979",
+    "Sizes": "P-256: 64-byte signature (r, s); 33-byte compressed public key",
+    "Best known attack": "Pollard's rho on the curve, about 2<sup>128</sup> for P-256. In practice, reused, biased or leaked nonces",
+    "Quantum": "Broken by Shor's algorithm"
+  },
+  "sections": [
+    {
+      "heading": "Signing and verifying",
+      "blocks": [
+        {
+          "p": "The public parameters are a curve with a base point G of prime order n. A private key is an integer d, and the public key is Q = dG. To sign a message, hash it to an integer z, then:"
+        },
+        {
+          "steps": [
+            "Choose a secret nonce k uniformly between 1 and n &minus; 1.",
+            "Compute the point kG and let r be its x-coordinate mod n.",
+            "Compute s = k<sup>&minus;1</sup>(z + rd) mod n. The signature is (r, s)."
+          ]
+        },
+        {
+          "p": "To verify, compute w = s<sup>&minus;1</sup>, then the point (zw)G + (rw)Q, and accept if its x-coordinate mod n equals r. It works because (zw)G + (rw)Q = w(z + rd)G = kG."
+        },
+        {
+          "p": "The example on this page runs on the real P-256 curve, at full size, in the code that builds this page. A key pair was drawn, and the message \"{{m1}}\" was signed with a random nonce:"
+        },
+        {
+          "pre": "Q.x = {{Qx}}\nQ.y = {{Qy}}\n\nr   = {{r0}}\ns   = {{s0}}",
+          "label": "A P-256 public key and a signature on \"{{m1}}\", in hexadecimal"
+        },
+        {
+          "p": "It verifies against Q, and does not verify for \"{{m2}}\"."
+        }
+      ]
+    },
+    {
+      "heading": "One nonce, two signatures",
+      "blocks": [
+        {
+          "p": "Look at the signing equation as an attacker would. It is one linear equation, s = k<sup>&minus;1</sup>(z + rd), in two unknowns, k and d. A single signature reveals nothing, because every d has a matching k. But if the same k is ever used for two messages, the two signatures share r and give two equations in the same two unknowns:"
+        },
+        {
+          "math": "k = (z<sub>1</sub> &minus; z<sub>2</sub>) / (s<sub>1</sub> &minus; s<sub>2</sub>), &nbsp; d = (s<sub>1</sub>k &minus; z<sub>1</sub>) / r &nbsp;(mod n)",
+          "label": "Two signatures with the same nonce give up the private key"
+        },
+        {
+          "p": "The build signed \"{{m1}}\" and \"{{m2}}\" with the same nonce. Both signatures are valid, and both have the same r, which is how the reuse is spotted from outside:"
+        },
+        {
+          "pre": "r   = {{r1}}\ns1  = {{s1}}\ns2  = {{s2}}\nz1  = {{z1}}\nz2  = {{z2}}\n\nk   = {{k}}\nd   = {{d}}",
+          "label": "The two signatures, the two SHA-256 hashes, and what the formulas above recover"
+        },
+        {
+          "p": "The recovered d satisfies dG = Q, so it is the private key. The build then signs \"{{m3}}\" with it, and that signature verifies under the victim's public key. There is no search here and no dependence on the curve's size: two modular inversions and a few multiplications break the key."
+        },
+        {
+          "p": "This has happened in production. In 2010 the fail0verflow group showed that Sony signed PlayStation 3 software with a fixed nonce, and recovered the signing key. In 2013 a flaw in Android's SecureRandom caused Bitcoin wallets to repeat nonces, and coins were taken from the affected addresses. Scanning public blockchains for repeated r values still turns up keys."
+        }
+      ]
+    },
+    {
+      "heading": "Deterministic nonces",
+      "blocks": [
+        {
+          "p": "The standard fix is to stop needing a random number generator at signing time. RFC 6979 derives k deterministically from the private key and the message hash with HMAC. The same message always gets the same nonce, and different messages get unrelated ones. Repeating k across different messages then needs an HMAC collision. EdDSA builds the same idea into its definition, and FIPS 186-5 allows deterministic ECDSA."
+        },
+        {
+          "p": "Deterministic signing has a weakness of its own. Because the same computation happens every time, a fault injected during one signing can be compared with a correct signature on the same message, and similar fault attacks work much as <a href=\"rsa.html\">they do on RSA with CRT</a>. Hedged signing, which mixes fresh randomness into the deterministic derivation, keeps the protection against bad generators while defeating these comparisons. It is the default in <a href=\"ml-dsa.html\">ML-DSA</a>."
+        }
+      ]
+    },
+    {
+      "heading": "Biased and leaked nonces",
+      "blocks": [
+        {
+          "p": "The nonce does not have to repeat to be fatal. Each signature gives a linear relation between k and d. If an attacker knows a few bits of each k, from a timing side channel, a biased generator or a truncated random number, many signatures together form an instance of the <a href=\"../cryptanalysis/hidden-number-problem.html\">hidden number problem</a>, which lattice reduction solves. Published attacks recover P-256 and secp256k1 keys from nonce leaks of a few bits per signature, given enough signatures. Constant-time scalar multiplication and nonces drawn uniformly mod n, not reduced from a slightly shorter string, are what prevents this."
+        }
+      ]
+    },
+    {
+      "heading": "Malleability",
+      "blocks": [
+        {
+          "p": "If (r, s) is a valid signature, so is (r, n &minus; s): negating s negates w, and the verification point becomes &minus;kG, which has the same x-coordinate. For the signature above, n &minus; s is"
+        },
+        {
+          "pre": "s'  = {{s0f}}",
+          "label": "The second valid signature on the same message, under the same key"
+        },
+        {
+          "p": "and it verifies. This does not let anyone sign a new message, but it breaks any system that identifies a signed object by the hash of its signature. Bitcoin transaction identifiers had exactly that problem, and Bitcoin now requires the smaller of s and n &minus; s. EdDSA and Schnorr signatures as in BIP-340 are defined so that this does not arise."
+        }
+      ]
+    },
+    {
+      "heading": "Where it stands",
+      "blocks": [
+        {
+          "p": "Against the curve itself ECDSA is as strong as the ECDLP, about 2<sup>128</sup> for P-256 and secp256k1; see the <a href=\"../notes/ecdlp.html\">ECDLP note</a>. Against a quantum computer running Shor's algorithm it falls completely, and NIST IR 8547 proposes disallowing it after 2035. Until then, reviewing an ECDSA implementation is mostly reviewing its nonces: where they come from, whether they are uniform mod n, and whether they leak through timing."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "NIST FIPS 186-5, Digital Signature Standard (DSS) (2023)",
+      "href": "https://doi.org/10.6028/NIST.FIPS.186-5"
+    },
+    {
+      "text": "T. Pornin, RFC 6979, Deterministic usage of the Digital Signature Algorithm (DSA) and Elliptic Curve Digital Signature Algorithm (ECDSA) (2013)",
+      "href": "https://www.rfc-editor.org/rfc/rfc6979"
+    },
+    {
+      "text": "Standards for Efficient Cryptography Group, SEC 1: Elliptic Curve Cryptography, version 2.0 (2009)",
+      "href": "https://www.secg.org/sec1-v2.pdf"
+    },
+    {
+      "text": "fail0verflow, \"Console hacking 2010: PS3 epic fail\", 27th Chaos Communication Congress (2010)",
+      "href": "https://media.ccc.de/v/27c3-4087-en-console_hacking_2010"
+    },
+    {
+      "text": "N. Howgrave-Graham and N. P. Smart, \"Lattice attacks on digital signature schemes\", Designs, Codes and Cryptography 23 (2001)",
+      "href": "https://doi.org/10.1023/A:1011214926272"
+    }
+  ],
+  "related": ["cryptanalysis/hidden-number-problem", "notes/ecdlp", "rsa"]
+}

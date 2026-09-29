@@ -188,9 +188,7 @@
             "Best known attack": "The number field sieve; the largest public factorisation is RSA-250, 829 bits, in 2020",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "cryptanalysis/number-field-sieve"
-          ]
+          "page": "rsa"
         },
         {
           "id": "ecdsa",
@@ -205,10 +203,7 @@
             "Best known attack": "Pollard's rho on the curve, about 2<sup>128</sup>. In practice, keys are lost to biased or leaked nonces through the hidden number problem",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "cryptanalysis/hidden-number-problem",
-            "notes/ecdlp"
-          ]
+          "page": "ecdsa"
         },
         {
           "id": "eddsa",
@@ -302,7 +297,8 @@
             "Sizes": "SLH-DSA-128s: 32-byte public key, 7,856-byte signature. The 128f variant signs faster with 17,088-byte signatures",
             "Best known attack": "Generic attacks on the hash function",
             "Quantum": "Only generic speedups, which the parameters account for"
-          }
+          },
+          "page": "slh-dsa"
         },
         {
           "id": "lms-xmss",

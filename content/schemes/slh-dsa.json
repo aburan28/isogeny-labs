@@ -1,0 +1,123 @@
+{
+  "slug": "slh-dsa",
+  "position": 5,
+  "group": "signatures",
+  "compute": "hashsig",
+  "title": "SLH-DSA",
+  "short_title": "SLH-DSA",
+  "one_liner": "The stateless hash-based signature standard of FIPS 205, formerly SPHINCS+: security from a hash function alone, paid for in size and speed.",
+  "description": "SLH-DSA (FIPS 205, formerly SPHINCS+): one-time signatures from hash chains, Merkle trees, the hypertree and FORS, why statelessness matters, every parameter set's signature size derived from its parameters, and a measured forgery when a one-time key is reused.",
+  "standfirst": "Every other signature scheme in use rests on a mathematical problem that someone might one day solve: factoring, discrete logarithms, lattices, isogenies. SLH-DSA rests only on its hash function behaving like one. That makes it the most conservative choice there is, and its signatures run from about 8 to 50 kilobytes.",
+  "facts": {
+    "Status": "FIPS 205, August 2024",
+    "Rests on": "Security properties of the hash function, SHA-2 or SHAKE",
+    "Sizes": "SLH-DSA-128s: 32-byte public key, 7,856-byte signature; SLH-DSA-128f: 17,088 bytes, faster signing",
+    "Signatures per key": "Designed for up to 2<sup>64</sup>, with no state to keep",
+    "Quantum": "Only generic speedups, which the parameters account for"
+  },
+  "sections": [
+    {
+      "heading": "One-time signatures from hash chains",
+      "blocks": [
+        {
+          "p": "The building block is a one-time signature. In the Winternitz scheme, WOTS+ in its modern form, the private key is a list of random strings, and the public key is what you get by hashing each of them w &minus; 1 times. Every string starts a chain of hashes, and the public key is the list of chain ends. To sign, write the message digest in base w, and for each digit v reveal the value v steps along the corresponding chain. The verifier hashes each revealed value the remaining w &minus; 1 &minus; v times and checks that it lands on the public key. Going forward along a chain is easy; going back would mean inverting the hash."
+        },
+        {
+          "p": "That leaves one problem: anyone can hash a revealed value further, which turns a signature on digit v into one on any larger digit. A checksum closes it. The signer also signs the sum of w &minus; 1 &minus; v over all the digits, and raising any message digit lowers that sum, which would need going backwards on a checksum chain."
+        },
+        {
+          "p": "The build signs \"release v1.0\" with a key of SLH-DSA-128's shape: n = {{n}}-byte values, w = {{w}}, {{len1}} message digits and {{len2}} checksum digits, so {{len}} chains and a {{wots_bytes}}-byte signature. The hash here is SHA-256 cut to 16 bytes. Signing took {{sign_hashes}} hash evaluations and verification {{verify_hashes}}, which add up to the {{chain_total}} steps of all the chains. The signature verifies, and it does not verify for \"release v1.1\"."
+        }
+      ]
+    },
+    {
+      "heading": "Why one-time means one time",
+      "blocks": [
+        {
+          "p": "Each signature reveals a point on every chain. After several signatures under one key, an attacker knows, for each chain, the lowest point anyone has revealed, and can sign any message whose digits are all at least those lowest points, checksum included. Finding such a message is a matter of hashing random candidates. The build signed a growing number of messages with a single key and searched:"
+        },
+        {
+          "computed": "reuse_table"
+        },
+        {
+          "p": "With up to {{below_found}} signatures the search found nothing in {{budget}} tries. With {{min_found}} it took {{tries_min}} tries, and with {{max_reuse}} only {{tries_max_reuse}}. Each forgery was then assembled from the revealed chain values and verified against the original public key. A one-time key used a few times is not slightly weaker. It is broken."
+        }
+      ]
+    },
+    {
+      "heading": "Many keys: Merkle trees",
+      "blocks": [
+        {
+          "p": "To sign more than once, Merkle's 1979 construction commits to many one-time keys at once. Hash the one-time public keys in pairs, then hash the results in pairs, until a single root remains, and publish the root as the public key. A signature is then a one-time signature plus the <em>authentication path</em>: the sibling of each node on the way from the used leaf to the root. The verifier recomputes the leaf from the one-time signature and hashes up the path."
+        },
+        {
+          "p": "The build puts {{tree_leaves}} one-time keys under a tree of height {{tree_height}} and signs \"release v2.0\" with leaf {{leaf}}. The signature is the {{len}} chain values and {{tree_height}} path nodes, {{tree_sig_bytes}} bytes, and it hashes up to the root {{root}}."
+        },
+        {
+          "p": "This scheme is <em>stateful</em>: the signer must never use a leaf twice, so it has to remember which leaves are spent, across crashes, backups and cloned virtual machines. LMS and XMSS, standardised in NIST SP 800-208, work this way and are approved for uses like firmware signing, where the state can be controlled. For general use, a state that can be lost or duplicated is a liability, since the table above shows what reuse costs."
+        }
+      ]
+    },
+    {
+      "heading": "Removing the state",
+      "blocks": [
+        {
+          "p": "SLH-DSA, designed as SPHINCS+ by Bernstein, H&uuml;lsing and others, removes the state by making the tree so large that a leaf chosen pseudorandomly from the message is essentially never reused. It needs two further ideas to make that affordable:"
+        },
+        {
+          "ul": [
+            "<strong>A hypertree.</strong> A single tree of height 63 could never be built, so the tree is split into d layers of smaller trees, each of height h/d. Every tree's root is signed with a one-time key from the tree above, and only the trees on the path to the chosen leaf are ever computed.",
+            "<strong>FORS at the bottom.</strong> The message itself is signed with a <em>few-time</em> signature, FORS, rather than a one-time one. It consists of k Merkle trees of height a, and each signature reveals one leaf from each. Even when the pseudorandom leaf choice does repeat, a few signatures under one FORS key cost a little security rather than all of it."
+          ]
+        },
+        {
+          "p": "A signature is therefore a randomiser, a FORS signature, and d layers of WOTS+ signature plus authentication path. With n-byte hashes that is n(1 + k(a + 1) + h + d&middot;len) bytes, where len is the number of WOTS+ chains. The formula reproduces every size in the standard:"
+        },
+        {
+          "computed": "size_table"
+        },
+        {
+          "p": "The \"s\" sets are small and slow to sign, the \"f\" sets fast and larger. FIPS 205 states that each set is designed to stay secure for up to 2<sup>64</sup> signatures per key. Its security claim is in NIST's category terms: at least as hard to break as AES-128, AES-192 or AES-256 key search for n = 16, 24 or 32."
+        }
+      ]
+    },
+    {
+      "heading": "Where it fits",
+      "blocks": [
+        {
+          "p": "SLH-DSA's security argument is the shortest of any standard signature: if the hash function is sound, so is the scheme. A quantum computer only gets Grover-type speedups against hash functions, which the parameters already absorb. What it costs is size and time. A 7,856-byte signature is more than three times ML-DSA-44's 2,420 bytes, and signing takes many thousands of hash evaluations."
+        },
+        {
+          "p": "That makes it the natural choice where signatures are rare, verified often and must last: firmware and software updates, root certificates, long-term archives. It is also the hedge in a portfolio. If a structural attack on lattices ever lands, <a href=\"ml-dsa.html\">ML-DSA</a> goes with it, and SLH-DSA does not."
+        },
+        {
+          "note": "the example on this page is simplified. It uses one hash with simple domain separation and no FORS layer, and it omits the public seed and exact address structure of FIPS 205. The sizes in the table are computed for the real standard; the signatures above are not SLH-DSA signatures.",
+          "note_label": "What the example leaves out"
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "NIST FIPS 205, Stateless Hash-Based Digital Signature Standard (2024)",
+      "href": "https://csrc.nist.gov/pubs/fips/205/final"
+    },
+    {
+      "text": "D. J. Bernstein, A. H&uuml;lsing, S. K&ouml;lbl, R. Niederhagen, J. Rijneveld and P. Schwabe, \"The SPHINCS<sup>+</sup> signature framework\", ACM CCS 2019",
+      "href": "https://doi.org/10.1145/3319535.3363229"
+    },
+    {
+      "text": "A. H&uuml;lsing, \"W-OTS+: shorter signatures for hash-based signature schemes\", AFRICACRYPT 2013",
+      "href": "https://doi.org/10.1007/978-3-642-38553-7_10"
+    },
+    {
+      "text": "R. C. Merkle, \"A certified digital signature\", CRYPTO 1989",
+      "href": "https://doi.org/10.1007/0-387-34805-0_21"
+    },
+    {
+      "text": "NIST SP 800-208, Recommendation for Stateful Hash-Based Signature Schemes (2020)",
+      "href": "https://csrc.nist.gov/pubs/sp/800/208/final"
+    }
+  ],
+  "related": ["ml-dsa", "sqisign", "ecdsa"]
+}
