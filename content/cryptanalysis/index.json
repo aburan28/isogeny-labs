@@ -45,14 +45,7 @@
     {
       "id": "lattice",
       "label": "Lattice attacks",
-      "intro": "When a secret is partly known, from a few leaked bits, a biased nonce, or a small root of a modular equation, lattice reduction can often recover the rest. Many breaks of deployed ECDSA and RSA implementations come from this family rather than from any weakness in the underlying problem.",
-      "planned": [
-        {
-          "title": "Coppersmith's method",
-          "slug": "coppersmith",
-          "one_liner": "Finding small roots of modular polynomials, and the partial-key-exposure and small-exponent attacks on RSA that follow from it."
-        }
-      ]
+      "intro": "When a secret is partly known, from a few leaked bits, a biased nonce, or a small root of a modular equation, lattice reduction can often recover the rest. Many breaks of deployed ECDSA and RSA implementations come from this family rather than from any weakness in the underlying problem."
     },
     {
       "id": "isogeny",
