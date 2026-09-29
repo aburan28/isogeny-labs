@@ -29,11 +29,7 @@
             "Best known attack": "Pollard's rho: about 2<sup>126</sup> to 2<sup>128</sup> group operations for 256-bit curves",
             "Quantum": "Shor's algorithm; Roetteler et al. estimate about 2,330 logical qubits for P-256"
           },
-          "see": [
-            "notes/elliptic-curves",
-            "notes/ecdlp",
-            "cryptanalysis/pollard-rho"
-          ]
+          "page": "x25519"
         },
         {
           "id": "ffdh",
@@ -218,9 +214,7 @@
             "Best known attack": "Pollard's rho, about 2<sup>126</sup> for Ed25519. Deterministic signing is exposed to fault attacks instead",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "notes/elliptic-curves"
-          ]
+          "page": "eddsa"
         },
         {
           "id": "schnorr-bip340",
