@@ -297,7 +297,8 @@
             "Sizes": "SLH-DSA-128s: 32-byte public key, 7,856-byte signature. The 128f variant signs faster with 17,088-byte signatures",
             "Best known attack": "Generic attacks on the hash function",
             "Quantum": "Only generic speedups, which the parameters account for"
-          }
+          },
+          "page": "slh-dsa"
         },
         {
           "id": "lms-xmss",

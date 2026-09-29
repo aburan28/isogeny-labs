@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="SLH-DSA (FIPS 205, formerly SPHINCS+): one-time signatures from hash chains, Merkle trees, the hypertree and FORS, why statelessness matters, every parameter set&#x27;s signature size derived from its parameters, and a measured forgery when a one-time key is reused.">
+  <meta property="og:title" content="SLH-DSA · Isogeny Labs">
+  <meta property="og:description" content="SLH-DSA (FIPS 205, formerly SPHINCS+): one-time signatures from hash chains, Merkle trees, the hypertree and FORS, why statelessness matters, every parameter set&#x27;s signature size derived from its parameters, and a measured forgery when a one-time key is reused.">
+  <meta property="og:type" content="article">
+  <title>SLH-DSA · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Schemes</a> /
+        <a href="index.html#signatures">Signatures</a>
+      </nav>
+      <header>
+        <h1>SLH-DSA</h1>
+        <p class="standfirst">Every other signature scheme in use rests on a mathematical problem that someone might one day solve: factoring, discrete logarithms, lattices, isogenies. SLH-DSA rests only on its hash function behaving like one. That makes it the most conservative choice there is, and its signatures run from about 8 to 50 kilobytes.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Status</dt><dd>FIPS 205, August 2024</dd></div>
+        <div><dt>Rests on</dt><dd>Security properties of the hash function, SHA-2 or SHAKE</dd></div>
+        <div><dt>Sizes</dt><dd>SLH-DSA-128s: 32-byte public key, 7,856-byte signature; SLH-DSA-128f: 17,088 bytes, faster signing</dd></div>
+        <div><dt>Signatures per key</dt><dd>Designed for up to 2<sup>64</sup>, with no state to keep</dd></div>
+        <div><dt>Quantum</dt><dd>Only generic speedups, which the parameters account for</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#one-time-signatures-from-hash-chains">One-time signatures from hash chains</a></li>
+        <li><a href="#why-one-time-means-one-time">Why one-time means one time</a></li>
+        <li><a href="#many-keys-merkle-trees">Many keys: Merkle trees</a></li>
+        <li><a href="#removing-the-state">Removing the state</a></li>
+        <li><a href="#where-it-fits">Where it fits</a></li>
+        </ol>
+      </nav>
+      <section id="one-time-signatures-from-hash-chains" aria-labelledby="one-time-signatures-from-hash-chains-title">
+        <h2 id="one-time-signatures-from-hash-chains-title">One-time signatures from hash chains</h2>
+        <p>The building block is a one-time signature. In the Winternitz scheme, WOTS+ in its modern form, the private key is a list of random strings, and the public key is what you get by hashing each of them w &minus; 1 times. Every string starts a chain of hashes, and the public key is the list of chain ends. To sign, write the message digest in base w, and for each digit v reveal the value v steps along the corresponding chain. The verifier hashes each revealed value the remaining w &minus; 1 &minus; v times and checks that it lands on the public key. Going forward along a chain is easy; going back would mean inverting the hash.</p>
+        <p>That leaves one problem: anyone can hash a revealed value further, which turns a signature on digit v into one on any larger digit. A checksum closes it. The signer also signs the sum of w &minus; 1 &minus; v over all the digits, and raising any message digit lowers that sum, which would need going backwards on a checksum chain.</p>
+        <p>The build signs "release v1.0" with a key of SLH-DSA-128's shape: n = 16-byte values, w = 16, 32 message digits and 3 checksum digits, so 35 chains and a 560-byte signature. The hash here is SHA-256 cut to 16 bytes. Signing took 195 hash evaluations and verification 330, which add up to the 525 steps of all the chains. The signature verifies, and it does not verify for "release v1.1".</p>
+      </section>
+      <section id="why-one-time-means-one-time" aria-labelledby="why-one-time-means-one-time-title">
+        <h2 id="why-one-time-means-one-time-title">Why one-time means one time</h2>
+        <p>Each signature reveals a point on every chain. After several signatures under one key, an attacker knows, for each chain, the lowest point anyone has revealed, and can sign any message whose digits are all at least those lowest points, checksum included. Finding such a message is a matter of hashing random candidates. The build signed a growing number of messages with a single key and searched:</p>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>One WOTS+ key used for several messages. Tries: random messages the attacker hashed before finding one it could sign from the revealed values, up to 300,000. Every forgery found was verified against the public key.</caption>
+          <thead><tr><th scope="col" class="num">Messages signed</th><th scope="col" class="num">Tries to a forgery</th><th scope="col">Verified</th></tr></thead>
+          <tbody>
+            <tr><th scope="row" class="num">1</th><td class="num">none in 300,000</td><td>&mdash;</td></tr>
+            <tr><th scope="row" class="num">2</th><td class="num">none in 300,000</td><td>&mdash;</td></tr>
+            <tr><th scope="row" class="num">3</th><td class="num">none in 300,000</td><td>&mdash;</td></tr>
+            <tr><th scope="row" class="num">4</th><td class="num">23,541</td><td>Yes</td></tr>
+            <tr><th scope="row" class="num">6</th><td class="num">39</td><td>Yes</td></tr>
+            <tr><th scope="row" class="num">8</th><td class="num">25</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>With up to 3 signatures the search found nothing in 300,000 tries. With 4 it took 23,541 tries, and with 8 only 25. Each forgery was then assembled from the revealed chain values and verified against the original public key. A one-time key used a few times is not slightly weaker. It is broken.</p>
+      </section>
+      <section id="many-keys-merkle-trees" aria-labelledby="many-keys-merkle-trees-title">
+        <h2 id="many-keys-merkle-trees-title">Many keys: Merkle trees</h2>
+        <p>To sign more than once, Merkle's 1979 construction commits to many one-time keys at once. Hash the one-time public keys in pairs, then hash the results in pairs, until a single root remains, and publish the root as the public key. A signature is then a one-time signature plus the <em>authentication path</em>: the sibling of each node on the way from the used leaf to the root. The verifier recomputes the leaf from the one-time signature and hashes up the path.</p>
+        <p>The build puts 16 one-time keys under a tree of height 4 and signs "release v2.0" with leaf 5. The signature is the 35 chain values and 4 path nodes, 624 bytes, and it hashes up to the root a9738a0d40cdaa4176a716a8ca2a38fe.</p>
+        <p>This scheme is <em>stateful</em>: the signer must never use a leaf twice, so it has to remember which leaves are spent, across crashes, backups and cloned virtual machines. LMS and XMSS, standardised in NIST SP 800-208, work this way and are approved for uses like firmware signing, where the state can be controlled. For general use, a state that can be lost or duplicated is a liability, since the table above shows what reuse costs.</p>
+      </section>
+      <section id="removing-the-state" aria-labelledby="removing-the-state-title">
+        <h2 id="removing-the-state-title">Removing the state</h2>
+        <p>SLH-DSA, designed as SPHINCS+ by Bernstein, H&uuml;lsing and others, removes the state by making the tree so large that a leaf chosen pseudorandomly from the message is essentially never reused. It needs two further ideas to make that affordable:</p>
+        <ul>
+          <li><strong>A hypertree.</strong> A single tree of height 63 could never be built, so the tree is split into d layers of smaller trees, each of height h/d. Every tree's root is signed with a one-time key from the tree above, and only the trees on the path to the chosen leaf are ever computed.</li>
+          <li><strong>FORS at the bottom.</strong> The message itself is signed with a <em>few-time</em> signature, FORS, rather than a one-time one. It consists of k Merkle trees of height a, and each signature reveals one leaf from each. Even when the pseudorandom leaf choice does repeat, a few signatures under one FORS key cost a little security rather than all of it.</li>
+        </ul>
+        <p>A signature is therefore a randomiser, a FORS signature, and d layers of WOTS+ signature plus authentication path. With n-byte hashes that is n(1 + k(a + 1) + h + d&middot;len) bytes, where len is the number of WOTS+ chains. The formula reproduces every size in the standard:</p>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>Signature sizes computed from each parameter set's n, h, d, a, k and lg w with the formula below, which the build checks against Table 2 of FIPS 205. The SHA2 and SHAKE variants of each set have the same sizes.</caption>
+          <thead><tr><th scope="col">Parameter set</th><th scope="col" class="num">n</th><th scope="col" class="num">h</th><th scope="col" class="num">d</th><th scope="col" class="num">Signature bytes</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">SLH-DSA-128s</th><td class="num">16</td><td class="num">63</td><td class="num">7</td><td class="num">7,856</td></tr>
+            <tr><th scope="row">SLH-DSA-128f</th><td class="num">16</td><td class="num">66</td><td class="num">22</td><td class="num">17,088</td></tr>
+            <tr><th scope="row">SLH-DSA-192s</th><td class="num">24</td><td class="num">63</td><td class="num">7</td><td class="num">16,224</td></tr>
+            <tr><th scope="row">SLH-DSA-192f</th><td class="num">24</td><td class="num">66</td><td class="num">22</td><td class="num">35,664</td></tr>
+            <tr><th scope="row">SLH-DSA-256s</th><td class="num">32</td><td class="num">64</td><td class="num">8</td><td class="num">29,792</td></tr>
+            <tr><th scope="row">SLH-DSA-256f</th><td class="num">32</td><td class="num">68</td><td class="num">17</td><td class="num">49,856</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>The "s" sets are small and slow to sign, the "f" sets fast and larger. FIPS 205 states that each set is designed to stay secure for up to 2<sup>64</sup> signatures per key. Its security claim is in NIST's category terms: at least as hard to break as AES-128, AES-192 or AES-256 key search for n = 16, 24 or 32.</p>
+      </section>
+      <section id="where-it-fits" aria-labelledby="where-it-fits-title">
+        <h2 id="where-it-fits-title">Where it fits</h2>
+        <p>SLH-DSA's security argument is the shortest of any standard signature: if the hash function is sound, so is the scheme. A quantum computer only gets Grover-type speedups against hash functions, which the parameters already absorb. What it costs is size and time. A 7,856-byte signature is more than three times ML-DSA-44's 2,420 bytes, and signing takes many thousands of hash evaluations.</p>
+        <p>That makes it the natural choice where signatures are rare, verified often and must last: firmware and software updates, root certificates, long-term archives. It is also the hedge in a portfolio. If a structural attack on lattices ever lands, <a href="ml-dsa.html">ML-DSA</a> goes with it, and SLH-DSA does not.</p>
+        <aside class="note"><p><span class="note-label">What the example leaves out.</span> the example on this page is simplified. It uses one hash with simple domain separation and no FORS layer, and it omits the public seed and exact address structure of FIPS 205. The sizes in the table are computed for the real standard; the signatures above are not SLH-DSA signatures.</p></aside>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://csrc.nist.gov/pubs/fips/205/final">NIST FIPS 205, Stateless Hash-Based Digital Signature Standard (2024)</a></li>
+        <li><a href="https://doi.org/10.1145/3319535.3363229">D. J. Bernstein, A. H&uuml;lsing, S. K&ouml;lbl, R. Niederhagen, J. Rijneveld and P. Schwabe, "The SPHINCS<sup>+</sup> signature framework", ACM CCS 2019</a></li>
+        <li><a href="https://doi.org/10.1007/978-3-642-38553-7_10">A. H&uuml;lsing, "W-OTS+: shorter signatures for hash-based signature schemes", AFRICACRYPT 2013</a></li>
+        <li><a href="https://doi.org/10.1007/0-387-34805-0_21">R. C. Merkle, "A certified digital signature", CRYPTO 1989</a></li>
+        <li><a href="https://csrc.nist.gov/pubs/sp/800/208/final">NIST SP 800-208, Recommendation for Stateful Hash-Based Signature Schemes (2020)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="ml-dsa.html">ML-DSA</a> <span class="family-tag">(Signatures)</span></li>
+        <li><a href="sqisign.html">SQIsign</a> <span class="family-tag">(Signatures)</span></li>
+        <li><a href="ecdsa.html">ECDSA</a> <span class="family-tag">(Signatures)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>
