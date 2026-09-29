@@ -188,9 +188,7 @@
             "Best known attack": "The number field sieve; the largest public factorisation is RSA-250, 829 bits, in 2020",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "cryptanalysis/number-field-sieve"
-          ]
+          "page": "rsa"
         },
         {
           "id": "ecdsa",
