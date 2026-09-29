@@ -104,9 +104,7 @@
             "Best known attack": "Classically about p<sup>1/4</sup>; quantumly, Kuperberg's subexponential algorithm, whose concrete cost is disputed",
             "Quantum": "Subexponential; CSIDH-512 is widely considered too small"
           },
-          "see": [
-            "cryptanalysis/kuperberg-csidh"
-          ]
+          "page": "csidh"
         }
       ]
     },
