@@ -33,14 +33,7 @@
     {
       "id": "index-calculus",
       "label": "Index calculus and descent",
-      "intro": "Index calculus collects relations over a factor base and solves a linear system. It is the reason discrete logarithms in finite fields take subexponential time. Whether anything like it works on elliptic curves has been an open question since Semaev's 2004 paper.",
-      "planned": [
-        {
-          "title": "Gr&ouml;bner-basis solving and first fall degree",
-          "slug": "groebner-first-fall-degree",
-          "one_liner": "How F4/F5 behaves on the polynomial systems that index calculus generates, and why the measured degree of regularity decides feasibility."
-        }
-      ]
+      "intro": "Index calculus collects relations over a factor base and solves a linear system. It is the reason discrete logarithms in finite fields take subexponential time. Whether anything like it works on elliptic curves has been an open question since Semaev's 2004 paper."
     },
     {
       "id": "lattice",
