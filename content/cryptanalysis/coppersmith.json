@@ -1,0 +1,108 @@
+{
+  "slug": "coppersmith",
+  "position": 2,
+  "family": "lattice",
+  "compute": "coppersmith",
+  "title": "Coppersmith's method",
+  "short_title": "Coppersmith's method",
+  "one_liner": "Finding small roots of modular polynomials, and the partial-key-exposure and small-exponent attacks on RSA that follow from it.",
+  "cost_label": "Polynomial time for roots below N<sup>1/d</sup>, for a monic polynomial of degree d mod N",
+  "description": "Coppersmith's method for small roots of modular polynomials, in Howgrave-Graham's formulation: a stereotyped RSA message with e = 3 recovered by exact LLL, the measured reach of each lattice size against the determinant bound, and the attacks on RSA that follow.",
+  "standfirst": "Solving a polynomial equation modulo an RSA modulus is as hard as factoring in general. Coppersmith showed in 1996 that it becomes easy when the root is small: any root below N<sup>1/d</sup> of a monic degree-d polynomial can be found in polynomial time, with lattice reduction. A remarkable number of practical RSA breaks are this one theorem applied to a different polynomial.",
+  "facts": {
+    "Problem": "Given monic f of degree d and N of unknown factorisation, find every x<sub>0</sub> with f(x<sub>0</sub>) &equiv; 0 mod N and |x<sub>0</sub>| &lt; X",
+    "Reach": "X up to N<sup>1/d</sup>, in time polynomial in log N and d",
+    "Tool": "LLL on a lattice of polynomials that all vanish at x<sub>0</sub> modulo N<sup>h</sup>",
+    "Measured here": "{{reach_max}} unknown bits of a message recovered from its e = 3 ciphertext under a {{nbits}}-bit modulus, against a limit of {{limit_bits}}",
+    "Consequences": "Stereotyped messages with small e, factoring with half of p known, ROCA, Boneh&ndash;Durfee for d &lt; N<sup>0.292</sup>"
+  },
+  "sections": [
+    {
+      "heading": "The idea",
+      "blocks": [
+        {
+          "p": "Finding roots of a polynomial over the integers is easy. Over Z/NZ with N composite it is not: square roots mod N alone are equivalent to factoring. The method's starting point is to move the problem from the first setting to the second."
+        },
+        {
+          "p": "Suppose f(x<sub>0</sub>) &equiv; 0 mod N with |x<sub>0</sub>| &lt; X. Howgrave-Graham's formulation of Coppersmith's idea builds many polynomials that also vanish at x<sub>0</sub>, modulo a power N<sup>h</sup>: the shifted multiples x<sup>j</sup> N<sup>h&minus;i</sup> f(x)<sup>i</sup>. Any integer combination of them vanishes at x<sub>0</sub> mod N<sup>h</sup> too. If some combination g has coefficients so small that |g(x<sub>0</sub>)| &lt; N<sup>h</sup> is guaranteed for every |x<sub>0</sub>| &lt; X, then g(x<sub>0</sub>), a multiple of N<sup>h</sup> smaller than N<sup>h</sup>, must be exactly zero. Now x<sub>0</sub> is a root of g over the integers, and it can simply be found."
+        },
+        {
+          "p": "Finding a combination with small coefficients is a short-vector problem. Write each polynomial's coefficients, with the coefficient of x<sup>k</sup> multiplied by X<sup>k</sup>, as a row of a matrix, and reduce it with <a href=\"../notes/lattices-and-lwe.html\">LLL</a>. The first reduced vector is short relative to the determinant of the lattice, and the determinant is easy to compute. That is why the method's reach can be predicted exactly, up to LLL's approximation factor."
+        }
+      ]
+    },
+    {
+      "heading": "A stereotyped message",
+      "blocks": [
+        {
+          "p": "The classic example is RSA with public exponent e = 3 and a message that is mostly known: a fixed header, a date, a template with a short secret in the last field. Write the message as M<sub>0</sub> + x<sub>0</sub>, where M<sub>0</sub> is known and x<sub>0</sub> is the unknown low part. Then x<sub>0</sub> is a small root of"
+        },
+        {
+          "math": "f(x) = (M<sub>0</sub> + x)<sup>3</sup> &minus; c &nbsp;(mod N)",
+          "label": "c is the ciphertext; f is monic of degree 3"
+        },
+        {
+          "p": "and Coppersmith's bound says any x<sub>0</sub> below N<sup>1/3</sup> can be recovered: a third of the message, with no factoring and no private key. The code behind this page generated a {{nbits}}-bit modulus from two {{pbits}}-bit primes, and ran the attack with h = 1, 2 and 3, which give lattices of dimension 4, 7 and 10. For each size it searched for the largest number of unknown bits at which the attack recovered two fresh messages in a row. Every recovered message was re-encrypted and compared with the ciphertext."
+        },
+        {
+          "computed": "reach_table"
+        },
+        {
+          "p": "The predicted column comes from the determinant alone. With dimension n = 3h + 1, the lattice's determinant is N<sup>3h(h+1)/2</sup> X<sup>n(n&minus;1)/2</sup>. The attack works roughly when its n-th root falls below N<sup>h</sup>, and solving for X gives the bound. For h = 1 that is X &lt; N<sup>1/6</sup>, {{pred_1}} bits, and the attack recovered {{reach_1}}. Larger lattices close in on N<sup>1/3</sup> = {{limit_bits}} bits slowly, and at growing cost. The dimension-10 run at {{shown_bits}} unknown bits took {{shown_swaps}} LLL swaps on entries over a thousand bits long, and the reduced basis was checked against both LLL conditions."
+        },
+        {
+          "note": "the unknown part here is the low end of the message. Any fixed position works, as long as the polynomial is made monic by multiplying through by an inverse mod N, and several unknown fields lead to the multivariate versions of the method, whose analysis rests on heuristics.",
+          "note_label": "Variants"
+        }
+      ]
+    },
+    {
+      "heading": "What follows from it",
+      "blocks": [
+        {
+          "ul": [
+            "<strong>Small public exponents.</strong> e = 3 with deterministic or low-entropy padding falls to the attack above, and H&aring;stad's broadcast attack, which recovers a message sent to several recipients, is sharpened by it. Randomised padding such as OAEP removes the structure the attack needs.",
+            "<strong>Factoring with partial knowledge.</strong> Coppersmith also showed that N = pq can be factored in polynomial time once half of the bits of p are known, the top half or the bottom half. Side channels and weak key generators that leak those bits break the key outright.",
+            "<strong>ROCA.</strong> In 2017 Nemec, Sys, &Scaron;venda, Klinec and Maty&aacute;&scaron; found that RSA keys from a widely deployed Infineon library had primes of a special form, and applied a Coppersmith-style attack over the few unknown parameters. The affected smartcards, TPMs and identity cards had to be reissued.",
+            "<strong>Small private exponents.</strong> Boneh and Durfee used a bivariate version to break RSA whenever d &lt; N<sup>0.292</sup>, improving on Wiener's continued-fraction bound of N<sup>1/4</sup>. The bivariate method rests on a heuristic that the reduced polynomials are algebraically independent, which holds in practice.",
+            "<strong>Partial key exposure.</strong> Knowing a fraction of the bits of d, together with a small e, is also often enough to recover the rest."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "The boundary",
+      "blocks": [
+        {
+          "p": "Coppersmith's method is not an attack on the RSA problem. Properly generated RSA keys with standard exponents and randomised padding leave it nothing to use. It needs structure the designer did not intend: a small root, known bits, a special form of prime. Its reach is predictable, so for each of those structures there is a precise answer to how much leakage is too much, and that is its lasting value to an assessor."
+        },
+        {
+          "p": "The same lattice machinery, applied to a different equation, gives the <a href=\"hidden-number-problem.html\">hidden number problem</a> attack on ECDSA nonces with a few leaked bits."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "D. Coppersmith, \"Small solutions to polynomial equations, and low exponent RSA vulnerabilities\", Journal of Cryptology 10 (1997)",
+      "href": "https://doi.org/10.1007/s001459900030"
+    },
+    {
+      "text": "N. Howgrave-Graham, \"Finding small roots of univariate modular equations revisited\", Cryptography and Coding 1997",
+      "href": "https://doi.org/10.1007/BFb0024458"
+    },
+    {
+      "text": "D. Boneh and G. Durfee, \"Cryptanalysis of RSA with private key d less than N<sup>0.292</sup>\", IEEE Transactions on Information Theory 46 (2000)",
+      "href": "https://doi.org/10.1109/18.850673"
+    },
+    {
+      "text": "M. Nemec, M. Sys, P. &Scaron;venda, D. Klinec and V. Maty&aacute;&scaron;, \"The return of Coppersmith's attack: practical factorization of widely used RSA moduli\", ACM CCS 2017",
+      "href": "https://doi.org/10.1145/3133956.3133969"
+    },
+    {
+      "text": "A. May, \"Using LLL-reduction for solving RSA and factorization problems\", in The LLL Algorithm, Springer (2010)",
+      "href": "https://doi.org/10.1007/978-3-642-02295-1_10"
+    }
+  ],
+  "related": ["hidden-number-problem", "number-field-sieve", "notes/lattices-and-lwe"]
+}

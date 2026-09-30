@@ -1,0 +1,250 @@
+{
+  "slug": "index-calculus-three-settings",
+  "position": 1,
+  "group": "explainers",
+  "title": "Index calculus for the ECDLP: prime fields, characteristic 2, and Koblitz curves",
+  "short_title": "Index calculus in three settings",
+  "one_liner": "The same pipeline over three kinds of curve, and why the structure of the field decides how far it gets.",
+  "index_meta": "Explainer · prime fields, F<sub>2<sup>m</sup></sub>, and Koblitz curves compared",
+  "description": "How index calculus for the elliptic-curve discrete logarithm problem differs over prime fields, characteristic-2 extension fields, and Koblitz curves: factor bases, Semaev polynomials, Weil descent, Frobenius orbits, and where the cost goes.",
+  "standfirst": "Index calculus has the same outline over prime fields, characteristic-2 extension fields and Koblitz curves. What differs is how much algebraic structure the field and the curve give you when a point has to be decomposed.",
+  "facts": {
+    "Scope": "Defensive cryptanalysis and algorithmic research. This compares the structure and bottlenecks of the attack; it does not claim a practical break of prime-field elliptic-curve cryptography."
+  },
+  "sections": [
+    {
+      "heading": "The question",
+      "blocks": [
+        {
+          "p": "Elliptic-curve cryptography rests on a deceptively simple equation, Q = [k]P. You know the public points P and Q; the hidden integer k is the discrete logarithm. For a generic elliptic-curve group, the benchmark attack is a collision search such as <a href=\"../cryptanalysis/pollard-rho.html\">Pollard rho</a>, whose cost grows on the order of the square root of the subgroup size."
+        },
+        {
+          "p": "Index calculus asks whether we can do something more structured. Instead of searching directly for k, it tries to express many curve points in terms of a smaller factor base, collect linear relations among the unknown logarithms of those factor-base points, and solve one large linear system. The high-level idea is the same over prime fields, characteristic-2 extension fields, and Koblitz curves. The crucial difference is how much algebraic structure the field and curve give us during point decomposition."
+        },
+        {
+          "note": "Binary Koblitz curves are themselves characteristic-2 curves. They are separated here because being defined over a small subfield gives them an unusually useful Frobenius endomorphism, which changes both index-calculus engineering and the Pollard-rho baseline.",
+          "note_label": "Taxonomy"
+        }
+      ]
+    },
+    {
+      "heading": "The universal index-calculus pipeline",
+      "blocks": [
+        {
+          "p": "Suppose Q = [k]P in a subgroup of order n. <a href=\"index-calculus-end-to-end.html\">Index calculus, end to end</a> runs every one of these steps with real numbers."
+        },
+        {
+          "steps": [
+            "<strong>Choose a factor base.</strong> Pick a structured subset &#x2131; = {P<sub>1</sub>, &hellip;, P<sub>N</sub>} &sub; E(F<sub>q</sub>). It should be small enough that its logarithms can eventually be solved by linear algebra, but large enough that random points have a reasonable probability of decomposing into a short sum of factor-base points. This trade-off is the first central design problem.",
+            "<strong>Randomise the target.</strong> Choose random a, b and compute R = [a]P + [b]Q. Because Q = [k]P, R = [a + bk]P.",
+            "<strong>Decompose the point.</strong> Try to find R = P<sub>i<sub>1</sub></sub> + &hellip; + P<sub>i<sub>t</sub></sub> with every P<sub>i<sub>j</sub></sub> in &#x2131;. This is the analogue of finding a smooth integer in classical index calculus, and for elliptic curves it is usually the difficult part.",
+            "<strong>Convert the decomposition into a relation.</strong> If P<sub>i</sub> = [&ell;<sub>i</sub>]P, a successful decomposition gives a + bk &equiv; &ell;<sub>i<sub>1</sub></sub> + &hellip; + &ell;<sub>i<sub>t</sub></sub> (mod n): one sparse linear relation.",
+            "<strong>Collect relations</strong> until the relation matrix contains enough independent information about the factor-base logarithms.",
+            "<strong>Solve the sparse linear system</strong> with modular sparse linear algebra to recover the unknown &ell;<sub>i</sub>.",
+            "<strong>Recover the target logarithm.</strong> A relation involving Q, together with the now-known factor-base logarithms, isolates k."
+          ]
+        },
+        {
+          "p": "The conceptual algorithm is therefore uncomplicated. The hard research question is whether the probability and cost of step 3 scale favourably enough to beat a generic square-root attack."
+        }
+      ]
+    },
+    {
+      "heading": "Prime-field curves: the algebra has nowhere to hide",
+      "blocks": [
+        {
+          "p": "Consider an elliptic curve over a large prime field, E/F<sub>p</sub>: y<sup>2</sup> = x<sup>3</sup> + Ax + B. This includes the broad family containing curves such as P-256 and secp256k1, even though those individual curves have additional properties of their own. The main obstacle is simple to state: F<sub>p</sub> does not come with a large vector-space decomposition over a much smaller subfield, as F<sub>2<sup>m</sup></sub> does over F<sub>2</sub>. That makes it harder to turn one large-coordinate equation into many small-coordinate equations."
+        },
+        {
+          "h3": "Semaev summation polynomials"
+        },
+        {
+          "p": "Semaev's key idea is to encode point addition using only x-coordinates. There are polynomials S<sub>r</sub>(x<sub>1</sub>, &hellip;, x<sub>r</sub>) with the property that, roughly speaking, S<sub>r</sub> = 0 when there exist curve points with those x-coordinates whose signed sum is the identity. So to decompose R = P<sub>1</sub> + &hellip; + P<sub>t</sub>, one can solve S<sub>t+1</sub>(x<sub>1</sub>, &hellip;, x<sub>t</sub>, x<sub>R</sub>) = 0 together with constraints forcing x<sub>1</sub>, &hellip;, x<sub>t</sub> into the factor base."
+        },
+        {
+          "p": "The conceptual win is enormous: a group-law decomposition has become a polynomial-system problem. But that merely moves the fight. The practical complexity now depends on"
+        },
+        {
+          "ul": [
+            "the number of variables;",
+            "the degrees after elimination;",
+            "the degree of regularity;",
+            "the size and sparsity of Macaulay matrices;",
+            "the monomial order;",
+            "symmetry breaking;",
+            "factor-base constraints;",
+            "and whether Gr&ouml;bner, F4/F5, SAT-style, or hybrid solving behaves best."
+          ]
+        },
+        {
+          "p": "For generic prime fields, no practical index-calculus method is known that overturns Pollard rho at cryptographic sizes. That is why prime-field ECDLP remains such a compelling benchmark for experimental algebraic cryptanalysis."
+        }
+      ]
+    },
+    {
+      "heading": "Characteristic 2: the field itself becomes part of the algorithm",
+      "blocks": [
+        {
+          "p": "Now take an elliptic curve over F<sub>2<sup>m</sup></sub>. A typical ordinary binary model can be written as y<sup>2</sup> + xy = x<sup>3</sup> + a<sub>2</sub>x<sup>2</sup> + a<sub>6</sub>. The crucial difference is not simply that arithmetic uses bits. It is that F<sub>2<sup>m</sup></sub> is an m-dimensional vector space over F<sub>2</sub>. Choose a basis, and every field element can be written as"
+        },
+        {
+          "math": "x = x<sub>0</sub>&beta;<sub>0</sub> + x<sub>1</sub>&beta;<sub>1</sub> + &hellip; + x<sub>m&minus;1</sub>&beta;<sub>m&minus;1</sub>, &nbsp;&nbsp; x<sub>i</sub> &isin; F<sub>2</sub>"
+        },
+        {
+          "p": "This gives index calculus an extra lever."
+        },
+        {
+          "h3": "Subspace factor bases"
+        },
+        {
+          "p": "A natural choice is &#x2131; = {P &isin; E(F<sub>2<sup>m</sup></sub>) : x(P) &isin; V}, where V &sub; F<sub>2<sup>m</sup></sub> is an &ell;-dimensional F<sub>2</sub>-subspace. The factor-base constraint is therefore not \"x is a small integer\". It is a linear-algebraic constraint in the field representation."
+        },
+        {
+          "h3": "Weil descent"
+        },
+        {
+          "p": "Write the unknown x-coordinates in the chosen basis and expand the Semaev relation into coordinate equations over F<sub>2</sub>. A polynomial system over one extension field becomes a larger system over the tiny base field. This is Weil descent in the algorithmic sense relevant here, and it can expose binary sparsity, linearised-polynomial structure, subspace restrictions, Frobenius structure, Boolean encodings, and opportunities for SAT or Gr&ouml;bner/SAT hybrids."
+        },
+        {
+          "p": "But there is no free lunch. The descended system can still suffer from degree growth and large elimination matrices. The question is therefore not merely whether we can descend. It is: does descent create a polynomial system whose total solving cost grows slowly enough to compensate for relation scarcity and linear algebra? That question is highly parameter-dependent."
+        }
+      ]
+    },
+    {
+      "heading": "Koblitz curves: characteristic 2 plus a powerful automorphism",
+      "blocks": [
+        {
+          "p": "A binary Koblitz curve is a particularly structured subfield curve. In the classical binary setting it is defined over F<sub>2</sub> and considered over F<sub>2<sup>m</sup></sub>. A standard form is y<sup>2</sup> + xy = x<sup>3</sup> + ax<sup>2</sup> + 1 with a &isin; {0, 1}. Because the curve is defined over the small base field, the Frobenius map &tau;: (x, y) &#8614; (x<sup>2</sup>, y<sup>2</sup>) is an efficiently computable endomorphism. This changes index calculus in a way that a generic binary curve does not provide as cleanly."
+        },
+        {
+          "h3": "Frobenius orbits"
+        },
+        {
+          "p": "A point naturally comes with an orbit P, &tau;(P), &tau;<sup>2</sup>(P), &hellip;. If the factor base is chosen to be Frobenius-invariant, then many apparently distinct decomposition problems are actually the same problem viewed at different points of an orbit. Instead of storing every point separately, one can reason in terms of pairs (orbit representative, Frobenius exponent). This can help at several stages:"
+        },
+        {
+          "steps": [
+            "<strong>Factor-base compression.</strong> Equivalent orbit elements can be represented once.",
+            "<strong>Point-decomposition symmetry breaking.</strong> The solver can avoid rediscovering Frobenius-equivalent solutions.",
+            "<strong>Relation deduplication.</strong> Equivalent relations can be canonicalised.",
+            "<strong>Linear algebra.</strong> Frobenius-invariant constructions can reduce or structure the matrix."
+          ]
+        },
+        {
+          "p": "Work on subfield and Koblitz curves has shown that Frobenius-invariant factor bases can reduce repeated polynomial-system solving and accelerate the linear-algebra stage."
+        },
+        {
+          "note": "Frobenius also accelerates Pollard rho on Koblitz curves, because rho can run on the equivalence classes induced by efficiently computable automorphisms. So Koblitz-specific index calculus is racing against a stronger generic baseline than an ordinary curve has. This is why \"Koblitz has more structure\" does not automatically imply \"index calculus wins\".",
+          "note_label": "The caveat"
+        }
+      ]
+    },
+    {
+      "heading": "The comparison that matters",
+      "blocks": [
+        {
+          "table": {
+            "head": ["Property", "Prime field", "Generic characteristic 2", "Koblitz or subfield"],
+            "rows": [
+              ["Typical field", "F<sub>p</sub>", "F<sub>2<sup>m</sup></sub>", "F<sub>2<sup>m</sup></sub>, curve defined over a small subfield"],
+              ["Natural small base field", "No useful one", "F<sub>2</sub>", "F<sub>2</sub>"],
+              ["Factor-base geometry", "Harder to engineer", "F<sub>2</sub>-subspaces are natural", "Frobenius-invariant subspaces and orbits"],
+              ["Semaev polynomials", "Yes", "Yes", "Yes"],
+              ["Weil descent", "Limited leverage", "Central technique", "Central technique"],
+              ["Boolean or SAT representation", "Possible but less natural", "Natural", "Natural, plus orbit symmetry"],
+              ["Frobenius symmetry", "Not analogous", "Present as a field map, but curve structure varies", "Especially exploitable"],
+              ["Linear-algebra compression", "Mostly generic sparsity", "Field structure can help", "Orbit structure can help substantially"],
+              ["Main bottleneck", "Point decomposition", "Point decomposition after descent", "Point decomposition, and exploiting symmetry"],
+              ["Pollard baseline", "Generic rho with negation", "Generic rho with negation", "Rho can also exploit Frobenius"]
+            ]
+          }
+        },
+        {
+          "p": "The key lesson is that index calculus is not one algorithm. It is a family of algorithms whose performance depends on whether the curve representation exposes a useful notion of smoothness. For integers, smoothness means factoring over small primes. For the finite-field DLP, it means factoring a field element into low-degree irreducibles. For the ECDLP, the analogue is whether a random curve point can be written as a short sum of points from a factor base, and whether that decomposition can be found cheaply. Everything revolves around that question."
+        }
+      ]
+    },
+    {
+      "heading": "Why the polynomial solver dominates",
+      "blocks": [
+        {
+          "p": "The relation-generation loop is unforgiving. Suppose only a small fraction of random R's decompose. Then the system solver is invoked again and again on failed candidates as well as successful ones, and a modest solver speedup multiplies across the entire attack. But an apparent toy-field improvement can also disappear as soon as the field size grows, because the degree of regularity changes. This is why serious experiments should record much more than wall-clock time:"
+        },
+        {
+          "ul": [
+            "decomposition success probability;",
+            "solver calls per accepted relation;",
+            "degree of regularity;",
+            "Macaulay matrix dimensions;",
+            "peak memory;",
+            "monomials generated;",
+            "Gr&ouml;bner reductions;",
+            "SAT conflicts and propagations, if applicable;",
+            "the number of relations before filtering, and the rank after it;",
+            "sparse-linear-algebra cost;",
+            "and total cost per verified independent relation."
+          ]
+        },
+        {
+          "p": "The metric that ultimately matters is not whether a Gr&ouml;bner basis ran faster. It is whether the full end-to-end cost per independent relation fell, and whether the scaling curve improves against Pollard rho."
+        }
+      ]
+    },
+    {
+      "heading": "Three mental models",
+      "blocks": [
+        {
+          "dl": [
+            ["Prime fields", "One large algebraic object. You constrain x-coordinates and ask a polynomial solver to discover a short point sum; there is relatively little field decomposition to exploit."],
+            ["Characteristic 2", "Turn one extension-field problem into many bit-level equations. The extension-field basis and the subspace factor base become part of the attack."],
+            ["Koblitz", "Do the characteristic-2 attack modulo Frobenius symmetry. Do not solve the same algebraic problem m times merely because Frobenius rotated the coordinates."]
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "What a breakthrough would look like",
+      "blocks": [
+        {
+          "p": "A genuinely important ECDLP index-calculus advance would likely do at least one of the following:"
+        },
+        {
+          "steps": [
+            "produce a factor base with much higher decomposition probability without exploding matrix size;",
+            "reduce the effective degree of regularity of the descended or Semaev system;",
+            "exploit enough symmetry that many targets share reusable algebraic work;",
+            "replace repeated full Gr&ouml;bner solving with incremental, parameterised, or cached preprocessing;",
+            "find a representation in which Frobenius or other endomorphisms make the constraints nearly linear or circulant;",
+            "reduce the total exponent of the attack below the best generic square-root baseline on a meaningful curve family."
+          ]
+        },
+        {
+          "p": "That is also why the most interesting experimental work is at the boundary between algebraic geometry, finite-field representation, polynomial-system solving, and sparse linear algebra."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "I. Semaev, \"Summation polynomials and the discrete logarithm problem on elliptic curves\" (2004)",
+      "href": "https://eprint.iacr.org/2004/031"
+    },
+    {
+      "text": "P. Gaudry, \"Index calculus for abelian varieties of small dimension and the elliptic curve discrete logarithm problem\", Journal of Symbolic Computation 44 (2009)",
+      "href": "https://eprint.iacr.org/2004/073"
+    },
+    {
+      "text": "P. Gaudry, F. Hess and N. P. Smart, \"Constructive and destructive facets of Weil descent on elliptic curves\", Journal of Cryptology 15 (2002)",
+      "href": "https://link.springer.com/article/10.1007/s00145-001-0011-x"
+    },
+    {
+      "text": "S. D. Galbraith and P. Gaudry, \"Recent progress on the elliptic curve discrete logarithm problem\", Designs, Codes and Cryptography 78 (2016)",
+      "href": "https://eprint.iacr.org/2015/1022"
+    },
+    {
+      "text": "S. D. Galbraith, R. Granger, S.-P. Merz and C. Petit, \"On index calculus algorithms for subfield curves\" (2020)",
+      "href": "https://eprint.iacr.org/2020/1315"
+    }
+  ],
+  "related": ["index-calculus-end-to-end", "cryptanalysis/summation-polynomials", "cryptanalysis/weil-descent", "ecdlp"]
+}

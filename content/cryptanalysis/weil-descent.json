@@ -1,0 +1,117 @@
+{
+  "slug": "weil-descent",
+  "position": 2,
+  "family": "index-calculus",
+  "title": "Weil descent and the GHS attack",
+  "short_title": "Weil descent (GHS)",
+  "one_liner": "Transport an elliptic curve over F<sub>2<sup>m</sup></sub> to a higher-genus curve over a subfield, where index calculus already works.",
+  "cost_label": "Subexponential on vulnerable binary curves",
+  "description": "The Gaudry-Hess-Smart Weil descent attack: transferring the ECDLP from a binary extension field to a hyperelliptic Jacobian over a subfield, and why standardised binary curves use prime extension degrees.",
+  "standfirst": "The GHS attack is the clearest example of the most dangerous shape in cryptanalysis: not a faster algorithm for your problem, but a structure-preserving map from your problem into someone else's, which was solved long ago.",
+  "facts": {
+    "Problem": "ECDLP on E/F<sub>q<sup>n</sup></sub>, characteristic 2, n composite or small",
+    "Mechanism": "Weil restriction to an abelian variety, then a covering curve",
+    "Cost after transfer": "Subexponential, via hyperelliptic index calculus",
+    "Affects": "Binary curves with composite extension degree; some degree-<em>n</em> cases with n &isin; {5, 7}",
+    "Does not affect": "F<sub>2<sup>m</sup></sub> with m prime and large &mdash; the standardised choice"
+  },
+  "sections": [
+    {
+      "heading": "The shape of the attack",
+      "blocks": [
+        {
+          "p": "Hyperelliptic curves of large genus are not good cryptographic groups. Adleman, DeMarrais and Huang, and later Gaudry and Enge&ndash;Gaudry, showed that index calculus works well in their Jacobians: divisors factor into prime divisors, so smoothness exists, so relations are cheap. High genus is therefore something to avoid, and nobody deploys it."
+        },
+        {
+          "p": "The GHS attack does not attack your elliptic curve. It constructs a hyperelliptic curve whose Jacobian contains your group, solves the discrete logarithm there, and maps the answer back. Your curve was never weak on its own terms; it was reachable from something weak."
+        }
+      ]
+    },
+    {
+      "heading": "The mechanism",
+      "blocks": [
+        {
+          "p": "Let <em>E</em> be defined over <em>k</em> = <strong>F</strong><sub><em>q<sup>n</sup></em></sub> with subfield <em>k</em><sub>0</sub> = <strong>F</strong><sub><em>q</em></sub>. The Weil restriction of scalars <em>W</em> = Res<sub><em>k</em>/<em>k</em><sub>0</sub></sub>(<em>E</em>) is an abelian variety of dimension <em>n</em> over <em>k</em><sub>0</sub> whose <em>k</em><sub>0</sub>-points are exactly the <em>k</em>-points of <em>E</em>. No information is lost; the group is simply viewed over the smaller field."
+        },
+        {
+          "p": "Gaudry, Hess and Smart then find a curve <em>C</em> over <em>k</em><sub>0</sub> mapping into <em>W</em>, built in characteristic 2 from an Artin&ndash;Schreier construction applied to the curve equation. Composing the two directions gives group homomorphisms"
+        },
+        {
+          "math": "E(F<sub>q<sup>n</sup></sub>) &rarr; Jac<sub>C</sub>(F<sub>q</sub>) &nbsp;&mdash;&nbsp; solve the DLP in the Jacobian, pull the answer back",
+          "label": "The transfer"
+        },
+        {
+          "p": "The genus of <em>C</em> is the parameter that decides everything. It is controlled by the Frobenius action on the 2-torsion-related data of the curve equation, and is roughly 2<sup><em>m</em>&minus;1</sup> or 2<sup><em>m</em>&minus;1</sup> &minus; 1 for a quantity <em>m</em> &le; <em>n</em> determined by the curve. Too small and the transfer loses information; too large and the Jacobian index calculus becomes more expensive than attacking <em>E</em> directly. The attack works in a window, and whether a given curve falls in that window is a computable property of its coefficients."
+        }
+      ]
+    },
+    {
+      "heading": "What it actually broke",
+      "blocks": [
+        {
+          "p": "Menezes and Qu showed that the attack does not apply to <strong>F</strong><sub>2<sup><em>m</em></sup></sub> with <em>m</em> prime in the range used by the standards, which is what kept the ANSI and NIST binary curves &mdash; <em>m</em> = 163, 233, 283, 409, 571, all prime &mdash; out of reach. The vulnerable cases are composite <em>m</em>, where a genuine intermediate subfield exists."
+        },
+        {
+          "p": "The most-cited concrete result is Jacobson, Menezes and Stein's solution of an ECDLP over <strong>F</strong><sub>2<sup>124</sup></sub> by descent to genus 31 over <strong>F</strong><sub>2<sup>4</sup></sub>, a computation far below the cost of rho on the same curve. Later work by Gaudry (the GHS variant using isogenies and covers) and by Hess extended coverage to more curves, including some cases with <em>n</em> prime and small, notably <em>n</em> = 5 and <em>n</em> = 7."
+        },
+        {
+          "note": "The attack's applicability is decided per curve, not per field. Two curves over the same field can differ in whether the covering construction yields a usable genus. Any deployment on a binary extension field needs the GHS test applied to its specific coefficients &mdash; a field-size check is not enough.",
+          "note_label": "Assessment is per curve"
+        }
+      ]
+    },
+    {
+      "heading": "The generalisation worth remembering",
+      "blocks": [
+        {
+          "p": "GHS sits in a family of <em>transfer</em> attacks, and that family is the right mental index:"
+        },
+        {
+          "ul": [
+            "<strong>MOV / Frey&ndash;R&uuml;ck.</strong> The Weil or Tate pairing embeds <em>E</em>(<strong>F</strong><sub><em>q</em></sub>) into <strong>F</strong><sub><em>q<sup>k</sup></em></sub><sup>&times;</sup>, where index calculus is subexponential. Harmless when the embedding degree <em>k</em> is large, fatal for supersingular curves where <em>k</em> &le; 6 &mdash; and deliberately exploited in pairing-based cryptography, which is the same fact used constructively.",
+            "<strong>Smart&ndash;Satoh&ndash;Araki.</strong> An anomalous curve, with #<em>E</em>(<strong>F</strong><sub><em>p</em></sub>) = <em>p</em>, lifts to the <em>p</em>-adics and the formal logarithm solves the ECDLP in linear time.",
+            "<strong>Weil descent.</strong> This page: transfer to a higher-genus Jacobian over a subfield.",
+            "<strong>Cover and decomposition attacks.</strong> Gaudry's decomposition method and the cover attacks of Diem combine descent with <a href=\"summation-polynomials.html\">summation-polynomial</a> relation search."
+          ]
+        },
+        {
+          "p": "Each is checkable in advance from published curve data: embedding degree, trace, field structure, and the covering computation. Curve validation criteria such as those in SafeCurves or the ANSI X9.62 conditions exist to close all of them at once."
+        }
+      ]
+    },
+    {
+      "heading": "The boundary",
+      "blocks": [
+        {
+          "p": "Weil descent needs a subfield. A curve over a prime field has none, so this entire family is inapplicable to P-256, secp256k1 and Curve25519 &mdash; their exposure remains the generic bound."
+        },
+        {
+          "p": "The broader lesson survives the specific attack, and is the reason this page exists in a library aimed at parameter-setters: a hardness assumption is only as strong as the weakest object your instance can be mapped into, and the relevant review question is which maps out of your group are efficiently computable. Extension-field structure, small embedding degree and unusual trace are the three that have historically had answers."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "P. Gaudry, F. Hess and N. P. Smart, \"Constructive and destructive facets of Weil descent on elliptic curves\", Journal of Cryptology 15 (2002)",
+      "href": "https://link.springer.com/article/10.1007/s00145-001-0011-x"
+    },
+    {
+      "text": "A. Menezes and M. Qu, \"Analysis of the Weil descent attack of Gaudry, Hess and Smart\", CT-RSA 2001",
+      "href": "https://link.springer.com/chapter/10.1007/3-540-45353-9_23"
+    },
+    {
+      "text": "M. Jacobson, A. Menezes and A. Stein, \"Solving elliptic curve discrete logarithm problems using Weil descent\" (2001)",
+      "href": "https://eprint.iacr.org/2001/041"
+    },
+    {
+      "text": "A. Menezes, T. Okamoto and S. Vanstone, \"Reducing elliptic curve logarithms to logarithms in a finite field\", IEEE Trans. Inf. Theory 39 (1993)",
+      "href": "https://ieeexplore.ieee.org/document/259647"
+    },
+    {
+      "text": "N. P. Smart, \"The discrete logarithm problem on elliptic curves of trace one\", Journal of Cryptology 12 (1999)",
+      "href": "https://link.springer.com/article/10.1007/s001459900052"
+    }
+  ],
+  "related": ["summation-polynomials", "pollard-rho"]
+}

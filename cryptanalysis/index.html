@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Notes on how public-key hardness assumptions are attacked: generic discrete-log algorithms, index calculus and descent, lattice attacks, and isogeny attacks, with costs, record computations, and the conditions under which each attack applies.">
+  <meta property="og:title" content="Cryptanalysis reference · Isogeny Labs">
+  <meta property="og:description" content="Notes on how public-key hardness assumptions are attacked: generic discrete-log algorithms, index calculus and descent, lattice attacks, and isogeny attacks, with costs, record computations, and the conditions under which each attack applies.">
+  <meta property="og:type" content="article">
+  <title>Cryptanalysis reference · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html">Schemes</a>
+        <a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <header aria-labelledby="library-title">
+      <h1 id="library-title">Cryptanalysis reference</h1>
+      <p class="standfirst">Notes on the attacks that public-key parameters are sized against. Each page says what the attack needs, what it costs, what the largest computation on record used, and when the attack stops applying. Every page cites the original papers, and those are the thing to read if you need precision.</p>
+    </header>
+    <nav class="toc" aria-label="Families">
+      <ol>
+        <li><a href="#generic">Generic group algorithms</a></li>
+        <li><a href="#index-calculus">Index calculus and descent</a></li>
+        <li><a href="#lattice">Lattice attacks</a></li>
+        <li><a href="#isogeny">Isogeny attacks</a></li>
+      </ol>
+    </nav>
+    <section aria-labelledby="guide-title">
+      <h2 id="guide-title">How the pages are organised</h2>
+      <p>Most published attacks don't break deployed systems. They improve an exponent, or need a structural coincidence that sensible parameters avoid, or assume an oracle nobody has. So the question each page tries to answer is what the attack would cost against a particular set of parameters, and what would have to change for that cost to become affordable.</p>
+      <p>Each page covers, in order:</p>
+      <ul>
+        <li><strong>The problem instance:</strong> what the attacker is given and what counts as success.</li>
+        <li><strong>The mechanism:</strong> the idea that makes the attack cheaper than brute force. It is usually a collision, a relation, or a map to an easier object.</li>
+        <li><strong>The cost:</strong> the asymptotic bound, and what the largest published computation actually used.</li>
+        <li><strong>The boundary:</strong> the hypothesis the attack depends on, and so the parameter choice that makes it irrelevant.</li>
+      </ul>
+      <aside class="note"><p><span class="note-label">A caveat that applies throughout.</span> an asymptotic bound is not a security level. O(&radic;n) group operations says nothing about memory, communication, or the constant factor, and those decide whether a computation is affordable. Where a record computation exists, we give its measured cost alongside the bound.</p></aside>
+    </section>
+      <section id="generic" aria-labelledby="generic-title">
+        <h2 id="generic-title">Generic group algorithms</h2>
+        <p class="family-intro">These work in any cyclic group where you can compute the group operation and test equality. Shoup's lower bound says no generic algorithm can use fewer than about &radic;p operations, where <em>p</em> is the largest prime dividing the group order, so these algorithms set the baseline every discrete-log parameter is measured against.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="pollard-rho.html">Pollard's rho</a></h3>
+            <p>The square-root generic attack that every elliptic-curve key size is calibrated against.</p>
+            <p class="meta">&Theta;(&radic;n) group operations</p>
+          </li>
+          <li>
+            <h3><a href="pohlig-hellman.html">Pohlig&ndash;Hellman</a></h3>
+            <p>A discrete logarithm is only as hard as the largest prime factor of the group order &mdash; which makes group-order validation a security control, not a formality.</p>
+            <p class="meta">O(&Sigma; e<sub>i</sub>(log n + &radic;p<sub>i</sub>))</p>
+          </li>
+          <li>
+            <h3><a href="baby-step-giant-step.html">BSGS and kangaroos</a></h3>
+            <p>Deterministic &radic;n time-memory tradeoffs, and Pollard's lambda method for logarithms known to lie in a short interval.</p>
+            <p class="meta">&radic;n time and memory (BSGS); about 2&radic;W time, little memory, for an interval of width W (kangaroos)</p>
+          </li>
+        </ul>
+      </section>
+      <section id="index-calculus" aria-labelledby="index-calculus-title">
+        <h2 id="index-calculus-title">Index calculus and descent</h2>
+        <p class="family-intro">Index calculus collects relations over a factor base and solves a linear system. It is the reason discrete logarithms in finite fields take subexponential time. Whether anything like it works on elliptic curves has been an open question since Semaev's 2004 paper.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="summation-polynomials.html">Summation polynomials</a></h3>
+            <p>Semaev's construction turns point decomposition into polynomial system solving &mdash; and delivers a genuine speedup over extension fields while leaving prime-field curves untouched.</p>
+            <p class="meta">&Otilde;(q<sup>2&minus;2/n</sup>) over F<sub>q<sup>n</sup></sub>, n fixed</p>
+          </li>
+          <li>
+            <h3><a href="weil-descent.html">Weil descent (GHS)</a></h3>
+            <p>Transport an elliptic curve over F<sub>2<sup>m</sup></sub> to a higher-genus curve over a subfield, where index calculus already works.</p>
+            <p class="meta">Subexponential on vulnerable binary curves</p>
+          </li>
+          <li>
+            <h3><a href="number-field-sieve.html">The number field sieve</a></h3>
+            <p>The L(1/3) algorithm behind every factoring and prime-field discrete-log record &mdash; and the reason RSA and finite-field Diffie&ndash;Hellman need 3072-bit parameters to match a 256-bit curve.</p>
+            <p class="meta">L<sub>N</sub>[1/3, 1.923] for general N</p>
+          </li>
+          <li>
+            <h3><a href="groebner-first-fall-degree.html">Gr&ouml;bner bases</a></h3>
+            <p>How F4/F5 behaves on the polynomial systems that index calculus generates, and why the measured degree of regularity decides feasibility.</p>
+            <p class="meta">About (number of monomials of degree &le; D)<sup>&omega;</sup>, with D the solving degree</p>
+          </li>
+        </ul>
+      </section>
+      <section id="lattice" aria-labelledby="lattice-title">
+        <h2 id="lattice-title">Lattice attacks</h2>
+        <p class="family-intro">When a secret is partly known, from a few leaked bits, a biased nonce, or a small root of a modular equation, lattice reduction can often recover the rest. Many breaks of deployed ECDSA and RSA implementations come from this family rather than from any weakness in the underlying problem.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="hidden-number-problem.html">Hidden number problem</a></h3>
+            <p>A few bits of nonce bias per signature, collected over a few hundred signatures, recovers the private key outright &mdash; regardless of curve size.</p>
+            <p class="meta">Seconds, given enough biased signatures</p>
+          </li>
+          <li>
+            <h3><a href="coppersmith.html">Coppersmith's method</a></h3>
+            <p>Finding small roots of modular polynomials, and the partial-key-exposure and small-exponent attacks on RSA that follow from it.</p>
+            <p class="meta">Polynomial time for roots below N<sup>1/d</sup>, for a monic polynomial of degree d mod N</p>
+          </li>
+        </ul>
+      </section>
+      <section id="isogeny" aria-labelledby="isogeny-title">
+        <h2 id="isogeny-title">Isogeny attacks</h2>
+        <p class="family-intro">Isogeny problems are the newest of these assumptions. SIKE was broken outright in 2022, after it had reached the fourth round of NIST's standardisation process, which is a good reason to read the attacks on its successors closely.</p>
+        <ul class="technique-list">
+          <li>
+            <h3><a href="sidh-torsion-attacks.html">SIDH torsion attacks</a></h3>
+            <p>Kani's criterion turned the auxiliary torsion images published by SIDH into a polynomial-time key recovery &mdash; breaking SIKE during NIST standardisation.</p>
+            <p class="meta">Polynomial time; SIKEp434 in about an hour</p>
+          </li>
+          <li>
+            <h3><a href="kuperberg-csidh.html">Kuperberg and CSIDH</a></h3>
+            <p>Commutativity buys CSIDH its small keys and non-interactive key exchange, and costs it a subexponential quantum attack &mdash; whose concrete cost is still disputed.</p>
+            <p class="meta">Classical p<sup>1/4</sup>; quantum 2<sup>O(&radic;log N)</sup></p>
+          </li>
+          <li>
+            <h3><a href="supersingular-path-problem.html">Supersingular path problem</a></h3>
+            <p>Delfs&ndash;Galbraith, Wesolowski's 2026 p<sup>1/3</sup> algorithm, and what its memory cost means for SQIsign parameters.</p>
+            <p class="meta">p<sup>1/2</sup> for thirty years; p<sup>1/3+o(1)</sup> time and memory since 2026</p>
+          </li>
+        </ul>
+      </section>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

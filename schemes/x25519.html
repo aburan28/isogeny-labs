@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Elliptic-curve Diffie-Hellman and X25519: the Montgomery ladder, the RFC 7748 test vectors reproduced at full size, scalar clamping, low-order points and the all-zero shared secret, twist security, and pairing X25519 with ML-KEM in hybrid key exchange.">
+  <meta property="og:title" content="X25519 and elliptic-curve Diffie–Hellman · Isogeny Labs">
+  <meta property="og:description" content="Elliptic-curve Diffie-Hellman and X25519: the Montgomery ladder, the RFC 7748 test vectors reproduced at full size, scalar clamping, low-order points and the all-zero shared secret, twist security, and pairing X25519 with ML-KEM in hybrid key exchange.">
+  <meta property="og:type" content="article">
+  <title>X25519 and elliptic-curve Diffie–Hellman · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Schemes</a> /
+        <a href="index.html#key-establishment">Key establishment</a>
+      </nav>
+      <header>
+        <h1>X25519 and elliptic-curve Diffie&ndash;Hellman</h1>
+        <p class="standfirst">Two parties each pick a secret number, exchange one curve point each, and arrive at the same shared secret, which an eavesdropper cannot compute without solving a discrete logarithm. X25519 is the version almost everyone uses. Its design choices make it hard to implement wrongly.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Rests on</dt><dd>The elliptic-curve Diffie&ndash;Hellman problem, which as far as anyone knows is as hard as the <a href="../notes/ecdlp.html">ECDLP</a></dd></div>
+        <div><dt>Standards</dt><dd>RFC 7748 (X25519 and X448); NIST SP 800-56A with the curves of SP 800-186</dd></div>
+        <div><dt>Sizes</dt><dd>32-byte public keys and shared secret</dd></div>
+        <div><dt>Group</dt><dd>Curve25519 over F<sub>p</sub>, p = 2<sup>255</sup> &minus; 19; order 8&middot;L with L a 253-bit prime</dd></div>
+        <div><dt>Quantum</dt><dd>Broken by Shor's algorithm; deployments are moving to hybrids with <a href="ml-kem.html">ML-KEM</a></dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#the-exchange">The exchange</a></li>
+        <li><a href="#design-choices-that-remove-mistakes">Design choices that remove mistakes</a></li>
+        <li><a href="#low-order-points">Low-order points</a></li>
+        <li><a href="#security-and-the-quantum-transition">Security and the quantum transition</a></li>
+        </ol>
+      </nav>
+      <section id="the-exchange" aria-labelledby="the-exchange-title">
+        <h2 id="the-exchange-title">The exchange</h2>
+        <p>Diffie&ndash;Hellman needs a group in which exponentiation is easy and its inverse, the discrete logarithm, is hard. On an elliptic curve with base point G, Alice picks a secret scalar a and publishes aG; Bob picks b and publishes bG. Each multiplies the other's point by their own secret, and both arrive at abG. An eavesdropper sees aG and bG, and getting abG from those is the Diffie&ndash;Hellman problem, for which no method is known that is better than recovering a or b outright.</p>
+        <p>X25519, specified in RFC 7748, is that exchange on Bernstein's Curve25519 with a particular encoding. Keys and points are 32-byte strings, and only the x-coordinate (u in RFC 7748) is ever sent. The code that builds this page implements it and reproduces the RFC's test vectors exactly:</p>
+        <pre class="listing">a        = 77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a
+X25519(a, 9) = 8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a
+
+b        = 5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b27ff88e0eb
+X25519(b, 9) = de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f
+
+shared K = 4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742</pre>
+        <p class="listing-label">RFC 7748 section 6.1, recomputed at build time: 9 is the base point's u-coordinate</p>
+        <p>X25519(a, X25519(b, 9)) and X25519(b, X25519(a, 9)) both give K, and both match the RFC.</p>
+      </section>
+      <section id="design-choices-that-remove-mistakes" aria-labelledby="design-choices-that-remove-mistakes-title">
+        <h2 id="design-choices-that-remove-mistakes-title">Design choices that remove mistakes</h2>
+        <p>Most elliptic-curve Diffie&ndash;Hellman failures have been implementation failures: invalid-curve points, timing leaks, missing checks. Curve25519 was designed so that the simplest correct implementation is also the natural one.</p>
+        <ul>
+          <li><strong>The Montgomery ladder.</strong> Scalar multiplication uses only x-coordinates and performs the same operations for every bit of the scalar, swapping two values conditionally. There is no branch on secret data. The implementation here is the RFC's pseudocode line for line.</li>
+          <li><strong>Clamping.</strong> Before use, the three lowest bits of the scalar are cleared, the top bit is cleared and bit 254 is set. The build checks this on Alice's key from the RFC: after clamping it is a multiple of 8 with bit 254 set. Clearing the low bits makes the scalar a multiple of the cofactor 8. Fixing the top bit gives every scalar the same length, so the ladder always runs the same number of steps.</li>
+          <li><strong>Twist security.</strong> A received u-coordinate that is not on Curve25519 is on its quadratic twist instead, and the ladder computes there without complaint. That is safe only if the twist's group is also hard. The build computes it: the curve has order 8&middot;L and the twist 4&middot;L&prime;, with L and L&prime; primes of 253 and 253 bits. An invalid point therefore gives an attacker nothing useful, so X25519 needs no point validation.</li>
+        </ul>
+      </section>
+      <section id="low-order-points" aria-labelledby="low-order-points-title">
+        <h2 id="low-order-points-title">Low-order points</h2>
+        <p>Clamping has one visible consequence. The curve has a few points of order dividing 8, among them u = 0 and u = 1, and multiplying any of them by a multiple of 8 gives the identity. A peer who sends one of these as its public key forces the shared secret to all zeros, whatever the other side's key. The build checks this for u = 0 and u = 1 against 5 different private keys, and every result is 32 zero bytes.</p>
+        <p>That does not reveal anything about the private key. It does let a malicious peer make two parties' shared secrets predictable, which matters in protocols that assume the secret is contributory. RFC 7748 allows implementations to reject an all-zero output, and TLS 1.3 requires it: implementations MUST check for the all-zero secret and abort.</p>
+      </section>
+      <section id="security-and-the-quantum-transition" aria-labelledby="security-and-the-quantum-transition-title">
+        <h2 id="security-and-the-quantum-transition-title">Security and the quantum transition</h2>
+        <p>Against classical computers X25519 offers about 2<sup>126</sup> security: <a href="../cryptanalysis/pollard-rho.html">Pollard's rho</a> on a group of prime order L &asymp; 2<sup>252</sup>, less a little for the negation map. Shor's algorithm breaks it completely, and because recorded traffic can be decrypted later, key exchange is the first thing to migrate. The deployed answer is a hybrid: run X25519 and <a href="ml-kem.html">ML-KEM-768</a> side by side and combine both secrets, so the result is secure while either holds. Hybrid X25519 and ML-KEM key exchange has been enabled by default in major browsers and in OpenSSH.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://www.rfc-editor.org/rfc/rfc7748">A. Langley, M. Hamburg and S. Turner, RFC 7748, Elliptic Curves for Security (2016)</a></li>
+        <li><a href="https://doi.org/10.1007/11745853_14">D. J. Bernstein, "Curve25519: new Diffie-Hellman speed records", PKC 2006</a></li>
+        <li><a href="https://www.rfc-editor.org/rfc/rfc8446">E. Rescorla, RFC 8446, The Transport Layer Security (TLS) Protocol Version 1.3 (2018)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="ml-kem.html">ML-KEM</a> <span class="family-tag">(Key establishment)</span></li>
+        <li><a href="eddsa.html">EdDSA and Ed25519</a> <span class="family-tag">(Signatures)</span></li>
+        <li><a href="../notes/elliptic-curves.html">Elliptic curves, from the equation to the group</a> <span class="family-tag">(Notes)</span></li>
+        <li><a href="../notes/ecdlp.html">The elliptic-curve discrete logarithm problem</a> <span class="family-tag">(Notes)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

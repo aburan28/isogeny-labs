@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Shanks&#x27;s baby-step giant-step algorithm and Pollard&#x27;s kangaroo (lambda) method for discrete logarithms, measured on a prime-order elliptic curve group, with when each is the right tool: short exponents, known intervals, and memory-bounded search.">
+  <meta property="og:title" content="Baby-step giant-step and kangaroos · Isogeny Labs">
+  <meta property="og:description" content="Shanks&#x27;s baby-step giant-step algorithm and Pollard&#x27;s kangaroo (lambda) method for discrete logarithms, measured on a prime-order elliptic curve group, with when each is the right tool: short exponents, known intervals, and memory-bounded search.">
+  <meta property="og:type" content="article">
+  <title>Baby-step giant-step and kangaroos · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html">Schemes</a>
+        <a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Cryptanalysis reference</a> /
+        <a href="index.html#generic">Generic group algorithms</a>
+      </nav>
+      <header>
+        <h1>Baby-step giant-step and kangaroos</h1>
+        <p class="standfirst">Pollard's rho is the algorithm parameters are sized against, but it is not the only square-root method. Baby-step giant-step is deterministic and simple, and pays for it in memory. Pollard's kangaroos solve a different problem, a logarithm known to lie in a short interval, in time that depends on the interval rather than the group.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Problem</dt><dd>Given P and Q = kP, find k; for kangaroos, with k known to lie in an interval of width W</dd></div>
+        <div><dt>BSGS cost</dt><dd>At most 2&lceil;&radic;n&rceil; group operations and &lceil;&radic;n&rceil; stored points</dd></div>
+        <div><dt>Kangaroo cost</dt><dd>About 2&radic;W group operations with a few stored points; parallelises linearly</dd></div>
+        <div><dt>Measured here</dt><dd>BSGS 1.49&radic;n on average; kangaroos 2.42&radic;W on average</dd></div>
+        <div><dt>Matters for</dt><dd>Short or structured exponents, partially leaked keys, and small-message decryption in exponential ElGamal</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#baby-steps-and-giant-steps">Baby steps and giant steps</a></li>
+        <li><a href="#kangaroos-a-logarithm-in-an-interval">Kangaroos: a logarithm in an interval</a></li>
+        <li><a href="#where-these-matter">Where these matter</a></li>
+        </ol>
+      </nav>
+      <section id="baby-steps-and-giant-steps" aria-labelledby="baby-steps-and-giant-steps-title">
+        <h2 id="baby-steps-and-giant-steps-title">Baby steps and giant steps</h2>
+        <p>Shanks's idea, from 1971, is to write the unknown k as k = im + j with m = &lceil;&radic;n&rceil; and 0 &le; i, j &lt; m. Then Q &minus; imP = jP, and the two sides can be computed separately:</p>
+        <ol>
+          <li><strong>Baby steps.</strong> Compute 0, P, 2P, &hellip;, (m&minus;1)P and store them in a hash table keyed by the point, with j as the value.</li>
+          <li><strong>Giant steps.</strong> Compute Q, Q &minus; mP, Q &minus; 2mP, &hellip; and look each one up in the table.</li>
+          <li><strong>Match.</strong> When Q &minus; imP is in the table as jP, the answer is k = im + j.</li>
+        </ol>
+        <p>Nothing is random. The algorithm finishes in at most 2m group operations, and the table holds m points. That table is the whole problem at cryptographic sizes: for a 256-bit curve m is 2<sup>128</sup>, and no computer stores 2<sup>128</sup> points. Rho does the same work, up to a constant, with almost no memory, which is why it and not BSGS is the baseline for key sizes.</p>
+        <p>On the curve from the <a href="../notes/pollard-rho-worked-example.html">rho worked example</a>, y<sup>2</sup> = x<sup>3</sup> + 3x + 6 over F<sub>10,007</sub>, with a group of prime order n = 10,039, the table holds m = 101 points. Over 200 random targets, BSGS used 150 group operations on average, and never more than 199 against the bound of 202. That is 1.49&radic;n: m baby steps, and on average m/2 giant steps. Each result was checked by multiplying P by the answer.</p>
+        <p>The trade can be moved. Storing more baby steps means fewer giant steps, and when many logarithms are needed in the same group the table can be built once and reused, which makes each further logarithm cheaper. With little memory and many targets, the parallel collision search of van Oorschot and Wiener is the better choice.</p>
+      </section>
+      <section id="kangaroos-a-logarithm-in-an-interval" aria-labelledby="kangaroos-a-logarithm-in-an-interval-title">
+        <h2 id="kangaroos-a-logarithm-in-an-interval-title">Kangaroos: a logarithm in an interval</h2>
+        <p>Sometimes the attacker knows more than the group. The exponent may be known to lie between 0 and W, for example because it was generated too short, or because a side channel leaked its top bits. BSGS adapts to an interval directly, with &radic;W memory. Pollard's lambda method, from 1978 and better known as the kangaroo method, does it in about 2&radic;W time with almost none.</p>
+        <p>Two kangaroos jump through the group. The <em>tame</em> kangaroo starts at a known multiple of P, the top of the interval, WP. The <em>wild</em> one starts at Q = kP. Each jump adds sP to the current point, where the jump length s is chosen by a fixed function of the point itself, so a kangaroo's path depends only on where it is. Each kangaroo records how far it has travelled. Because the paths are deterministic, once the wild kangaroo lands anywhere the tame one has already been, it follows the tame one's footprints from then on. Setting the two positions equal gives W + d<sub>tame</sub> = k + d<sub>wild</sub>, so k = W + d<sub>tame</sub> &minus; d<sub>wild</sub>.</p>
+        <p>The jump lengths are powers of two whose mean is about &radic;W/2. That is small enough that the wild kangaroo, following behind, cannot jump over the tame one's whole trail, and large enough that it catches up quickly. For an interval of width W = 1,000 in the same group, that meant 7 jump lengths, 1 to 2<sup>7&minus;1</sup>, with mean 18.1.</p>
+        <p>Over 200 secrets drawn from [0, 1,000), the two kangaroos together used 76 group operations on average, with median 78 and maximum 144. That is 2.42&radic;W, close to the 2&radic;W that the analysis predicts, and it did not depend on the group order of 10,039. Every answer was checked by scalar multiplication.</p>
+        <aside class="note"><p><span class="note-label">Distinguished points.</span> at this size the code remembers every point either kangaroo has visited. A real implementation remembers only <em>distinguished</em> points, such as those whose x-coordinate ends in enough zero bits, and detects the collision a few steps late. That is what lets the method run with a handful of stored points, and across many processors at once.</p></aside>
+        <p>Van Oorschot and Wiener showed how to run many kangaroos in parallel with distinguished points, for a linear speedup. Pollard's 2000 paper analyses several variants. Galbraith, Pollard and Ruprai later lowered the constant below 2 by using more kangaroos and exploiting the group's cheap negation.</p>
+      </section>
+      <section id="where-these-matter" aria-labelledby="where-these-matter-title">
+        <h2 id="where-these-matter-title">Where these matter</h2>
+        <ul>
+          <li><strong>Short exponents.</strong> A secret key or nonce drawn from fewer bits than the group size falls to kangaroos in time about 2<sup>b/2</sup> for b bits, whatever the group order. Using a 128-bit exponent in a group of 256-bit order leaves 64-bit security, not 128.</li>
+          <li><strong>Partial leaks.</strong> If a side channel reveals some bits of a key, the rest lies in an interval or a union of intervals, and the kangaroo cost is set by what remains unknown.</li>
+          <li><strong>Exponential ElGamal.</strong> Schemes that encrypt m as mP, for homomorphic addition, have to solve a discrete logarithm to decrypt, and rely on m being small. BSGS with a precomputed table is the usual decryption method.</li>
+          <li><strong>Composite orders.</strong> Inside <a href="pohlig-hellman.html">Pohlig&ndash;Hellman</a>, each prime-order piece is solved with BSGS or rho, so the cost is set by the largest prime factor of the group order.</li>
+        </ul>
+        <p>None of this changes the security of a properly generated key in a prime-order group. The exponent is uniform over the whole group, the interval is the group, and every square-root method costs about &radic;n, which is the bound Shoup proved no generic algorithm can beat.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://doi.org/10.1090/S0025-5718-1978-0491431-9">J. M. Pollard, "Monte Carlo methods for index computation (mod p)", Mathematics of Computation 32 (1978)</a></li>
+        <li><a href="https://doi.org/10.1007/PL00003816">P. C. van Oorschot and M. J. Wiener, "Parallel collision search with cryptanalytic applications", Journal of Cryptology 12 (1999)</a></li>
+        <li><a href="https://doi.org/10.1007/s001450010010">J. M. Pollard, "Kangaroos, Monopoly and discrete logarithms", Journal of Cryptology 13 (2000)</a></li>
+        <li><a href="https://doi.org/10.1090/S0025-5718-2012-02641-X">S. D. Galbraith, J. M. Pollard and R. S. Ruprai, "Computing discrete logarithms in an interval", Mathematics of Computation 82 (2013)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="pollard-rho.html">Pollard's rho and the parallel collision search</a> <span class="family-tag">(Generic group algorithms)</span></li>
+        <li><a href="pohlig-hellman.html">Pohlig&ndash;Hellman and the smooth-order reduction</a> <span class="family-tag">(Generic group algorithms)</span></li>
+        <li><a href="../notes/pollard-rho-worked-example.html">Pollard's rho, worked on a small curve</a> <span class="family-tag">(Notes)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

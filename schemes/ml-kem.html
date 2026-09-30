@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="ML-KEM (FIPS 203, formerly CRYSTALS-Kyber): module learning with errors, the K-PKE encryption scheme, the Fujisaki-Okamoto transform with implicit rejection, parameter sets and sizes, and what has gone wrong in implementations.">
+  <meta property="og:title" content="ML-KEM · Isogeny Labs">
+  <meta property="og:description" content="ML-KEM (FIPS 203, formerly CRYSTALS-Kyber): module learning with errors, the K-PKE encryption scheme, the Fujisaki-Okamoto transform with implicit rejection, parameter sets and sizes, and what has gone wrong in implementations.">
+  <meta property="og:type" content="article">
+  <title>ML-KEM · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Schemes</a> /
+        <a href="index.html#key-establishment">Key establishment</a>
+      </nav>
+      <header>
+        <h1>ML-KEM</h1>
+        <p class="standfirst">ML-KEM is what replaces elliptic-curve Diffie&ndash;Hellman for agreeing on keys. It is fast, its keys and ciphertexts are about a kilobyte each, and its security rests on a lattice problem that no known quantum algorithm solves efficiently.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Standard</dt><dd>FIPS 203, August 2024, from CRYSTALS-Kyber</dd></div>
+        <div><dt>Rests on</dt><dd>Module learning with errors over Z<sub>3329</sub>[X]/(X<sup>256</sup> + 1)</dd></div>
+        <div><dt>Parameter sets</dt><dd>ML-KEM-512, -768 and -1024, claimed at security categories 1, 3 and 5. NIST recommends ML-KEM-768 as the default</dd></div>
+        <div><dt>Sizes (ML-KEM-768)</dt><dd>1,184-byte encapsulation key, 1,088-byte ciphertext, 32-byte shared secret</dd></div>
+        <div><dt>Deployed as</dt><dd>Hybrids such as X25519MLKEM768 in TLS 1.3, which combine it with X25519</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#what-a-kem-does">What a KEM does</a></li>
+        <li><a href="#the-hard-problem">The hard problem</a></li>
+        <li><a href="#the-encryption-scheme-underneath">The encryption scheme underneath</a></li>
+        <li><a href="#from-encryption-to-a-kem">From encryption to a KEM</a></li>
+        <li><a href="#parameters-and-sizes">Parameters and sizes</a></li>
+        <li><a href="#security-in-practice">Security in practice</a></li>
+        <li><a href="#where-it-stops">Where it stops</a></li>
+        </ol>
+      </nav>
+      <section id="what-a-kem-does" aria-labelledby="what-a-kem-does-title">
+        <h2 id="what-a-kem-does-title">What a KEM does</h2>
+        <p>A key-encapsulation mechanism has three algorithms. KeyGen makes an encapsulation key ek, which is public, and a decapsulation key dk, which is secret. Encaps(ek) produces a fresh random shared key K together with a ciphertext c. Decaps(dk, c) recovers K from c. In TLS 1.3 the client sends ek in its first message, the server replies with c, and both sides derive the session keys from K.</p>
+        <p>Unlike Diffie&ndash;Hellman, the two sides do different things, and there is no way for two parties to derive a shared key from each other's public keys alone. For a handshake that difference does not matter: one round trip carries the key share each way, exactly as with ECDH.</p>
+      </section>
+      <section id="the-hard-problem" aria-labelledby="the-hard-problem-title">
+        <h2 id="the-hard-problem-title">The hard problem</h2>
+        <p>Learning with errors (LWE), introduced by Regev in 2005, asks: given a random matrix A and t = As + e, where s and e have small entries, find s. Without the error e this is linear algebra. With it, the best known methods reduce it to finding short vectors in a lattice, which is believed to be hard for classical and quantum computers alike.</p>
+        <p>ML-KEM uses the module version (MLWE). Every entry of A, s and e is a polynomial in the ring R<sub>q</sub> = Z<sub>q</sub>[X]/(X<sup>256</sup> + 1) with q = 3329, and A is a k &times; k matrix of such polynomials, with k = 2, 3 or 4. The structure makes keys small and arithmetic fast; Langlois and Stehl&eacute; showed that module lattices keep a worst-case to average-case reduction of the kind that underpins LWE.</p>
+        <p>The modulus is chosen for speed. Since 256 divides 3328 = q &minus; 1, the number &zeta; = 17 is a primitive 256th root of unity modulo q, and a number-theoretic transform splits X<sup>256</sup> + 1 into 128 quadratic factors. Multiplying two polynomials then takes a few thousand small multiplications, transforms included, instead of the 65,536 of the schoolbook method.</p>
+      </section>
+      <section id="the-encryption-scheme-underneath" aria-labelledby="the-encryption-scheme-underneath-title">
+        <h2 id="the-encryption-scheme-underneath-title">The encryption scheme underneath</h2>
+        <p>ML-KEM is built on a simpler public-key encryption scheme, K-PKE, which encrypts a 32-byte message m. Small polynomials are sampled from a centred binomial distribution CBD<sub>&eta;</sub>, whose coefficients lie between &minus;&eta; and &eta;; the matrix A is expanded from a 32-byte seed &rho; with SHAKE128, so the public key carries the seed instead of the matrix.</p>
+        <pre class="listing">K-PKE.KeyGen
+  A ← expanded from seed ρ
+  s, e ← CBD(η1)                  small, secret
+  t = A·s + e
+  encryption key (t, ρ);  decryption key s
+
+K-PKE.Encrypt(t, ρ, m; randomness)
+  r ← CBD(η1);  e1, e2 ← CBD(η2)
+  u = Aᵀ·r + e1
+  v = tᵀ·r + e2 + ⌈q/2⌉·m          each bit of m becomes 0 or ⌈q/2⌉
+  ciphertext (Compress(u, du), Compress(v, dv))
+
+K-PKE.Decrypt(s, u, v)
+  w = v − sᵀ·u
+  m = each coefficient of w rounded to 0 or ⌈q/2⌉</pre>
+        <p class="listing-label">An outline of FIPS 203's K-PKE; the standard fixes every encoding, sampling and hashing step.</p>
+        <p>Decryption works because w = ⌈q/2⌉&middot;m + (e<sup>T</sup>r + e<sub>2</sub> &minus; s<sup>T</sup>e<sub>1</sub>) plus rounding from compression, and the bracketed error is a sum of products of small polynomials. It is almost always smaller than q/4 in every coefficient, so rounding recovers m. Almost always is not always: the chance that some coefficient overflows is the decapsulation failure rate, which FIPS 203 gives as 2<sup>&minus;138.8</sup>, 2<sup>&minus;164.8</sup> and 2<sup>&minus;174.8</sup> for the three parameter sets.</p>
+        <p>Compression drops low-order bits of u and v to shorten the ciphertext. It adds a little more error, which is part of the same failure budget.</p>
+      </section>
+      <section id="from-encryption-to-a-kem" aria-labelledby="from-encryption-to-a-kem-title">
+        <h2 id="from-encryption-to-a-kem-title">From encryption to a KEM</h2>
+        <p>K-PKE on its own is only secure against passive attackers: someone who can submit modified ciphertexts and watch what the decrypter does can learn the secret key. ML-KEM wraps it in a variant of the Fujisaki&ndash;Okamoto transform, which makes decryption check its own work:</p>
+        <pre class="listing">Encaps(ek)
+  m ← 32 random bytes
+  (K, r) = G(m ‖ H(ek))
+  c = K-PKE.Encrypt(ek, m; r)
+  return (K, c)
+
+Decaps(dk, c)                     dk holds s, ek, H(ek) and a random z
+  m&#x27; = K-PKE.Decrypt(s, c)
+  (K&#x27;, r&#x27;) = G(m&#x27; ‖ H(ek))
+  c&#x27; = K-PKE.Encrypt(ek, m&#x27;; r&#x27;)
+  if c&#x27; = c:  return K&#x27;
+  else:       return J(z ‖ c)        implicit rejection</pre>
+        <p class="listing-label">G, H and J are SHA3-512, SHA3-256 and SHAKE256.</p>
+        <p>Because all the encryption randomness is derived from m, the decrypter can re-encrypt and compare. A tampered ciphertext fails the comparison, and instead of reporting an error, Decaps returns a key derived from a secret value z and the ciphertext. The attacker gets a random-looking key either way and learns nothing from the difference; the handshake simply fails later, as it would with a wrong key. Hofheinz, H&ouml;velmanns and Kiltz give the modular analysis of transforms of this kind.</p>
+        <p>FIPS 203 also requires input checks that Kyber's specification did not include: an encapsulation key whose coefficients are not reduced modulo q must be rejected, and a decapsulation key must match the hash of the encapsulation key stored inside it.</p>
+      </section>
+      <section id="parameters-and-sizes" aria-labelledby="parameters-and-sizes-title">
+        <h2 id="parameters-and-sizes-title">Parameters and sizes</h2>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>From FIPS 203, Tables 1 to 3. All three sets use n = 256 and q = 3329.</caption>
+          <thead><tr><th scope="col"></th><th scope="col" class="num">k</th><th scope="col" class="num">&eta;<sub>1</sub></th><th scope="col" class="num">&eta;<sub>2</sub></th><th scope="col" class="num">d<sub>u</sub></th><th scope="col" class="num">d<sub>v</sub></th><th scope="col" class="num">Category</th><th scope="col" class="num">Failure rate</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">ML-KEM-512</th><td class="num">2</td><td class="num">3</td><td class="num">2</td><td class="num">10</td><td class="num">4</td><td class="num">1</td><td class="num">2<sup>&minus;138.8</sup></td></tr>
+            <tr><th scope="row">ML-KEM-768</th><td class="num">3</td><td class="num">2</td><td class="num">2</td><td class="num">10</td><td class="num">4</td><td class="num">3</td><td class="num">2<sup>&minus;164.8</sup></td></tr>
+            <tr><th scope="row">ML-KEM-1024</th><td class="num">4</td><td class="num">2</td><td class="num">2</td><td class="num">11</td><td class="num">5</td><td class="num">5</td><td class="num">2<sup>&minus;174.8</sup></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>Sizes in bytes, from FIPS 203, Table 3.</caption>
+          <thead><tr><th scope="col"></th><th scope="col" class="num">Encapsulation key</th><th scope="col" class="num">Decapsulation key</th><th scope="col" class="num">Ciphertext</th><th scope="col" class="num">Shared secret</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">ML-KEM-512</th><td class="num">800</td><td class="num">1,632</td><td class="num">768</td><td class="num">32</td></tr>
+            <tr><th scope="row">ML-KEM-768</th><td class="num">1,184</td><td class="num">2,400</td><td class="num">1,088</td><td class="num">32</td></tr>
+            <tr><th scope="row">ML-KEM-1024</th><td class="num">1,568</td><td class="num">3,168</td><td class="num">1,568</td><td class="num">32</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>A security category is a comparison, not a count of bits: category 1 means breaking the scheme takes at least as many resources as recovering an AES-128 key by search, category 3 an AES-192 key, and category 5 an AES-256 key. FIPS 203 recommends ML-KEM-768 as the default, as providing a large security margin at a reasonable cost.</p>
+      </section>
+      <section id="security-in-practice" aria-labelledby="security-in-practice-title">
+        <h2 id="security-in-practice-title">Security in practice</h2>
+        <p>The best known attacks on the mathematics are lattice reduction, in primal and dual forms, and their cost is estimated rather than measured: the estimates depend on models of how BKZ and lattice sieving scale, and on how memory is costed. Whether ML-KEM-512 comfortably meets category 1 was argued in public during standardisation, and the answer depends on those models. The <a href="../cryptanalysis/kuperberg-csidh.html">page on Kuperberg's algorithm</a> discusses the same issue for quantum costs; any claimed security level is a claim about a cost model.</p>
+        <p>The failures so far have been in implementations. In 2024, KyberSlash showed that several implementations, including the reference code, divided by q using instructions whose timing depends on the secret, and recovered keys within minutes to hours on a Raspberry Pi 2 and on a Cortex-M4. The affected libraries were patched. Side channels and faults in decapsulation, where the secret is used, remain the thing to review.</p>
+        <aside class="note"><p><span class="note-label">Why hybrids.</span> ML-KEM is young as deployed cryptography goes, so TLS deployments combine it with X25519. The hybrid's shared secret is derived from both, and stays secure as long as either component does: a classical break of ML-KEM leaves X25519, and a quantum computer leaves ML-KEM.</p></aside>
+      </section>
+      <section id="where-it-stops" aria-labelledby="where-it-stops-title">
+        <h2 id="where-it-stops-title">Where it stops</h2>
+        <p>ML-KEM would fall to an efficient algorithm for module-LWE at these dimensions, classical or quantum. None is known, and the structure it adds over plain LWE has not yielded an attack on these parameters. Because ML-KEM is NIST's only standardised KEM, NIST selected HQC in 2025 as a second one based on different mathematics, as a backup in case a weakness is found in ML-KEM.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://csrc.nist.gov/pubs/fips/203/final">NIST, FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard (2024)</a></li>
+        <li><a href="https://doi.org/10.1145/1568318.1568324">O. Regev, "On lattices, learning with errors, random linear codes, and cryptography", Journal of the ACM 56 (2009)</a></li>
+        <li><a href="https://eprint.iacr.org/2012/090">A. Langlois and D. Stehl&eacute;, "Worst-case to average-case reductions for module lattices", Designs, Codes and Cryptography 75 (2015)</a></li>
+        <li><a href="https://eprint.iacr.org/2017/604">D. Hofheinz, K. H&ouml;velmanns and E. Kiltz, "A modular analysis of the Fujisaki-Okamoto transformation", TCC 2017</a></li>
+        <li><a href="https://eprint.iacr.org/2024/1049">D. J. Bernstein et al., "KyberSlash: exploiting secret-dependent division timings in Kyber implementations", TCHES 2025</a></li>
+        <li><a href="https://nvlpubs.nist.gov/nistpubs/ir/2025/NIST.IR.8545.pdf">NIST IR 8545, Status Report on the Fourth Round of the NIST Post-Quantum Cryptography Standardization Process (2025)</a></li>
+        <li><a href="https://datatracker.ietf.org/doc/draft-ietf-tls-ecdhe-mlkem/">IETF, "Post-quantum hybrid ECDHE-MLKEM key agreement for TLSv1.3" (draft-ietf-tls-ecdhe-mlkem)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="ml-dsa.html">ML-DSA</a> <span class="family-tag">(Signatures)</span></li>
+        <li><a href="../notes/ecdlp.html">The elliptic-curve discrete logarithm problem</a> <span class="family-tag">(Notes)</span></li>
+        <li><a href="../cryptanalysis/kuperberg-csidh.html">Kuperberg's algorithm and CSIDH</a> <span class="family-tag">(Cryptanalysis reference)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

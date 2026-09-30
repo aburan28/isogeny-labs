@@ -1,0 +1,143 @@
+{
+  "slug": "lattices-and-lwe",
+  "position": 1,
+  "group": "lattices",
+  "compute": "lwe",
+  "title": "Lattices and learning with errors",
+  "short_title": "Lattices and LWE",
+  "one_liner": "What a lattice is, why adding small noise to linear equations makes them hard, and the lattice attack that recovers the secret when the dimension is small.",
+  "index_meta": "Primer &middot; an LWE secret recovered with LLL, and where LLL stops working",
+  "description": "Lattices, bases and short vectors; the learning with errors problem behind ML-KEM and ML-DSA; a toy LWE instance broken by the primal embedding attack with an exact LLL implementation; and a measurement of where LLL alone stops succeeding.",
+  "standfirst": "ML-KEM and ML-DSA rest on learning with errors: linear equations with a little noise added. Without the noise, Gaussian elimination solves them instantly. With it, the best known attacks turn the problem into finding a short vector in a lattice. This note does that on a small instance and measures where it stops working.",
+  "facts": {
+    "Instance shown": "n = {{n}} unknowns, m = {{m}} equations, q = {{q}}, centred binomial noise with &eta; = {{eta}}",
+    "Attack": "Primal embedding into a lattice of dimension {{dim}}, reduced with LLL (&delta; = 0.99)",
+    "Result": "Secret recovered after {{swaps}} LLL swaps, and checked",
+    "Where LLL stops": "Success falls from certain at small n to {{top_wins}} in {{trials}} at n = {{top_n}}"
+  },
+  "sections": [
+    {
+      "heading": "Lattices",
+      "blocks": [
+        {
+          "p": "A lattice is the set of all integer combinations of some linearly independent vectors b<sub>1</sub>, &hellip;, b<sub>d</sub> in R<sup>d</sup>. Those vectors are a basis, and every lattice of dimension two or more has infinitely many bases. Some are made of short, nearly orthogonal vectors, and others of long vectors that point in almost the same direction. The lattice is the same either way, but what you can compute with it is not."
+        },
+        {
+          "p": "The central problems are about short vectors. The shortest vector problem (SVP) asks for the shortest non-zero vector in the lattice, and the closest vector problem (CVP) for the lattice vector nearest a given point. With a good basis both are easy to approximate. With a bad basis, and in high dimension, no known algorithm, classical or quantum, finds them in less than exponential time."
+        },
+        {
+          "p": "Lattice reduction is the process of turning a bad basis into a better one. The LLL algorithm of Lenstra, Lenstra and Lov&aacute;sz, from 1982, runs in polynomial time and returns a basis whose first vector is within a factor exponential in d of the shortest. In the worst case that factor is 2<sup>(d&minus;1)/2</sup>. In practice LLL does far better than its guarantee: Gama and Nguyen measured the first vector at about 1.02<sup>d</sup> times the expected length of the shortest vector. That gap between guarantee and practice runs through all of lattice cryptanalysis. Security estimates are built on measured behaviour and models of it, not on theorems."
+        }
+      ]
+    },
+    {
+      "heading": "Learning with errors",
+      "blocks": [
+        {
+          "p": "Regev's learning with errors problem, from 2005, is this. A secret vector s of length n has small entries. You are given a random m &times; n matrix A over Z<sub>q</sub> and"
+        },
+        {
+          "math": "b = A s + e &nbsp;(mod q)",
+          "label": "An LWE instance: e is a vector of small errors"
+        },
+        {
+          "p": "and you must find s. Here is one with n = {{n}}, m = {{m}} and q = {{q}}. The entries of s and e are drawn from the centred binomial distribution with &eta; = {{eta}}, the same noise distribution ML-KEM uses, so each entry is between &minus;{{eta}} and {{eta}} and most are 0 or &plusmn;1:"
+        },
+        {
+          "computed": "lwe_instance"
+        },
+        {
+          "p": "The secret is s = {{s}} and the error is e = {{e}}. Neither is known to the attacker."
+        },
+        {
+          "p": "Without the error this would be trivial. The first {{n}} equations alone determine s, by Gaussian elimination. Doing exactly that here gives the candidate {{naive}}. It satisfies those first {{n}} equations perfectly, and misses the remaining equations by amounts as large as {{naive_max}}: the residuals b &minus; As, reduced into the range around zero, are {{naive_residual}}. Gaussian elimination carries the error forward and amplifies it, and a single wrong entry of the result is as bad as all of them."
+        },
+        {
+          "p": "Brute force does work at this size. There are 5<sup>{{n}}</sup> = {{brute}} possible secrets, and each can be tested by checking that b &minus; As is small. At ML-KEM's sizes that search is over 5<sup>512</sup> or more, and not an option."
+        }
+      ]
+    },
+    {
+      "heading": "The primal attack",
+      "blocks": [
+        {
+          "p": "The standard attack turns the instance into a lattice problem. The vectors As mod q, for every s, together with all multiples of q, form a lattice of dimension m. The vector b lies very close to one of its points, namely As, because b &minus; As = e is small. Finding s is therefore a closest-vector problem, and Kannan's embedding turns it into a shortest-vector problem: add b as one more basis vector, with an extra coordinate set to 1. The lattice then contains (b &minus; As, 1) = (e, 1), which is far shorter than a lattice of that dimension and determinant would normally hold."
+        },
+        {
+          "steps": [
+            "<strong>Build the basis.</strong> Each vector As mod q is fixed by its first n coordinates, so the lattice has a basis of n rows [I | (A<sub>2</sub>A<sub>1</sub><sup>&minus;1</sup>)<sup>T</sup>] and m &minus; n rows that are q times a unit vector, where A<sub>1</sub> is the top n &times; n block of A. The row (b, 1) is appended to them. Here that is {{basis_rows}} rows in dimension {{dim}}.",
+            "<strong>Reduce it.</strong> LLL with &delta; = 0.99, in exact integer arithmetic, took {{swaps}} swaps.",
+            "<strong>Read off the error.</strong> The reduced basis contains {{target}}. Its last coordinate is 1, so its first {{m}} coordinates are a candidate error vector. Its length is {{norm_e}}; the next shortest vector in the reduced basis has length {{next_norm}}.",
+            "<strong>Recover and check.</strong> The candidate gives b<sub>1</sub> &minus; e<sub>1</sub> = A<sub>1</sub>s, so s = A<sub>1</sub><sup>&minus;1</sup>(b<sub>1</sub> &minus; e<sub>1</sub>) = {{s}}. The attacker accepts it because s and b &minus; As are both small in every coordinate, a test that needs no knowledge of the answer. It matches the real secret."
+          ]
+        },
+        {
+          "p": "The code runs one further check: it verifies both LLL conditions on the reduced basis exactly, with rational Gram&ndash;Schmidt, so the reduction itself is checked rather than trusted. The (e, 1) vector here is only slightly shorter than the next one, which is one sign that this instance sits near the edge of what LLL can do."
+        }
+      ]
+    },
+    {
+      "heading": "Where LLL stops",
+      "blocks": [
+        {
+          "p": "The attack works when the embedded error vector is short enough, relative to the lattice, that the reduction algorithm finds it. As the dimension grows with q and the noise fixed, the gap closes and LLL's approximation factor of about 1.02<sup>d</sup> is no longer good enough. Repeating the attack on fresh instances shows where that happens:"
+        },
+        {
+          "computed": "lwe_scan"
+        },
+        {
+          "p": "Recovery is certain at small n, first fails at n = {{first_fail}}, and by n = {{top_n}}, a lattice of dimension {{top_dim}}, it succeeds {{top_wins}} time in {{trials}}. The failures are not partial: when LLL does not surface (e, 1), the reduced basis contains nothing that passes the attacker's check. The number of swaps grows quickly with the dimension."
+        },
+        {
+          "note": "these are measurements of one algorithm on a few instances per row, with q = {{q}} and m = 2n chosen so that the transition falls at sizes that run in seconds. They show the shape of the boundary, not its position for any real parameter set.",
+          "note_label": "Scale"
+        },
+        {
+          "p": "Past this point the attacker switches from LLL to BKZ, which reduces the basis in overlapping blocks of dimension &beta; and calls an exact SVP solver on each. A larger &beta; gives a shorter vector, and costs exponentially more. With the best lattice sieves, one call in dimension &beta; costs about 2<sup>0.292&beta;</sup> classical operations (Becker, Ducas, Gama and Laarhoven). Security estimates for LWE therefore ask what block size &beta; the attack needs, then price one or more SVP calls at that size. That price is the \"core-SVP\" figure quoted for lattice schemes. The Lattice Estimator of Albrecht, Player, Scott and others automates the calculation, for the primal attack shown here and for the dual and hybrid attacks alongside it."
+        }
+      ]
+    },
+    {
+      "heading": "From here to ML-KEM",
+      "blocks": [
+        {
+          "p": "<a href=\"../schemes/ml-kem.html\">ML-KEM</a> uses the same noise with q = 3329, and a secret of dimension 512, 768 or 1024 made of polynomial blocks: module LWE, which saves space and time without, as far as anyone knows, helping the attacker. At those sizes the primal attack still applies. It needs a block size in the hundreds, far beyond anything computed, and its cost is estimated rather than measured, which is where the debates about ML-KEM-512's margin come from. <a href=\"../schemes/ml-dsa.html\">ML-DSA</a> rests on module LWE and on a second problem, module SIS, which asks for short solutions to linear equations and is attacked with the same reduction algorithms."
+        },
+        {
+          "p": "The same machinery also breaks schemes that were never meant to be lattice-based. When a few bits of an ECDSA nonce leak, the <a href=\"../cryptanalysis/hidden-number-problem.html\">hidden number problem</a> becomes a closest-vector problem, and LLL or BKZ recovers the private key from enough signatures."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "A. K. Lenstra, H. W. Lenstra and L. Lov&aacute;sz, \"Factoring polynomials with rational coefficients\", Mathematische Annalen 261 (1982)",
+      "href": "https://doi.org/10.1007/BF01457454"
+    },
+    {
+      "text": "O. Regev, \"On lattices, learning with errors, random linear codes, and cryptography\", Journal of the ACM 56 (2009)",
+      "href": "https://doi.org/10.1145/1568318.1568324"
+    },
+    {
+      "text": "N. Gama and P. Q. Nguyen, \"Predicting lattice reduction\", EUROCRYPT 2008",
+      "href": "https://doi.org/10.1007/978-3-540-78967-3_3"
+    },
+    {
+      "text": "M. R. Albrecht, R. Player and S. Scott, \"On the concrete hardness of learning with errors\", Journal of Mathematical Cryptology 9 (2015)",
+      "href": "https://doi.org/10.1515/jmc-2015-0016"
+    },
+    {
+      "text": "A. Becker, L. Ducas, N. Gama and T. Laarhoven, \"New directions in nearest neighbor searching with applications to lattice sieving\", SODA 2016",
+      "href": "https://doi.org/10.1137/1.9781611974331.ch2"
+    },
+    {
+      "text": "H. Cohen, A Course in Computational Algebraic Number Theory, Springer (1993), Algorithm 2.6.7 (integral LLL, as implemented here)",
+      "href": "https://doi.org/10.1007/978-3-662-02945-9"
+    },
+    {
+      "text": "The Lattice Estimator",
+      "href": "https://github.com/malb/lattice-estimator"
+    }
+  ],
+  "related": ["schemes/ml-kem", "schemes/ml-dsa", "cryptanalysis/hidden-number-problem"]
+}

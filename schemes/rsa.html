@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="RSA: key generation, encryption and signatures, the Chinese remainder theorem speedup, why padding is not optional, and three real failure modes worked at toy size: textbook malleability, the Boneh-DeMillo-Lipton fault attack on CRT signing, and moduli sharing a prime.">
+  <meta property="og:title" content="RSA · Isogeny Labs">
+  <meta property="og:description" content="RSA: key generation, encryption and signatures, the Chinese remainder theorem speedup, why padding is not optional, and three real failure modes worked at toy size: textbook malleability, the Boneh-DeMillo-Lipton fault attack on CRT signing, and moduli sharing a prime.">
+  <meta property="og:type" content="article">
+  <title>RSA · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Schemes</a> /
+        <a href="index.html#signatures">Signatures</a>
+      </nav>
+      <header>
+        <h1>RSA</h1>
+        <p class="standfirst">RSA has been in use since 1977 and still signs most web certificates. The mathematics has held up: the best attack is still factoring the modulus, and the largest public factorisation is 829 bits. The failures have come from how it is used: missing padding, faulty hardware, and keys generated without enough randomness.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Rests on</dt><dd>The RSA problem, taking e-th roots modulo N = pq, which is no harder than factoring N</dd></div>
+        <div><dt>Standards</dt><dd>PKCS #1 v2.2 (RFC 8017); FIPS 186-5 for signatures; SP 800-56B for key establishment</dd></div>
+        <div><dt>Sizes</dt><dd>RSA-2048: 256-byte modulus and signature; RSA-3072: 384 bytes</dd></div>
+        <div><dt>Best known attack</dt><dd>The <a href="../cryptanalysis/number-field-sieve.html">number field sieve</a>; the largest public factorisation is RSA-250, 829 bits, in 2020</dd></div>
+        <div><dt>Quantum</dt><dd>Broken by Shor's algorithm</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#the-scheme">The scheme</a></li>
+        <li><a href="#the-crt-speedup">The CRT speedup</a></li>
+        <li><a href="#why-padding-is-not-optional">Why padding is not optional</a></li>
+        <li><a href="#faults-in-crt-signing">Faults in CRT signing</a></li>
+        <li><a href="#shared-primes">Shared primes</a></li>
+        <li><a href="#sizes-and-the-quantum-question">Sizes and the quantum question</a></li>
+        </ol>
+      </nav>
+      <section id="the-scheme" aria-labelledby="the-scheme-title">
+        <h2 id="the-scheme-title">The scheme</h2>
+        <p>Pick two large primes p and q and publish their product N together with an exponent e, almost always 65537. The private exponent d satisfies ed &equiv; 1 mod (p &minus; 1)(q &minus; 1), and computing it needs p and q. Then for every m mod N,</p>
+        <div class="math">(m<sup>e</sup>)<sup>d</sup> &equiv; m &nbsp;(mod N)
+          <span class="math-label">Raising to e and to d undo each other</span></div>
+        <p>Encryption raises to e, and so does signature verification. Decryption and signing raise to d. Recovering m from m<sup>e</sup> mod N without d is the RSA problem. Factoring N solves it, and nothing substantially better than factoring is known.</p>
+        <p>Here is a key with 64-bit primes, generated and checked by the code that builds this page. That makes a 128-bit modulus, small enough to read and far too small to use:</p>
+        <dl class="terms">
+          <div><dt>p, q</dt><dd>12017517957161568679, 18416108616170145109</dd></div>
+          <div><dt>N = pq</dt><dd>221315915995862605756138350697499441011</dd></div>
+          <div><dt>e</dt><dd>65537</dd></div>
+          <div><dt>d = e<sup>&minus;1</sup> mod (p&minus;1)(q&minus;1)</dt><dd>67697944183729155392880397401730174217</dd></div>
+        </dl>
+        <p>The message m = 162636732814686403448117886186516556018 encrypts to c = m<sup>e</sup> mod N = 152083984479829913375860482820873108877, and c<sup>d</sup> mod N gives m back.</p>
+      </section>
+      <section id="the-crt-speedup" aria-labelledby="the-crt-speedup-title">
+        <h2 id="the-crt-speedup-title">The CRT speedup</h2>
+        <p>The private-key holder knows p and q, and can compute c<sup>d</sup> modulo each separately, with the smaller exponents d<sub>p</sub> = d mod (p &minus; 1) = 9878873955538434029 and d<sub>q</sub> = d mod (q &minus; 1) = 5527052510359805669. The Chinese remainder theorem then combines the two halves into the answer mod N. Each half is an exponentiation with numbers half the size, so the whole takes about a quarter of the work, and nearly every implementation does it this way. On the key above both routes give the same m, as the build checks.</p>
+        <p>The speedup has a cost that is not arithmetic: the two halves are separate secrets, and an error in one of them, as the fault attack below shows, gives the factorisation away.</p>
+      </section>
+      <section id="why-padding-is-not-optional" aria-labelledby="why-padding-is-not-optional-title">
+        <h2 id="why-padding-is-not-optional-title">Why padding is not optional</h2>
+        <p>The bare operation m &#8614; m<sup>e</sup>, "textbook RSA", has structure an attacker can use. It is deterministic, so equal messages give equal ciphertexts. It is also multiplicative: (m<sub>1</sub>m<sub>2</sub>)<sup>d</sup> = m<sub>1</sub><sup>d</sup> m<sub>2</sub><sup>d</sup> mod N. With the key above, the signatures on m<sub>1</sub> = 169635402868690145007025520585269636032 and m<sub>2</sub> = 180069909498339022707975475649847430267 multiply to 219949365838898887615636389138238068962, which verifies as a valid signature on m<sub>1</sub>m<sub>2</sub> mod N = 76542379048537193462564054111097885405, a message the key holder never signed.</p>
+        <p>Padding destroys that structure. RSA-PSS for signatures and RSA-OAEP for encryption, both in PKCS #1 v2.2, hash and randomise the message before exponentiation, and come with security proofs in the random-oracle model. The older PKCS #1 v1.5 encryption padding does not, and Bleichenbacher showed in 1998 that a server revealing only whether a ciphertext's padding was valid lets an attacker decrypt any ciphertext with about a million queries. Variants of that attack have recurred in TLS implementations ever since, which is one reason TLS 1.3 dropped RSA key transport altogether.</p>
+      </section>
+      <section id="faults-in-crt-signing" aria-labelledby="faults-in-crt-signing-title">
+        <h2 id="faults-in-crt-signing-title">Faults in CRT signing</h2>
+        <p>Boneh, DeMillo and Lipton observed in 1997 that one faulty CRT signature is enough to factor N. Suppose a glitch, from voltage, heat or a deliberate laser pulse, corrupts only the half computed mod q. The faulty signature s&prime; is still correct mod p and wrong mod q, so s&prime;<sup>e</sup> &minus; h is divisible by p and not by q, and</p>
+        <div class="math">gcd(s&prime;<sup>e</sup> &minus; h, N) = p
+          <span class="math-label">One faulty signature on a known h factors N</span></div>
+        <p>The build signs h = 170353258798061478120892406166625372696 twice with the key above. The correct signature is 107498222148844492028097394686158116556. The second run adds one to the half mod q, and the result is 148222457455667009917425936892490253663. That fails verification, and the gcd above comes out as 12017517957161568679, which is p.</p>
+        <p>The defence is to verify every signature before releasing it, which costs one cheap exponentiation by e, or to randomise the computation. Smartcards and HSMs are expected to do this.</p>
+      </section>
+      <section id="shared-primes" aria-labelledby="shared-primes-title">
+        <h2 id="shared-primes-title">Shared primes</h2>
+        <p>RSA's security needs p and q to be unpredictable. In 2012 two independent teams, Heninger, Durumeric, Wustrow and Halderman, and Lenstra and colleagues, collected millions of RSA public keys from the internet and computed pairwise gcds of the moduli. Many devices, mostly routers and embedded systems that generated keys at first boot with too little entropy, had produced moduli sharing one prime with another device. Heninger's team recovered private keys for 0.50% of the TLS hosts they scanned.</p>
+        <p>The attack is one line. The build generates two keys that share a prime, as such a device would:</p>
+        <dl class="terms">
+          <div><dt>N<sub>1</sub></dt><dd>169539004447946207924492599901229771809</dd></div>
+          <div><dt>N<sub>2</sub></dt><dd>164309505621721155053360814796316121253</dd></div>
+          <div><dt>gcd(N<sub>1</sub>, N<sub>2</sub>)</dt><dd>12040577098273738717</dd></div>
+        </dl>
+        <p>The gcd is the shared prime, and dividing it out gives the other two, 14080637752176601877 and 13646314813704258409: both keys are factored without any factoring. Computing a gcd takes microseconds at real sizes, and a product tree does all pairs in a large collection at once.</p>
+      </section>
+      <section id="sizes-and-the-quantum-question" aria-labelledby="sizes-and-the-quantum-question-title">
+        <h2 id="sizes-and-the-quantum-question-title">Sizes and the quantum question</h2>
+        <p>RSA-2048 is conventionally rated at about 112 bits of classical security and RSA-3072 at 128, against the <a href="../cryptanalysis/number-field-sieve.html">number field sieve</a>, which is subexponential. That is why RSA keys are so much larger than elliptic-curve keys of the same strength. Shor's algorithm factors N in polynomial time on a large enough quantum computer, so RSA is on the same retirement path as elliptic-curve cryptography. NIST IR 8547 proposes deprecating 112-bit-security RSA after 2030 and disallowing RSA entirely after 2035, in favour of <a href="ml-dsa.html">ML-DSA</a> and <a href="ml-kem.html">ML-KEM</a>.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://doi.org/10.1145/359340.359342">R. L. Rivest, A. Shamir and L. Adleman, "A method for obtaining digital signatures and public-key cryptosystems", Communications of the ACM 21 (1978)</a></li>
+        <li><a href="https://www.rfc-editor.org/rfc/rfc8017">K. Moriarty, B. Kaliski, J. Jonsson and A. Rusch, RFC 8017, PKCS #1: RSA Cryptography Specifications Version 2.2 (2016)</a></li>
+        <li><a href="https://doi.org/10.1007/BFb0055716">D. Bleichenbacher, "Chosen ciphertext attacks against protocols based on the RSA encryption standard PKCS #1", CRYPTO 1998</a></li>
+        <li><a href="https://doi.org/10.1007/3-540-69053-0_4">D. Boneh, R. A. DeMillo and R. J. Lipton, "On the importance of checking cryptographic protocols for faults", EUROCRYPT 1997</a></li>
+        <li><a href="https://factorable.net/">N. Heninger, Z. Durumeric, E. Wustrow and J. A. Halderman, "Mining your Ps and Qs: detection of widespread weak keys in network devices", USENIX Security 2012</a></li>
+        <li><a href="https://eprint.iacr.org/2012/064">A. K. Lenstra, J. P. Hughes, M. Augier, J. W. Bos, T. Kleinjung and C. Wachter, "Ron was wrong, Whit is right" (2012)</a></li>
+        <li><a href="https://csrc.nist.gov/pubs/ir/8547/ipd">NIST IR 8547 (initial public draft), Transition to Post-Quantum Cryptography Standards (2024)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="../cryptanalysis/number-field-sieve.html">The number field sieve</a> <span class="family-tag">(Cryptanalysis reference)</span></li>
+        <li><a href="../cryptanalysis/coppersmith.html">Coppersmith's method</a> <span class="family-tag">(Cryptanalysis reference)</span></li>
+        <li><a href="ml-dsa.html">ML-DSA</a> <span class="family-tag">(Signatures)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

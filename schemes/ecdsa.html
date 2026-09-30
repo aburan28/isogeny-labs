@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="ECDSA: signing and verification, a full-size P-256 example, private-key recovery from two signatures that reuse a nonce, signature malleability, deterministic nonces (RFC 6979), and biased nonces and the hidden number problem.">
+  <meta property="og:title" content="ECDSA · Isogeny Labs">
+  <meta property="og:description" content="ECDSA: signing and verification, a full-size P-256 example, private-key recovery from two signatures that reuse a nonce, signature malleability, deterministic nonces (RFC 6979), and biased nonces and the hidden number problem.">
+  <meta property="og:type" content="article">
+  <title>ECDSA · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Schemes</a> /
+        <a href="index.html#signatures">Signatures</a>
+      </nav>
+      <header>
+        <h1>ECDSA</h1>
+        <p class="standfirst">ECDSA signs TLS certificates, hardware tokens and cryptocurrency transactions. Nobody has come close to solving the elliptic-curve discrete logarithm behind it, yet ECDSA keys are lost regularly, and almost always the same way: through the random number used once per signature.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Rests on</dt><dd>The <a href="../notes/ecdlp.html">ECDLP</a>, and a uniformly random secret nonce for every signature</dd></div>
+        <div><dt>Standards</dt><dd>FIPS 186-5; SEC 1; ANSI X9.62; deterministic nonces in RFC 6979</dd></div>
+        <div><dt>Sizes</dt><dd>P-256: 64-byte signature (r, s); 33-byte compressed public key</dd></div>
+        <div><dt>Best known attack</dt><dd>Pollard's rho on the curve, about 2<sup>128</sup> for P-256. In practice, reused, biased or leaked nonces</dd></div>
+        <div><dt>Quantum</dt><dd>Broken by Shor's algorithm</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#signing-and-verifying">Signing and verifying</a></li>
+        <li><a href="#one-nonce-two-signatures">One nonce, two signatures</a></li>
+        <li><a href="#deterministic-nonces">Deterministic nonces</a></li>
+        <li><a href="#biased-and-leaked-nonces">Biased and leaked nonces</a></li>
+        <li><a href="#malleability">Malleability</a></li>
+        <li><a href="#where-it-stands">Where it stands</a></li>
+        </ol>
+      </nav>
+      <section id="signing-and-verifying" aria-labelledby="signing-and-verifying-title">
+        <h2 id="signing-and-verifying-title">Signing and verifying</h2>
+        <p>The public parameters are a curve with a base point G of prime order n. A private key is an integer d, and the public key is Q = dG. To sign a message, hash it to an integer z, then:</p>
+        <ol>
+          <li>Choose a secret nonce k uniformly between 1 and n &minus; 1.</li>
+          <li>Compute the point kG and let r be its x-coordinate mod n.</li>
+          <li>Compute s = k<sup>&minus;1</sup>(z + rd) mod n. The signature is (r, s).</li>
+        </ol>
+        <p>To verify, compute w = s<sup>&minus;1</sup>, then the point (zw)G + (rw)Q, and accept if its x-coordinate mod n equals r. It works because (zw)G + (rw)Q = w(z + rd)G = kG.</p>
+        <p>The example on this page runs on the real P-256 curve, at full size, in the code that builds this page. A key pair was drawn, and the message "Pay Alice 10 coins" was signed with a random nonce:</p>
+        <pre class="listing">Q.x = 16c5e7e8705a2ae2474767308b755c54cff1af229cf3ff351d60d391a5b124fc
+Q.y = a59d5cb1f6b4902dd6350ac628dc38e3c6ed87cf2d4cebc525bbe943d703d064
+
+r   = 14ce431740968d40033648f63e34d260f5d329aa70f2e516e278cab3ee9411f2
+s   = da76a7337f0dc8a2b0503456cfa3d59620b92cc7e33f2afe876f7616afa8a9e8</pre>
+        <p class="listing-label">A P-256 public key and a signature on "Pay Alice 10 coins", in hexadecimal</p>
+        <p>It verifies against Q, and does not verify for "Pay Bob 20 coins".</p>
+      </section>
+      <section id="one-nonce-two-signatures" aria-labelledby="one-nonce-two-signatures-title">
+        <h2 id="one-nonce-two-signatures-title">One nonce, two signatures</h2>
+        <p>Look at the signing equation as an attacker would. It is one linear equation, s = k<sup>&minus;1</sup>(z + rd), in two unknowns, k and d. A single signature reveals nothing, because every d has a matching k. But if the same k is ever used for two messages, the two signatures share r and give two equations in the same two unknowns:</p>
+        <div class="math">k = (z<sub>1</sub> &minus; z<sub>2</sub>) / (s<sub>1</sub> &minus; s<sub>2</sub>), &nbsp; d = (s<sub>1</sub>k &minus; z<sub>1</sub>) / r &nbsp;(mod n)
+          <span class="math-label">Two signatures with the same nonce give up the private key</span></div>
+        <p>The build signed "Pay Alice 10 coins" and "Pay Bob 20 coins" with the same nonce. Both signatures are valid, and both have the same r, which is how the reuse is spotted from outside:</p>
+        <pre class="listing">r   = cb07b062b8d7af8d0ed281924c8a94e67c229175ac1fbd2090f3a523c502ea9d
+s1  = f872e3eb0b3f2c3e6ba18e4b9129b95828f180a9df9216a0c7481e62da033b1a
+s2  = b6cf16d1daee0952d46931a819397b6e41243a6544eb13cc8cec141a3a050d0f
+z1  = f359021fadd6e209e61397188b22911c97a99c13311bee82edfbd9a5bde91991
+z2  = 6a03b853ee8000b6c76a898ed9a88f87bc48000a2b83454a37e6d083ac6d52f6
+
+k   = ea7a3bf4a4f26de35499523182aab29ad7f357bf4e2f13f05922c31f81e00562
+d   = 1bfed262bd821be1057f723be45270d37e62710eb8dac0fe7bc0c090abebdba1</pre>
+        <p class="listing-label">The two signatures, the two SHA-256 hashes, and what the formulas above recover</p>
+        <p>The recovered d satisfies dG = Q, so it is the private key. The build then signs "Pay Mallory everything" with it, and that signature verifies under the victim's public key. There is no search here and no dependence on the curve's size: two modular inversions and a few multiplications break the key.</p>
+        <p>This has happened in production. In 2010 the fail0verflow group showed that Sony signed PlayStation 3 software with a fixed nonce, and recovered the signing key. In 2013 a flaw in Android's SecureRandom caused Bitcoin wallets to repeat nonces, and coins were taken from the affected addresses. Scanning public blockchains for repeated r values still turns up keys.</p>
+      </section>
+      <section id="deterministic-nonces" aria-labelledby="deterministic-nonces-title">
+        <h2 id="deterministic-nonces-title">Deterministic nonces</h2>
+        <p>The standard fix is to stop needing a random number generator at signing time. RFC 6979 derives k deterministically from the private key and the message hash with HMAC. The same message always gets the same nonce, and different messages get unrelated ones. Repeating k across different messages then needs an HMAC collision. EdDSA builds the same idea into its definition, and FIPS 186-5 allows deterministic ECDSA.</p>
+        <p>Deterministic signing has a weakness of its own. Because the same computation happens every time, a fault injected during one signing can be compared with a correct signature on the same message, and similar fault attacks work much as <a href="rsa.html">they do on RSA with CRT</a>. Hedged signing, which mixes fresh randomness into the deterministic derivation, keeps the protection against bad generators while defeating these comparisons. It is the default in <a href="ml-dsa.html">ML-DSA</a>.</p>
+      </section>
+      <section id="biased-and-leaked-nonces" aria-labelledby="biased-and-leaked-nonces-title">
+        <h2 id="biased-and-leaked-nonces-title">Biased and leaked nonces</h2>
+        <p>The nonce does not have to repeat to be fatal. Each signature gives a linear relation between k and d. If an attacker knows a few bits of each k, from a timing side channel, a biased generator or a truncated random number, many signatures together form an instance of the <a href="../cryptanalysis/hidden-number-problem.html">hidden number problem</a>, which lattice reduction solves. Published attacks recover P-256 and secp256k1 keys from nonce leaks of a few bits per signature, given enough signatures. Constant-time scalar multiplication and nonces drawn uniformly mod n, not reduced from a slightly shorter string, are what prevents this.</p>
+      </section>
+      <section id="malleability" aria-labelledby="malleability-title">
+        <h2 id="malleability-title">Malleability</h2>
+        <p>If (r, s) is a valid signature, so is (r, n &minus; s): negating s negates w, and the verification point becomes &minus;kG, which has the same x-coordinate. For the signature above, n &minus; s is</p>
+        <pre class="listing">s&#x27;  = 258958cb80f2375e4fafcba9305c2a699c2dcde5c3d873866c4a54ac4cba7b69</pre>
+        <p class="listing-label">The second valid signature on the same message, under the same key</p>
+        <p>and it verifies. This does not let anyone sign a new message, but it breaks any system that identifies a signed object by the hash of its signature. Bitcoin transaction identifiers had exactly that problem, and Bitcoin now requires the smaller of s and n &minus; s. EdDSA and Schnorr signatures as in BIP-340 are defined so that this does not arise.</p>
+      </section>
+      <section id="where-it-stands" aria-labelledby="where-it-stands-title">
+        <h2 id="where-it-stands-title">Where it stands</h2>
+        <p>Against the curve itself ECDSA is as strong as the ECDLP, about 2<sup>128</sup> for P-256 and secp256k1; see the <a href="../notes/ecdlp.html">ECDLP note</a>. Against a quantum computer running Shor's algorithm it falls completely, and NIST IR 8547 proposes disallowing it after 2035. Until then, reviewing an ECDSA implementation is mostly reviewing its nonces: where they come from, whether they are uniform mod n, and whether they leak through timing.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://doi.org/10.6028/NIST.FIPS.186-5">NIST FIPS 186-5, Digital Signature Standard (DSS) (2023)</a></li>
+        <li><a href="https://www.rfc-editor.org/rfc/rfc6979">T. Pornin, RFC 6979, Deterministic usage of the Digital Signature Algorithm (DSA) and Elliptic Curve Digital Signature Algorithm (ECDSA) (2013)</a></li>
+        <li><a href="https://www.secg.org/sec1-v2.pdf">Standards for Efficient Cryptography Group, SEC 1: Elliptic Curve Cryptography, version 2.0 (2009)</a></li>
+        <li><a href="https://media.ccc.de/v/27c3-4087-en-console_hacking_2010">fail0verflow, "Console hacking 2010: PS3 epic fail", 27th Chaos Communication Congress (2010)</a></li>
+        <li><a href="https://doi.org/10.1023/A:1011214926272">N. Howgrave-Graham and N. P. Smart, "Lattice attacks on digital signature schemes", Designs, Codes and Cryptography 23 (2001)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="../cryptanalysis/hidden-number-problem.html">The hidden number problem and ECDSA nonce leakage</a> <span class="family-tag">(Cryptanalysis reference)</span></li>
+        <li><a href="../notes/ecdlp.html">The elliptic-curve discrete logarithm problem</a> <span class="family-tag">(Notes)</span></li>
+        <li><a href="rsa.html">RSA</a> <span class="family-tag">(Signatures)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="A catalogue of cryptographic schemes, from RSA and elliptic curves to ML-KEM, ML-DSA, SLH-DSA and SQIsign: what each rests on, its standard, its sizes, the best known attack, and its status against quantum computers.">
+  <meta property="og:title" content="Schemes · Isogeny Labs">
+  <meta property="og:description" content="A catalogue of cryptographic schemes, from RSA and elliptic curves to ML-KEM, ML-DSA, SLH-DSA and SQIsign: what each rests on, its standard, its sizes, the best known attack, and its status against quantum computers.">
+  <meta property="og:type" content="article">
+  <title>Schemes · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <header aria-labelledby="catalogue-title">
+      <h1 id="catalogue-title">Schemes</h1>
+      <p class="standfirst">What each widely used scheme rests on, what it costs, and where it stands against classical and quantum attacks. <a href="ml-kem.html">ML-KEM</a>, <a href="ml-dsa.html">ML-DSA</a> and <a href="sqisign.html">SQIsign</a> have full pages; the rest are summarised here, with links to the attacks that set their parameters.</p>
+    </header>
+    <nav class="toc" aria-label="Groups">
+      <ol>
+        <li><a href="#key-establishment">Key establishment</a></li>
+        <li><a href="#signatures">Signatures</a></li>
+        <li><a href="#symmetric">Symmetric ciphers and hashes</a></li>
+        <li><a href="#retired">Broken or retired</a></li>
+      </ol>
+    </nav>
+    <section aria-labelledby="glance-title">
+      <h2 id="glance-title">At a glance</h2>
+      <p>"Broken by Shor's algorithm" means broken by a large fault-tolerant quantum computer, which does not exist yet. It is the reason for the move away from RSA and elliptic curves, and the reason key exchange moves first: traffic recorded today can be decrypted later, while a signature only has to resist forgery for as long as it is relied on.</p>
+      <div class="table-wrap">
+      <table class="data glance">
+        <thead><tr><th scope="col">Scheme</th><th scope="col">Kind</th><th scope="col">Rests on</th><th scope="col">Against a quantum computer</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><a href="#ecdh">ECDH (X25519, P-256)</a></th><td>Key establishment</td><td>Elliptic-curve discrete logarithm</td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#ffdh">Finite-field Diffie&ndash;Hellman</a></th><td>Key establishment</td><td>Discrete logarithm in F<sub>p</sub><sup>&times;</sup></td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#ml-kem">ML-KEM</a></th><td>Key establishment</td><td>Module learning with errors</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#hqc">HQC</a></th><td>Key establishment</td><td>Decoding quasi-cyclic codes</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#classic-mceliece">Classic McEliece</a></th><td>Key establishment</td><td>Decoding binary Goppa codes</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#csidh">CSIDH</a></th><td>Key establishment</td><td>Inverting a class-group action</td><td>Subexponential attack (Kuperberg)</td></tr>
+          <tr><th scope="row"><a href="#rsa">RSA</a></th><td>Signature and encryption</td><td>Factoring</td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#ecdsa">ECDSA</a></th><td>Signature</td><td>Elliptic-curve discrete logarithm</td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#eddsa">EdDSA (Ed25519, Ed448)</a></th><td>Signature</td><td>Elliptic-curve discrete logarithm</td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#schnorr-bip340">Schnorr signatures (BIP-340)</a></th><td>Signature</td><td>Elliptic-curve discrete logarithm</td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#bls">BLS signatures</a></th><td>Signature</td><td>Diffie&ndash;Hellman in pairing groups</td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#ml-dsa">ML-DSA</a></th><td>Signature</td><td>Module-LWE and module-SIS</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#fn-dsa">FN-DSA (Falcon)</a></th><td>Signature</td><td>Short vectors in NTRU lattices</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#slh-dsa">SLH-DSA (SPHINCS+)</a></th><td>Signature</td><td>Hash functions only</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#lms-xmss">LMS and XMSS</a></th><td>Signature</td><td>Hash functions only</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#sqisign">SQIsign</a></th><td>Signature</td><td>Supersingular endomorphism rings</td><td>No known efficient attack</td></tr>
+          <tr><th scope="row"><a href="#aes">AES</a></th><td>Block cipher</td><td>Resistance to cryptanalysis</td><td>Key search sped up by Grover, not broken</td></tr>
+          <tr><th scope="row"><a href="#chacha20-poly1305">ChaCha20-Poly1305</a></th><td>Authenticated cipher</td><td>Resistance to cryptanalysis</td><td>Key search sped up by Grover, not broken</td></tr>
+          <tr><th scope="row"><a href="#sha-2">SHA-2</a></th><td>Hash function</td><td>Resistance to cryptanalysis</td><td>Generic speedups only</td></tr>
+          <tr><th scope="row"><a href="#sha-3">SHA-3 and SHAKE</a></th><td>Hash function</td><td>Resistance to cryptanalysis</td><td>Generic speedups only</td></tr>
+          <tr><th scope="row"><a href="#sike">SIKE</a></th><td>Key establishment</td><td>Isogenies with torsion images</td><td>Broken classically</td></tr>
+          <tr><th scope="row"><a href="#rainbow">Rainbow</a></th><td>Signature</td><td>Multivariate quadratic equations</td><td>Broken classically</td></tr>
+          <tr><th scope="row"><a href="#dsa">DSA</a></th><td>Signature</td><td>Discrete logarithm in F<sub>p</sub><sup>&times;</sup></td><td>Broken by Shor's algorithm</td></tr>
+          <tr><th scope="row"><a href="#sha-1">SHA-1</a></th><td>Hash function</td><td>Resistance to cryptanalysis</td><td>Broken classically</td></tr>
+          <tr><th scope="row"><a href="#md5">MD5</a></th><td>Hash function</td><td>Resistance to cryptanalysis</td><td>Broken classically</td></tr>
+          <tr><th scope="row"><a href="#des-3des">DES and Triple DES</a></th><td>Block cipher</td><td>Resistance to cryptanalysis</td><td>Broken classically</td></tr>
+          <tr><th scope="row"><a href="#rc4">RC4</a></th><td>Stream cipher</td><td>Resistance to cryptanalysis</td><td>Broken classically</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+      <section id="key-establishment" aria-labelledby="key-establishment-title">
+        <h2 id="key-establishment-title">Key establishment</h2>
+        <p class="family-intro">How two parties agree on a shared secret over a public channel: Diffie&ndash;Hellman key exchange, or a key-encapsulation mechanism (KEM), in which one side encrypts a fresh key to the other's public key.</p>
+        <ul class="catalogue">
+          <li id="ecdh">
+            <h3>ECDH (X25519, P-256)</h3>
+            <p>Diffie&ndash;Hellman on an elliptic curve. It is the standard key exchange in TLS 1.3, SSH and Signal, usually on Curve25519 as X25519.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The elliptic-curve Diffie&ndash;Hellman problem, which as far as anyone knows is as hard as the <a href="../notes/ecdlp.html">ECDLP</a></dd></div>
+              <div><dt>Standards</dt><dd>RFC 7748 (X25519 and X448); NIST SP 800-56A with the curves of SP 800-186</dd></div>
+              <div><dt>Sizes</dt><dd>X25519: 32-byte public keys and shared secret. P-256: 33-byte compressed or 65-byte uncompressed public keys</dd></div>
+              <div><dt>Best known attack</dt><dd>Pollard's rho: about 2<sup>126</sup> to 2<sup>128</sup> group operations for 256-bit curves</dd></div>
+              <div><dt>Quantum</dt><dd>Shor's algorithm; Roetteler et al. estimate about 2,330 logical qubits for P-256</dd></div>
+            </dl>
+            <p class="see">See also: <a href="x25519.html">Full page</a></p>
+          </li>
+          <li id="ffdh">
+            <h3>Finite-field Diffie&ndash;Hellman</h3>
+            <p>Diffie and Hellman's original 1976 key exchange, in the multiplicative group of a prime field. Largely replaced by ECDH, which needs far smaller parameters for the same strength.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The Diffie&ndash;Hellman problem in F<sub>p</sub><sup>&times;</sup>, attacked through the discrete logarithm</dd></div>
+              <div><dt>Standards</dt><dd>RFC 7919 named groups for TLS; NIST SP 800-56A</dd></div>
+              <div><dt>Sizes</dt><dd>ffdhe3072: 384-byte public values</dd></div>
+              <div><dt>Best known attack</dt><dd>The number field sieve, largely a precomputation on the prime that is then reused for every key; this is what the Logjam attack exploited. The record is a 795-bit prime field (2019)</dd></div>
+              <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
+            </dl>
+            <p class="see">See also: <a href="../cryptanalysis/number-field-sieve.html">The number field sieve</a></p>
+          </li>
+          <li id="ml-kem">
+            <h3>ML-KEM</h3>
+            <p>The module-lattice KEM standardised in 2024, formerly CRYSTALS-Kyber. It is what replaces ECDH, at first alongside it as a hybrid.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Module learning with errors (MLWE)</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 203 (August 2024)</dd></div>
+              <div><dt>Sizes</dt><dd>ML-KEM-768: 1,184-byte encapsulation key, 1,088-byte ciphertext</dd></div>
+              <div><dt>Best known attack</dt><dd>Lattice reduction</dd></div>
+              <div><dt>Quantum</dt><dd>No known attack beyond small speedups to lattice sieving</dd></div>
+            </dl>
+            <p class="see">See also: <a href="ml-kem.html">Full page</a></p>
+          </li>
+          <li id="hqc">
+            <h3>HQC</h3>
+            <p>A code-based KEM that NIST selected in March 2025 as a backup to ML-KEM, chosen because it rests on different mathematics.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Decoding random quasi-cyclic codes</dd></div>
+              <div><dt>Standards</dt><dd>Selected in NIST IR 8545 (March 2025). NIST expects to publish a draft standard and to finalise it in 2027</dd></div>
+              <div><dt>Sizes</dt><dd>HQC-128: 2,249-byte public key, 4,497-byte ciphertext</dd></div>
+              <div><dt>Best known attack</dt><dd>Information-set decoding</dd></div>
+              <div><dt>Quantum</dt><dd>No known efficient attack</dd></div>
+            </dl>
+          </li>
+          <li id="classic-mceliece">
+            <h3>Classic McEliece</h3>
+            <p>McEliece's 1978 code-based system, the oldest public-key design still considered secure: very large public keys and very small ciphertexts.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Decoding a random-looking binary Goppa code</dd></div>
+              <div><dt>Standards</dt><dd>Under ISO standardisation. NIST's 2025 report (IR 8545) dropped it from NIST's current process, citing limited interest and the risk of an incompatible parallel standard, and said NIST may later base a standard on ISO's</dd></div>
+              <div><dt>Sizes</dt><dd>mceliece348864: 261,120-byte public key, 96-byte ciphertext</dd></div>
+              <div><dt>Best known attack</dt><dd>Information-set decoding, which decades of work have improved only modestly</dd></div>
+              <div><dt>Quantum</dt><dd>No known efficient attack</dd></div>
+            </dl>
+          </li>
+          <li id="csidh">
+            <h3>CSIDH</h3>
+            <p>An isogeny-based key exchange with small keys and a property no lattice scheme offers: non-interactive key exchange, like Diffie&ndash;Hellman.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Inverting a commutative class-group action on supersingular curves over F<sub>p</sub></dd></div>
+              <div><dt>Standards</dt><dd>None; a research scheme</dd></div>
+              <div><dt>Sizes</dt><dd>CSIDH-512: 64-byte public keys</dd></div>
+              <div><dt>Best known attack</dt><dd>Classically about p<sup>1/4</sup>; quantumly, Kuperberg's subexponential algorithm, whose concrete cost is disputed</dd></div>
+              <div><dt>Quantum</dt><dd>Subexponential; CSIDH-512 is widely considered too small</dd></div>
+            </dl>
+            <p class="see">See also: <a href="csidh.html">Full page</a></p>
+          </li>
+        </ul>
+      </section>
+      <section id="signatures" aria-labelledby="signatures-title">
+        <h2 id="signatures-title">Signatures</h2>
+        <p class="family-intro">How a message is bound to a key, so that anyone with the public key can check it. Post-quantum signatures cost more bytes than the schemes they replace, by very different amounts:</p>
+        <figure class="diagram">
+          <svg viewBox="0 0 600 324" role="img" aria-label="Public-key and signature sizes of eight signature schemes on a logarithmic axis, from 32 bytes to 17,088 bytes. The same numbers are in the table below." xmlns="http://www.w3.org/2000/svg"><line class="rule" x1="252.9" y1="36" x2="252.9" y2="290" stroke-width="1"/><text x="252.9" y="310" text-anchor="middle">100</text><line class="rule" x1="382.1" y1="36" x2="382.1" y2="290" stroke-width="1"/><text x="382.1" y="310" text-anchor="middle">1,000</text><line class="rule" x1="511.4" y1="36" x2="511.4" y2="290" stroke-width="1"/><text x="511.4" y="310" text-anchor="middle">10,000</text><text x="578" y="21" text-anchor="end">bytes, log scale</text><circle class="series-1" cx="156" cy="16" r="5"/><text class="label" x="168" y="21">public key</text><circle class="series-2" cx="282" cy="16" r="5"/><text class="label" x="294" y="21">signature</text><text class="label" x="136" y="64" text-anchor="end">Ed25519</text><line class="rule" x1="188.9" y1="59" x2="227.8" y2="59" stroke-width="2"/><g class="hit"><title>Ed25519: public key 32 bytes</title><circle cx="188.9" cy="59" r="12" fill="transparent"/><circle class="series-1 ringed" cx="188.9" cy="59" r="5.5"/></g><g class="hit"><title>Ed25519: signature 64 bytes</title><circle cx="227.8" cy="59" r="12" fill="transparent"/><circle class="series-2 ringed" cx="227.8" cy="59" r="5.5"/></g><text class="label" x="136" y="94" text-anchor="end">ECDSA P-256</text><line class="rule" x1="190.6" y1="89" x2="227.8" y2="89" stroke-width="2"/><g class="hit"><title>ECDSA P-256: public key 33 bytes</title><circle cx="190.6" cy="89" r="12" fill="transparent"/><circle class="series-1 ringed" cx="190.6" cy="89" r="5.5"/></g><g class="hit"><title>ECDSA P-256: signature 64 bytes</title><circle cx="227.8" cy="89" r="12" fill="transparent"/><circle class="series-2 ringed" cx="227.8" cy="89" r="5.5"/></g><text class="label" x="136" y="124" text-anchor="end">SQIsign I</text><line class="rule" x1="242.4" y1="119" x2="291.8" y2="119" stroke-width="2"/><g class="hit"><title>SQIsign I: public key 83 bytes</title><circle cx="242.4" cy="119" r="12" fill="transparent"/><circle class="series-1 ringed" cx="242.4" cy="119" r="5.5"/></g><g class="hit"><title>SQIsign I: signature 200 bytes</title><circle cx="291.8" cy="119" r="12" fill="transparent"/><circle class="series-2 ringed" cx="291.8" cy="119" r="5.5"/></g><text class="label" x="136" y="154" text-anchor="end">RSA-3072</text><line class="rule" x1="328.4" y1="149" x2="328.4" y2="149" stroke-width="2"/><g class="hit"><title>RSA-3072: public key 384 bytes</title><circle cx="328.4" cy="144.5" r="12" fill="transparent"/><circle class="series-1 ringed" cx="328.4" cy="144.5" r="5.5"/></g><g class="hit"><title>RSA-3072: signature 384 bytes</title><circle cx="328.4" cy="153.5" r="12" fill="transparent"/><circle class="series-2 ringed" cx="328.4" cy="153.5" r="5.5"/></g><text class="label" x="136" y="184" text-anchor="end">FN-DSA-512</text><line class="rule" x1="359.3" y1="179" x2="376" y2="179" stroke-width="2"/><g class="hit"><title>FN-DSA-512: public key 897 bytes</title><circle cx="376" cy="179" r="12" fill="transparent"/><circle class="series-1 ringed" cx="376" cy="179" r="5.5"/></g><g class="hit"><title>FN-DSA-512: signature 666 bytes</title><circle cx="359.3" cy="179" r="12" fill="transparent"/><circle class="series-2 ringed" cx="359.3" cy="179" r="5.5"/></g><text class="label" x="136" y="214" text-anchor="end">ML-DSA-44</text><line class="rule" x1="397.4" y1="209" x2="431.7" y2="209" stroke-width="2"/><g class="hit"><title>ML-DSA-44: public key 1,312 bytes</title><circle cx="397.4" cy="209" r="12" fill="transparent"/><circle class="series-1 ringed" cx="397.4" cy="209" r="5.5"/></g><g class="hit"><title>ML-DSA-44: signature 2,420 bytes</title><circle cx="431.7" cy="209" r="12" fill="transparent"/><circle class="series-2 ringed" cx="431.7" cy="209" r="5.5"/></g><text class="label" x="136" y="244" text-anchor="end">SLH-DSA-128s</text><line class="rule" x1="188.9" y1="239" x2="497.8" y2="239" stroke-width="2"/><g class="hit"><title>SLH-DSA-128s: public key 32 bytes</title><circle cx="188.9" cy="239" r="12" fill="transparent"/><circle class="series-1 ringed" cx="188.9" cy="239" r="5.5"/></g><g class="hit"><title>SLH-DSA-128s: signature 7,856 bytes</title><circle cx="497.8" cy="239" r="12" fill="transparent"/><circle class="series-2 ringed" cx="497.8" cy="239" r="5.5"/></g><text class="label" x="136" y="274" text-anchor="end">SLH-DSA-128f</text><line class="rule" x1="188.9" y1="269" x2="541.5" y2="269" stroke-width="2"/><g class="hit"><title>SLH-DSA-128f: public key 32 bytes</title><circle cx="188.9" cy="269" r="12" fill="transparent"/><circle class="series-1 ringed" cx="188.9" cy="269" r="5.5"/></g><g class="hit"><title>SLH-DSA-128f: signature 17,088 bytes</title><circle cx="541.5" cy="269" r="12" fill="transparent"/><circle class="series-2 ringed" cx="541.5" cy="269" r="5.5"/></g></svg>
+          <figcaption>Public key and signature sizes at the lowest standard security level of each scheme. SQIsign is at its round-3 parameters (version 3.0, September 2026); the ECDSA public key is compressed and its signature is the raw pair (r, s).</figcaption>
+        </figure>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>The values plotted above.</caption>
+          <thead><tr><th scope="col">Scheme</th><th scope="col" class="num">Public key (bytes)</th><th scope="col" class="num">Signature (bytes)</th><th scope="col">Standard or status</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Ed25519</th><td class="num">32</td><td class="num">64</td><td>RFC 8032, FIPS 186-5</td></tr>
+            <tr><th scope="row">ECDSA P-256</th><td class="num">33</td><td class="num">64</td><td>FIPS 186-5</td></tr>
+            <tr><th scope="row">SQIsign I</th><td class="num">83</td><td class="num">200</td><td>NIST round 3 candidate</td></tr>
+            <tr><th scope="row">RSA-3072</th><td class="num">384</td><td class="num">384</td><td>RFC 8017, FIPS 186-5</td></tr>
+            <tr><th scope="row">FN-DSA-512</th><td class="num">897</td><td class="num">666</td><td>FIPS 206 in preparation</td></tr>
+            <tr><th scope="row">ML-DSA-44</th><td class="num">1,312</td><td class="num">2,420</td><td>FIPS 204</td></tr>
+            <tr><th scope="row">SLH-DSA-128s</th><td class="num">32</td><td class="num">7,856</td><td>FIPS 205</td></tr>
+            <tr><th scope="row">SLH-DSA-128f</th><td class="num">32</td><td class="num">17,088</td><td>FIPS 205</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <ul class="catalogue">
+          <li id="rsa">
+            <h3>RSA</h3>
+            <p>The first widely deployed public-key system (1977), used for both signatures and encryption, and still common for signatures in web certificates.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The RSA problem, taking e-th roots modulo N = pq, which is no harder than factoring N</dd></div>
+              <div><dt>Standards</dt><dd>PKCS #1 v2.2 (RFC 8017); FIPS 186-5 for signatures; SP 800-56B for key establishment</dd></div>
+              <div><dt>Sizes</dt><dd>RSA-2048: 256-byte modulus and signature; RSA-3072: 384 bytes</dd></div>
+              <div><dt>Best known attack</dt><dd>The number field sieve; the largest public factorisation is RSA-250, 829 bits, in 2020</dd></div>
+              <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
+            </dl>
+            <p class="see">See also: <a href="rsa.html">Full page</a></p>
+          </li>
+          <li id="ecdsa">
+            <h3>ECDSA</h3>
+            <p>DSA on an elliptic curve, used in TLS certificates, hardware tokens, and the transactions of Bitcoin and Ethereum. Each signature uses a fresh secret nonce, and a nonce that leaks even a few bits loses the key.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The ECDLP, and a uniformly random secret nonce for every signature</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 186-5; SEC 1; ANSI X9.62</dd></div>
+              <div><dt>Sizes</dt><dd>P-256: 64-byte signature (r, s); 33-byte compressed public key</dd></div>
+              <div><dt>Best known attack</dt><dd>Pollard's rho on the curve, about 2<sup>128</sup>. In practice, keys are lost to biased or leaked nonces through the hidden number problem</dd></div>
+              <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
+            </dl>
+            <p class="see">See also: <a href="ecdsa.html">Full page</a></p>
+          </li>
+          <li id="eddsa">
+            <h3>EdDSA (Ed25519, Ed448)</h3>
+            <p>Schnorr-style signatures on Edwards curves, with the nonce derived deterministically from the key and message, which removes the most common way ECDSA keys are lost.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The ECDLP on Curve25519 or Curve448</dd></div>
+              <div><dt>Standards</dt><dd>RFC 8032; added to FIPS 186-5 in 2023</dd></div>
+              <div><dt>Sizes</dt><dd>Ed25519: 32-byte public key, 64-byte signature</dd></div>
+              <div><dt>Best known attack</dt><dd>Pollard's rho, about 2<sup>126</sup> for Ed25519. Deterministic signing is exposed to fault attacks instead</dd></div>
+              <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
+            </dl>
+            <p class="see">See also: <a href="eddsa.html">Full page</a></p>
+          </li>
+          <li id="schnorr-bip340">
+            <h3>Schnorr signatures (BIP-340)</h3>
+            <p>Schnorr signatures on secp256k1, introduced to Bitcoin with the Taproot upgrade.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The ECDLP on secp256k1</dd></div>
+              <div><dt>Standards</dt><dd>Bitcoin Improvement Proposal 340</dd></div>
+              <div><dt>Sizes</dt><dd>32-byte public key (x-coordinate only), 64-byte signature</dd></div>
+              <div><dt>Best known attack</dt><dd>Pollard's rho, about 2<sup>127</sup> using the curve's extra automorphisms</dd></div>
+              <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
+            </dl>
+            <p class="see">See also: <a href="schnorr.html">Full page</a></p>
+          </li>
+          <li id="bls">
+            <h3>BLS signatures</h3>
+            <p>Pairing-based signatures that aggregate: many signatures, even on different messages, combine into one short signature. Ethereum's consensus layer depends on this.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The computational Diffie&ndash;Hellman problem in the groups of a pairing, in practice on the curve BLS12-381</dd></div>
+              <div><dt>Standards</dt><dd>An IRTF CFRG draft (draft-irtf-cfrg-bls-signature)</dd></div>
+              <div><dt>Sizes</dt><dd>In Ethereum's choice, 48-byte public keys and 96-byte signatures</dd></div>
+              <div><dt>Best known attack</dt><dd>Rho on the curve groups, and the number field sieve in the pairing's target field, which has embedding degree 12</dd></div>
+              <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
+            </dl>
+            <p class="see">See also: <a href="../notes/ecdlp.html">The ECDLP</a></p>
+          </li>
+          <li id="ml-dsa">
+            <h3>ML-DSA</h3>
+            <p>The module-lattice signature standardised in 2024, formerly CRYSTALS-Dilithium: NIST's main replacement for RSA and ECDSA signatures.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Module learning with errors for the key; module short integer solutions for forgery</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 204 (August 2024)</dd></div>
+              <div><dt>Sizes</dt><dd>ML-DSA-65: 1,952-byte public key, 3,309-byte signature</dd></div>
+              <div><dt>Best known attack</dt><dd>Lattice reduction</dd></div>
+              <div><dt>Quantum</dt><dd>No known attack beyond small speedups to lattice sieving</dd></div>
+            </dl>
+            <p class="see">See also: <a href="ml-dsa.html">Full page</a></p>
+          </li>
+          <li id="fn-dsa">
+            <h3>FN-DSA (Falcon)</h3>
+            <p>Hash-and-sign signatures over NTRU lattices: the smallest public key and signature of NIST's lattice schemes, with a harder signing algorithm.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Finding short solutions to linear equations over NTRU lattices (NTRU-SIS)</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 206, in preparation; NIST describes the process as under way</dd></div>
+              <div><dt>Sizes</dt><dd>Falcon-512: 897-byte public key, 666-byte signature</dd></div>
+              <div><dt>Best known attack</dt><dd>Lattice reduction. Signing samples a discrete Gaussian with floating-point arithmetic, which makes safe constant-time implementations harder than for ML-DSA</dd></div>
+              <div><dt>Quantum</dt><dd>No known efficient attack</dd></div>
+            </dl>
+          </li>
+          <li id="slh-dsa">
+            <h3>SLH-DSA (SPHINCS+)</h3>
+            <p>Signatures built from a hash function and nothing else. It is the most conservative assumption available, paid for in signature size and signing time.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Security properties of the hash function, SHA-2 or SHAKE</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 205 (August 2024)</dd></div>
+              <div><dt>Sizes</dt><dd>SLH-DSA-128s: 32-byte public key, 7,856-byte signature. The 128f variant signs faster with 17,088-byte signatures</dd></div>
+              <div><dt>Best known attack</dt><dd>Generic attacks on the hash function</dd></div>
+              <div><dt>Quantum</dt><dd>Only generic speedups, which the parameters account for</dd></div>
+            </dl>
+            <p class="see">See also: <a href="slh-dsa.html">Full page</a></p>
+          </li>
+          <li id="lms-xmss">
+            <h3>LMS and XMSS</h3>
+            <p>Stateful hash-based signatures: small and fast, but each one-time key must never be used twice, so the signer has to keep reliable state.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Security properties of the hash function</dd></div>
+              <div><dt>Standards</dt><dd>RFC 8554 (LMS) and RFC 8391 (XMSS); NIST SP 800-208, for uses such as firmware signing where state can be managed</dd></div>
+              <div><dt>Sizes</dt><dd>Depend on the tree height and Winternitz parameter</dd></div>
+              <div><dt>Best known attack</dt><dd>Generic attacks on the hash, or, in practice, a signer that reuses state</dd></div>
+              <div><dt>Quantum</dt><dd>Only generic speedups</dd></div>
+            </dl>
+          </li>
+          <li id="sqisign">
+            <h3>SQIsign</h3>
+            <p>Isogeny-based signatures with by far the smallest public key and signature of any post-quantum candidate, and slow, intricate signing.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Computing the endomorphism ring of a supersingular elliptic curve</dd></div>
+              <div><dt>Standards</dt><dd>A round-3 candidate in NIST's additional-signatures process (NIST IR 8610, May 2026)</dd></div>
+              <div><dt>Sizes</dt><dd>Version 3.0, level I: 83-byte public key, 200-byte signature</dd></div>
+              <div><dt>Best known attack</dt><dd>Wesolowski's 2026 algorithm, in time and memory p<sup>1/3+o(1)</sup>; version 3.0 raised its parameters in response</dd></div>
+              <div><dt>Quantum</dt><dd>No known efficient attack</dd></div>
+            </dl>
+            <p class="see">See also: <a href="sqisign.html">Full page</a></p>
+          </li>
+        </ul>
+      </section>
+      <section id="symmetric" aria-labelledby="symmetric-title">
+        <h2 id="symmetric-title">Symmetric ciphers and hashes</h2>
+        <p class="family-intro">Schemes with no public key. They carry the bulk of the data once a key is agreed, and quantum computers threaten them far less: Grover's algorithm at most square-roots the cost of a key search, and parallelises badly.</p>
+        <ul class="catalogue">
+          <li id="aes">
+            <h3>AES</h3>
+            <p>The block cipher behind most bulk encryption, usually in GCM mode.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Twenty-five years of cryptanalysis; there is no reduction to a number-theoretic problem</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 197</dd></div>
+              <div><dt>Sizes</dt><dd>128-bit block; 128-, 192- or 256-bit key</dd></div>
+              <div><dt>Best known attack</dt><dd>Biclique cryptanalysis recovers an AES-128 key in about 2<sup>126.1</sup> operations, four times faster than brute force. In practice, table-based software leaks through cache timing; use AES instructions or bitsliced code</dd></div>
+              <div><dt>Quantum</dt><dd>NIST uses key search on AES-128 as the benchmark for its lowest post-quantum security category</dd></div>
+            </dl>
+            <p class="see">See also: <a href="aes.html">Full page</a></p>
+          </li>
+          <li id="chacha20-poly1305">
+            <h3>ChaCha20-Poly1305</h3>
+            <p>A stream cipher and a one-time authenticator, designed to be fast and constant-time in software without special instructions.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Cryptanalysis of the ChaCha permutation, and the security of Poly1305 as a one-time authenticator</dd></div>
+              <div><dt>Standards</dt><dd>RFC 8439</dd></div>
+              <div><dt>Sizes</dt><dd>256-bit key, 96-bit nonce, 128-bit tag</dd></div>
+              <div><dt>Best known attack</dt><dd>Published attacks reach 7 of ChaCha's 20 rounds</dd></div>
+              <div><dt>Quantum</dt><dd>Grover's algorithm on key search</dd></div>
+            </dl>
+          </li>
+          <li id="sha-2">
+            <h3>SHA-2</h3>
+            <p>The SHA-256 and SHA-512 family, used almost everywhere a hash is needed.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Cryptanalysis of the compression function</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 180-4</dd></div>
+              <div><dt>Sizes</dt><dd>224- to 512-bit output</dd></div>
+              <div><dt>Best known attack</dt><dd>None on the full functions; collisions exist only for reduced-round versions. The Merkle&ndash;Damg&aring;rd structure allows length extension, which is why keyed hashing uses HMAC</dd></div>
+              <div><dt>Quantum</dt><dd>Generic speedups only</dd></div>
+            </dl>
+          </li>
+          <li id="sha-3">
+            <h3>SHA-3 and SHAKE</h3>
+            <p>Keccak, a sponge construction chosen by public competition in 2012. Its extendable-output forms SHAKE128 and SHAKE256 run inside ML-KEM, ML-DSA and SLH-DSA.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Cryptanalysis of the Keccak-f permutation</dd></div>
+              <div><dt>Standards</dt><dd>FIPS 202</dd></div>
+              <div><dt>Sizes</dt><dd>224- to 512-bit output, or any length for SHAKE</dd></div>
+              <div><dt>Best known attack</dt><dd>Only reduced-round versions</dd></div>
+              <div><dt>Quantum</dt><dd>Generic speedups only</dd></div>
+            </dl>
+          </li>
+        </ul>
+      </section>
+      <section id="retired" aria-labelledby="retired-title">
+        <h2 id="retired-title">Broken or retired</h2>
+        <p class="family-intro">Schemes that fell, and what finally ended them. Most of these failures were visible years before they became practical.</p>
+        <ul class="catalogue">
+          <li id="sike">
+            <h3>SIKE</h3>
+            <p>Supersingular isogeny key encapsulation, a fourth-round candidate in NIST's process, broken in 2022 in about an hour on a laptop.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>An isogeny problem made easier by the torsion-point images the protocol publishes</dd></div>
+              <div><dt>What ended it</dt><dd>The torsion-point attacks of Castryck and Decru, Maino and Martindale, and Robert, all in 2022</dd></div>
+              <div><dt>Status</dt><dd>Withdrawn; the attack is polynomial-time, so larger parameters do not help</dd></div>
+            </dl>
+            <p class="see">See also: <a href="../cryptanalysis/sidh-torsion-attacks.html">SIDH torsion attacks</a></p>
+          </li>
+          <li id="rainbow">
+            <h3>Rainbow</h3>
+            <p>A multivariate signature scheme and finalist in NIST's third round, broken in 2022.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>Solving structured systems of multivariate quadratic equations</dd></div>
+              <div><dt>What ended it</dt><dd>Beullens' 2022 key-recovery attack, which broke the level-I parameters in about a weekend on a laptop</dd></div>
+              <div><dt>Status</dt><dd>Not selected by NIST</dd></div>
+            </dl>
+          </li>
+          <li id="dsa">
+            <h3>DSA</h3>
+            <p>The original Digital Signature Algorithm (1991), over a prime field.</p>
+            <dl class="facts compact">
+              <div><dt>Rests on</dt><dd>The discrete logarithm in a subgroup of F<sub>p</sub><sup>&times;</sup>, and a random nonce per signature</dd></div>
+              <div><dt>What ended it</dt><dd>Not an attack: FIPS 186-5 (2023) no longer approves DSA for generating signatures, only for verifying old ones</dd></div>
+              <div><dt>Status</dt><dd>Retired in favour of ECDSA, EdDSA and ML-DSA</dd></div>
+            </dl>
+            <p class="see">See also: <a href="../cryptanalysis/hidden-number-problem.html">Hidden number problem</a></p>
+          </li>
+          <li id="sha-1">
+            <h3>SHA-1</h3>
+            <p>The 160-bit predecessor of SHA-2.</p>
+            <dl class="facts compact">
+              <div><dt>What ended it</dt><dd>The first public collision in 2017 (SHAttered), then chosen-prefix collisions in 2020, which make forged certificates practical</dd></div>
+              <div><dt>Status</dt><dd>NIST plans to retire it from all uses by 31 December 2030</dd></div>
+            </dl>
+          </li>
+          <li id="md5">
+            <h3>MD5</h3>
+            <p>A 128-bit hash function from 1992.</p>
+            <dl class="facts compact">
+              <div><dt>What ended it</dt><dd>Collisions found by Wang and collaborators in 2004, and chosen-prefix collisions from 2007; the Flame malware used one to forge a Microsoft code-signing certificate in 2012</dd></div>
+              <div><dt>Status</dt><dd>Broken for any use that needs collision resistance</dd></div>
+            </dl>
+          </li>
+          <li id="des-3des">
+            <h3>DES and Triple DES</h3>
+            <p>The 1977 block cipher standard and its tripled extension.</p>
+            <dl class="facts compact">
+              <div><dt>What ended it</dt><dd>DES's 56-bit key was searched exhaustively in public in 1998. Triple DES's 64-bit block allows birthday attacks on long sessions, demonstrated as Sweet32 in 2016</dd></div>
+              <div><dt>Status</dt><dd>NIST disallowed Triple DES for encryption after 2023</dd></div>
+            </dl>
+          </li>
+          <li id="rc4">
+            <h3>RC4</h3>
+            <p>A stream cipher once used in both TLS and WEP.</p>
+            <dl class="facts compact">
+              <div><dt>What ended it</dt><dd>Biases in its keystream, which make plaintext recovery from many encryptions practical</dd></div>
+              <div><dt>Status</dt><dd>Prohibited in TLS since 2015 (RFC 7465)</dd></div>
+            </dl>
+          </li>
+        </ul>
+      </section>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

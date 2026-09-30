@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Coppersmith&#x27;s method for small roots of modular polynomials, in Howgrave-Graham&#x27;s formulation: a stereotyped RSA message with e = 3 recovered by exact LLL, the measured reach of each lattice size against the determinant bound, and the attacks on RSA that follow.">
+  <meta property="og:title" content="Coppersmith&#x27;s method · Isogeny Labs">
+  <meta property="og:description" content="Coppersmith&#x27;s method for small roots of modular polynomials, in Howgrave-Graham&#x27;s formulation: a stereotyped RSA message with e = 3 recovered by exact LLL, the measured reach of each lattice size against the determinant bound, and the attacks on RSA that follow.">
+  <meta property="og:type" content="article">
+  <title>Coppersmith&#x27;s method · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html">Schemes</a>
+        <a href="../cryptanalysis/index.html" aria-current="page">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Cryptanalysis reference</a> /
+        <a href="index.html#lattice">Lattice attacks</a>
+      </nav>
+      <header>
+        <h1>Coppersmith's method</h1>
+        <p class="standfirst">Solving a polynomial equation modulo an RSA modulus is as hard as factoring in general. Coppersmith showed in 1996 that it becomes easy when the root is small: any root below N<sup>1/d</sup> of a monic degree-d polynomial can be found in polynomial time, with lattice reduction. A remarkable number of practical RSA breaks are this one theorem applied to a different polynomial.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Problem</dt><dd>Given monic f of degree d and N of unknown factorisation, find every x<sub>0</sub> with f(x<sub>0</sub>) &equiv; 0 mod N and |x<sub>0</sub>| &lt; X</dd></div>
+        <div><dt>Reach</dt><dd>X up to N<sup>1/d</sup>, in time polynomial in log N and d</dd></div>
+        <div><dt>Tool</dt><dd>LLL on a lattice of polynomials that all vanish at x<sub>0</sub> modulo N<sup>h</sup></dd></div>
+        <div><dt>Measured here</dt><dd>68 unknown bits of a message recovered from its e = 3 ciphertext under a 256-bit modulus, against a limit of 85</dd></div>
+        <div><dt>Consequences</dt><dd>Stereotyped messages with small e, factoring with half of p known, ROCA, Boneh&ndash;Durfee for d &lt; N<sup>0.292</sup></dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#the-idea">The idea</a></li>
+        <li><a href="#a-stereotyped-message">A stereotyped message</a></li>
+        <li><a href="#what-follows-from-it">What follows from it</a></li>
+        <li><a href="#the-boundary">The boundary</a></li>
+        </ol>
+      </nav>
+      <section id="the-idea" aria-labelledby="the-idea-title">
+        <h2 id="the-idea-title">The idea</h2>
+        <p>Finding roots of a polynomial over the integers is easy. Over Z/NZ with N composite it is not: square roots mod N alone are equivalent to factoring. The method's starting point is to move the problem from the first setting to the second.</p>
+        <p>Suppose f(x<sub>0</sub>) &equiv; 0 mod N with |x<sub>0</sub>| &lt; X. Howgrave-Graham's formulation of Coppersmith's idea builds many polynomials that also vanish at x<sub>0</sub>, modulo a power N<sup>h</sup>: the shifted multiples x<sup>j</sup> N<sup>h&minus;i</sup> f(x)<sup>i</sup>. Any integer combination of them vanishes at x<sub>0</sub> mod N<sup>h</sup> too. If some combination g has coefficients so small that |g(x<sub>0</sub>)| &lt; N<sup>h</sup> is guaranteed for every |x<sub>0</sub>| &lt; X, then g(x<sub>0</sub>), a multiple of N<sup>h</sup> smaller than N<sup>h</sup>, must be exactly zero. Now x<sub>0</sub> is a root of g over the integers, and it can simply be found.</p>
+        <p>Finding a combination with small coefficients is a short-vector problem. Write each polynomial's coefficients, with the coefficient of x<sup>k</sup> multiplied by X<sup>k</sup>, as a row of a matrix, and reduce it with <a href="../notes/lattices-and-lwe.html">LLL</a>. The first reduced vector is short relative to the determinant of the lattice, and the determinant is easy to compute. That is why the method's reach can be predicted exactly, up to LLL's approximation factor.</p>
+      </section>
+      <section id="a-stereotyped-message" aria-labelledby="a-stereotyped-message-title">
+        <h2 id="a-stereotyped-message-title">A stereotyped message</h2>
+        <p>The classic example is RSA with public exponent e = 3 and a message that is mostly known: a fixed header, a date, a template with a short secret in the last field. Write the message as M<sub>0</sub> + x<sub>0</sub>, where M<sub>0</sub> is known and x<sub>0</sub> is the unknown low part. Then x<sub>0</sub> is a small root of</p>
+        <div class="math">f(x) = (M<sub>0</sub> + x)<sup>3</sup> &minus; c &nbsp;(mod N)
+          <span class="math-label">c is the ciphertext; f is monic of degree 3</span></div>
+        <p>and Coppersmith's bound says any x<sub>0</sub> below N<sup>1/3</sup> can be recovered: a third of the message, with no factoring and no private key. The code behind this page generated a 256-bit modulus from two 128-bit primes, and ran the attack with h = 1, 2 and 3, which give lattices of dimension 4, 7 and 10. For each size it searched for the largest number of unknown bits at which the attack recovered two fresh messages in a row. Every recovered message was re-encrypted and compared with the ciphertext.</p>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>Predicted and recovered unknown low bits of a message from its e = 3 RSA ciphertext under a 256-bit modulus: the largest multiple of 4 for which two fresh messages in a row were recovered and checked. Coppersmith's limit is 256/3 &asymp; 85 bits.</caption>
+          <thead><tr><th scope="col" class="num">h</th><th scope="col" class="num">Dimension</th><th scope="col" class="num">Predicted</th><th scope="col" class="num">Recovered</th></tr></thead>
+          <tbody>
+            <tr><th scope="row" class="num">1</th><td class="num">4</td><td class="num">42.7</td><td class="num">40</td></tr>
+            <tr><th scope="row" class="num">2</th><td class="num">7</td><td class="num">61.0</td><td class="num">60</td></tr>
+            <tr><th scope="row" class="num">3</th><td class="num">10</td><td class="num">68.3</td><td class="num">68</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>The predicted column comes from the determinant alone. With dimension n = 3h + 1, the lattice's determinant is N<sup>3h(h+1)/2</sup> X<sup>n(n&minus;1)/2</sup>. The attack works roughly when its n-th root falls below N<sup>h</sup>, and solving for X gives the bound. For h = 1 that is X &lt; N<sup>1/6</sup>, 42.7 bits, and the attack recovered 40. Larger lattices close in on N<sup>1/3</sup> = 85 bits slowly, and at growing cost. The dimension-10 run at 68 unknown bits took 1,582 LLL swaps on entries over a thousand bits long, and the reduced basis was checked against both LLL conditions.</p>
+        <aside class="note"><p><span class="note-label">Variants.</span> the unknown part here is the low end of the message. Any fixed position works, as long as the polynomial is made monic by multiplying through by an inverse mod N, and several unknown fields lead to the multivariate versions of the method, whose analysis rests on heuristics.</p></aside>
+      </section>
+      <section id="what-follows-from-it" aria-labelledby="what-follows-from-it-title">
+        <h2 id="what-follows-from-it-title">What follows from it</h2>
+        <ul>
+          <li><strong>Small public exponents.</strong> e = 3 with deterministic or low-entropy padding falls to the attack above, and H&aring;stad's broadcast attack, which recovers a message sent to several recipients, is sharpened by it. Randomised padding such as OAEP removes the structure the attack needs.</li>
+          <li><strong>Factoring with partial knowledge.</strong> Coppersmith also showed that N = pq can be factored in polynomial time once half of the bits of p are known, the top half or the bottom half. Side channels and weak key generators that leak those bits break the key outright.</li>
+          <li><strong>ROCA.</strong> In 2017 Nemec, Sys, &Scaron;venda, Klinec and Maty&aacute;&scaron; found that RSA keys from a widely deployed Infineon library had primes of a special form, and applied a Coppersmith-style attack over the few unknown parameters. The affected smartcards, TPMs and identity cards had to be reissued.</li>
+          <li><strong>Small private exponents.</strong> Boneh and Durfee used a bivariate version to break RSA whenever d &lt; N<sup>0.292</sup>, improving on Wiener's continued-fraction bound of N<sup>1/4</sup>. The bivariate method rests on a heuristic that the reduced polynomials are algebraically independent, which holds in practice.</li>
+          <li><strong>Partial key exposure.</strong> Knowing a fraction of the bits of d, together with a small e, is also often enough to recover the rest.</li>
+        </ul>
+      </section>
+      <section id="the-boundary" aria-labelledby="the-boundary-title">
+        <h2 id="the-boundary-title">The boundary</h2>
+        <p>Coppersmith's method is not an attack on the RSA problem. Properly generated RSA keys with standard exponents and randomised padding leave it nothing to use. It needs structure the designer did not intend: a small root, known bits, a special form of prime. Its reach is predictable, so for each of those structures there is a precise answer to how much leakage is too much, and that is its lasting value to an assessor.</p>
+        <p>The same lattice machinery, applied to a different equation, gives the <a href="hidden-number-problem.html">hidden number problem</a> attack on ECDSA nonces with a few leaked bits.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://doi.org/10.1007/s001459900030">D. Coppersmith, "Small solutions to polynomial equations, and low exponent RSA vulnerabilities", Journal of Cryptology 10 (1997)</a></li>
+        <li><a href="https://doi.org/10.1007/BFb0024458">N. Howgrave-Graham, "Finding small roots of univariate modular equations revisited", Cryptography and Coding 1997</a></li>
+        <li><a href="https://doi.org/10.1109/18.850673">D. Boneh and G. Durfee, "Cryptanalysis of RSA with private key d less than N<sup>0.292</sup>", IEEE Transactions on Information Theory 46 (2000)</a></li>
+        <li><a href="https://doi.org/10.1145/3133956.3133969">M. Nemec, M. Sys, P. &Scaron;venda, D. Klinec and V. Maty&aacute;&scaron;, "The return of Coppersmith's attack: practical factorization of widely used RSA moduli", ACM CCS 2017</a></li>
+        <li><a href="https://doi.org/10.1007/978-3-642-02295-1_10">A. May, "Using LLL-reduction for solving RSA and factorization problems", in The LLL Algorithm, Springer (2010)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="hidden-number-problem.html">The hidden number problem and ECDSA nonce leakage</a> <span class="family-tag">(Lattice attacks)</span></li>
+        <li><a href="number-field-sieve.html">The number field sieve</a> <span class="family-tag">(Index calculus and descent)</span></li>
+        <li><a href="../notes/lattices-and-lwe.html">Lattices and learning with errors</a> <span class="family-tag">(Notes)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>
