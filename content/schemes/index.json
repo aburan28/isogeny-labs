@@ -104,9 +104,7 @@
             "Best known attack": "Classically about p<sup>1/4</sup>; quantumly, Kuperberg's subexponential algorithm, whose concrete cost is disputed",
             "Quantum": "Subexponential; CSIDH-512 is widely considered too small"
           },
-          "see": [
-            "cryptanalysis/kuperberg-csidh"
-          ]
+          "page": "csidh"
         }
       ]
     },
@@ -229,9 +227,7 @@
             "Best known attack": "Pollard's rho, about 2<sup>127</sup> using the curve's extra automorphisms",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "notes/ecdlp"
-          ]
+          "page": "schnorr"
         },
         {
           "id": "bls",
@@ -344,7 +340,8 @@
             "Sizes": "128-bit block; 128-, 192- or 256-bit key",
             "Best known attack": "Biclique cryptanalysis recovers an AES-128 key in about 2<sup>126.1</sup> operations, four times faster than brute force. In practice, table-based software leaks through cache timing; use AES instructions or bitsliced code",
             "Quantum": "NIST uses key search on AES-128 as the benchmark for its lowest post-quantum security category"
-          }
+          },
+          "page": "aes"
         },
         {
           "id": "chacha20-poly1305",

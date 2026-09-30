@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="AES (FIPS 197, Rijndael): the round structure, the S-box built from inversion in GF(2^8), the FIPS 197 example vector reproduced, avalanche measured round by round, the best known cryptanalysis, cache-timing side channels, modes of operation, and what quantum computers do to key search.">
+  <meta property="og:title" content="AES · Isogeny Labs">
+  <meta property="og:description" content="AES (FIPS 197, Rijndael): the round structure, the S-box built from inversion in GF(2^8), the FIPS 197 example vector reproduced, avalanche measured round by round, the best known cryptanalysis, cache-timing side channels, modes of operation, and what quantum computers do to key search.">
+  <meta property="og:type" content="article">
+  <title>AES · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html#work">Work</a>
+        <a href="../index.html#services">Services</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../schemes/index.html" aria-current="page">Schemes</a>
+        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Schemes</a> /
+        <a href="index.html#symmetric">Symmetric ciphers and hashes</a>
+      </nav>
+      <header>
+        <h1>AES</h1>
+        <p class="standfirst">Almost every encrypted byte on the internet passes through AES. Unlike the public-key schemes in this catalogue, its security does not reduce to any mathematical problem. It rests on twenty-five years of cryptanalysis that has barely dented it, and in practice the attacks that matter are on how it is implemented.</p>
+      </header>
+      <dl class="facts">
+        <div><dt>Rests on</dt><dd>Resistance to cryptanalysis; there is no reduction to a number-theoretic problem</dd></div>
+        <div><dt>Standards</dt><dd>FIPS 197 (2001, updated 2023); modes in NIST SP 800-38 series</dd></div>
+        <div><dt>Sizes</dt><dd>128-bit block; 128-, 192- or 256-bit key; 10, 12 or 14 rounds</dd></div>
+        <div><dt>Best known attack</dt><dd>Biclique cryptanalysis: an AES-128 key in about 2<sup>126.1</sup> operations, four times faster than brute force</dd></div>
+        <div><dt>Quantum</dt><dd>Grover's algorithm speeds up key search; NIST uses AES-128 key search as the benchmark for its lowest post-quantum category</dd></div>
+      </dl>
+      <nav class="toc" aria-label="On this page">
+        <p>On this page</p>
+        <ol>
+        <li><a href="#the-cipher">The cipher</a></li>
+        <li><a href="#diffusion-measured">Diffusion, measured</a></li>
+        <li><a href="#cryptanalysis">Cryptanalysis</a></li>
+        <li><a href="#modes-and-what-can-go-wrong-there">Modes, and what can go wrong there</a></li>
+        <li><a href="#the-quantum-question">The quantum question</a></li>
+        </ol>
+      </nav>
+      <section id="the-cipher" aria-labelledby="the-cipher-title">
+        <h2 id="the-cipher-title">The cipher</h2>
+        <p>AES is Rijndael, by Daemen and Rijmen, chosen by NIST in 2000 after an open competition. It encrypts a 16-byte block, arranged as a 4 &times; 4 array of bytes, through a fixed number of rounds. Each round applies four steps:</p>
+        <ol>
+          <li><strong>SubBytes.</strong> Replace every byte by its image under a fixed 8-bit S-box. This is the only nonlinear step.</li>
+          <li><strong>ShiftRows.</strong> Rotate row i of the array left by i positions, so each column's bytes move to four different columns.</li>
+          <li><strong>MixColumns.</strong> Multiply each column by a fixed 4 &times; 4 matrix over GF(2<sup>8</sup>). A change in one input byte changes all four output bytes of its column.</li>
+          <li><strong>AddRoundKey.</strong> XOR in a 16-byte round key derived from the cipher key.</li>
+        </ol>
+        <p>The S-box is not an arbitrary table. It is inversion in the field GF(2<sup>8</sup>), with 0 sent to 0, followed by a fixed affine map over GF(2). Inversion was chosen because its differential and linear properties are close to the best any 8-bit S-box can have, and the affine map removes its simple algebraic structure. The code behind this page builds the S-box from exactly that definition, and checks it against the examples in the standard.</p>
+        <p>With the S-box built, the whole cipher is about a hundred lines. It reproduces the example of FIPS 197 appendix C.1:</p>
+        <pre class="listing">key        000102030405060708090a0b0c0d0e0f
+plaintext  00112233445566778899aabbccddeeff
+ciphertext 69c4e0d86a7b0430d8cdb78070b4c55a</pre>
+        <p class="listing-label">FIPS 197 appendix C.1, AES-128, recomputed at build time</p>
+      </section>
+      <section id="diffusion-measured" aria-labelledby="diffusion-measured-title">
+        <h2 id="diffusion-measured-title">Diffusion, measured</h2>
+        <p>The design goal of the round structure is that every output bit depends on every input bit after very few rounds, the property Daemen and Rijmen call the wide-trail strategy. It can be watched directly. Take two plaintexts that differ in a single bit, encrypt both under the same key, and count how many of the 128 state bits differ after each round:</p>
+        <div class="table-wrap">
+        <table class="data">
+          <caption>Mean number of the 128 state bits that differ after each round, when two plaintexts differ in one bit, over 200 random keys and plaintexts. A random pair would differ in 64.</caption>
+          <thead><tr><th scope="col" class="num">Round</th><th scope="col" class="num">Bits changed</th></tr></thead>
+          <tbody>
+            <tr><th scope="row" class="num">1</th><td class="num">16.0</td></tr>
+            <tr><th scope="row" class="num">2</th><td class="num">64.6</td></tr>
+            <tr><th scope="row" class="num">3</th><td class="num">63.6</td></tr>
+            <tr><th scope="row" class="num">4</th><td class="num">64.2</td></tr>
+            <tr><th scope="row" class="num">5</th><td class="num">63.9</td></tr>
+            <tr><th scope="row" class="num">6</th><td class="num">63.7</td></tr>
+            <tr><th scope="row" class="num">7</th><td class="num">63.0</td></tr>
+            <tr><th scope="row" class="num">8</th><td class="num">63.5</td></tr>
+            <tr><th scope="row" class="num">9</th><td class="num">63.6</td></tr>
+            <tr><th scope="row" class="num">10</th><td class="num">63.8</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>After one round the difference has spread to a single column, 16.0 bits on average. The S-box changes one byte, and MixColumns spreads it to the four bytes of that column. After round 2, ShiftRows has sent those four bytes to four different columns, and the difference covers the whole state: 64.6 bits, indistinguishable from the 64 of two unrelated random blocks. It stays there through round 10. Full diffusion after two rounds is by design, and it is part of why published attacks meaningfully faster than brute force reach only about seven of AES-128's ten rounds.</p>
+      </section>
+      <section id="cryptanalysis" aria-labelledby="cryptanalysis-title">
+        <h2 id="cryptanalysis-title">Cryptanalysis</h2>
+        <p>The design was built to resist differential and linear cryptanalysis with a provable margin: every four-round trail passes through at least 25 active S-boxes, which bounds the probability of any single differential or linear trail far below what an attack could use. Twenty-five years on, the best attack on the full cipher is the 2011 biclique attack of Bogdanov, Khovratovich and Rechberger. It recovers an AES-128 key in about 2<sup>126.1</sup> operations, compared with 2<sup>128</sup> for brute force, with a data requirement that makes it purely theoretical. Related-key attacks on AES-192 and AES-256 exist, but need keys with a chosen relationship, which proper protocols never produce.</p>
+        <p>The attacks that have mattered in practice are side channels. Fast software AES used lookup tables indexed by secret-dependent bytes, and which table entries are in the processor's cache leaks those bytes through timing. Bernstein demonstrated remote timing leakage in 2005, and Osvik, Shamir and Tromer recovered full keys through cache attacks in 2006. The fix is to avoid secret-dependent memory access: the AES instructions in modern processors, or bitsliced constant-time software.</p>
+      </section>
+      <section id="modes-and-what-can-go-wrong-there" aria-labelledby="modes-and-what-can-go-wrong-there-title">
+        <h2 id="modes-and-what-can-go-wrong-there-title">Modes, and what can go wrong there</h2>
+        <p>A block cipher on its own encrypts 16 bytes. Real use needs a mode. The standard choice is GCM (NIST SP 800-38D), which encrypts in counter mode and authenticates with a polynomial hash over GF(2<sup>128</sup>). GCM's security depends absolutely on never repeating a nonce under one key: a repeated nonce reveals the XOR of two plaintexts and allows forgeries. Where nonces cannot be guaranteed unique, nonce-misuse-resistant modes such as AES-GCM-SIV limit the damage. ECB mode, which encrypts each block independently, leaks the pattern of equal blocks and should not be used at all.</p>
+      </section>
+      <section id="the-quantum-question" aria-labelledby="the-quantum-question-title">
+        <h2 id="the-quantum-question-title">The quantum question</h2>
+        <p>Grover's algorithm searches 2<sup>k</sup> keys in about 2<sup>k/2</sup> quantum steps, which is often summarised as halving the key length. In practice the steps are long, sequential and hard to parallelise, so the real cost is far above 2<sup>64</sup> for AES-128. NIST defines its lowest post-quantum security category as "at least as hard as key search on AES-128" and does not consider AES-128 broken by quantum computers. AES-256 is the conservative choice where a large margin is wanted. Either way, the symmetric side of the quantum transition is a parameter choice, not a replacement, unlike <a href="rsa.html">RSA</a> and <a href="x25519.html">elliptic-curve</a> cryptography.</p>
+      </section>
+      <section class="references" id="references" aria-labelledby="references-title">
+        <h2 id="references-title">Primary sources</h2>
+        <ol>
+        <li><a href="https://doi.org/10.6028/NIST.FIPS.197-upd1">NIST FIPS 197, Advanced Encryption Standard (AES) (2001, updated 2023)</a></li>
+        <li><a href="https://doi.org/10.1007/978-3-662-04722-4">J. Daemen and V. Rijmen, The Design of Rijndael, Springer (2002)</a></li>
+        <li><a href="https://doi.org/10.1007/978-3-642-25385-0_19">A. Bogdanov, D. Khovratovich and C. Rechberger, "Biclique cryptanalysis of the full AES", ASIACRYPT 2011</a></li>
+        <li><a href="https://doi.org/10.1007/11605805_1">D. A. Osvik, A. Shamir and E. Tromer, "Cache attacks and countermeasures: the case of AES", CT-RSA 2006</a></li>
+        <li><a href="https://cr.yp.to/antiforgery/cachetiming-20050414.pdf">D. J. Bernstein, "Cache-timing attacks on AES" (2005)</a></li>
+        <li><a href="https://doi.org/10.6028/NIST.SP.800-38D">M. Dworkin, NIST SP 800-38D, Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC (2007)</a></li>
+        </ol>
+      </section>
+      <section class="related" aria-labelledby="related-title">
+        <h2 id="related-title">Related</h2>
+        <ul>
+        <li><a href="ml-kem.html">ML-KEM</a> <span class="family-tag">(Key establishment)</span></li>
+        <li><a href="slh-dsa.html">SLH-DSA</a> <span class="family-tag">(Signatures)</span></li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+{
+  "slug": "csidh",
+  "position": 3,
+  "group": "key-establishment",
+  "compute": "csidh",
+  "title": "CSIDH",
+  "short_title": "CSIDH",
+  "one_liner": "Isogeny-based key exchange that works like Diffie&ndash;Hellman, non-interactively, computed on the paper's toy prime p = 419.",
+  "description": "CSIDH: a commutative class-group action on supersingular curves over F_p, a full key exchange computed with p = 419 and checked against the class number, why commutativity gives non-interactive key exchange, and why it also admits Kuperberg's subexponential quantum attack.",
+  "standfirst": "Every other post-quantum key exchange is a key encapsulation: one side sends a ciphertext to the other. CSIDH is a drop-in replacement for Diffie&ndash;Hellman instead, with static public keys that anyone can combine without interaction. That property comes from a commutative group action, and the same commutativity is what gives quantum computers a subexponential attack on it.",
+  "facts": {
+    "Rests on": "Inverting a commutative class-group action on supersingular curves over F<sub>p</sub>",
+    "Standards": "None; a research scheme",
+    "Sizes": "CSIDH-512: 64-byte public keys",
+    "Best known attack": "Classically about p<sup>1/4</sup>; quantumly, <a href=\"../cryptanalysis/kuperberg-csidh.html\">Kuperberg's subexponential algorithm</a>, whose concrete cost is disputed",
+    "Toy example here": "p = {{p}}: {{orbit}} curves in one orbit, equal to the class number h(&minus;4p) = {{h}}"
+  },
+  "sections": [
+    {
+      "heading": "A group acting on curves",
+      "blocks": [
+        {
+          "p": "Diffie&ndash;Hellman works because exponentiation commutes: (g<sup>a</sup>)<sup>b</sup> = (g<sup>b</sup>)<sup>a</sup>. CSIDH, by Castryck, Lange, Martindale, Panny and Renes, gets the same property from a <em>group action</em>. The set is the supersingular elliptic curves defined over F<sub>p</sub> whose endomorphism ring is Z[&radic;&minus;p], written as Montgomery curves y<sup>2</sup> = x<sup>3</sup> + Ax<sup>2</sup> + x and identified by the single number A. The group is the class group of Z[&radic;&minus;p]. It acts by isogenies: an ideal of norm &#8467; sends a curve to its image under an isogeny of degree &#8467;, and the group is commutative, so the order of the steps does not matter."
+        },
+        {
+          "p": "The prime is chosen as p = 4&middot;&#8467;<sub>1</sub>&middot;&middot;&middot;&#8467;<sub>n</sub> &minus; 1 for small odd primes &#8467;<sub>i</sub>. Then every such curve has p + 1 points, so points of order &#8467;<sub>i</sub> exist over F<sub>p</sub> and each step can be computed with V&eacute;lu's formulas on rational points. A step in the direction of the ideal l<sub>i</sub> uses a point on the curve, and a step in the direction of its inverse uses a point on the quadratic twist."
+        }
+      ]
+    },
+    {
+      "heading": "A key exchange with p = {{p}}",
+      "blocks": [
+        {
+          "p": "The paper's toy example uses p = 4&middot;3&middot;5&middot;7 &minus; 1 = {{p}}, with the ideals above 3, 5 and 7. The code that builds this page implements the paper's evaluation algorithm, with x-only Montgomery arithmetic and odd-degree V&eacute;lu formulas, and runs a key exchange starting from the curve A = 0:"
+        },
+        {
+          "steps": [
+            "Alice's secret is an exponent vector a = {{a}}: apply the ideal above 3 twice, the one above 5 twice, and the inverse of the one above 7 once. Starting from A = 0 this gives her public curve A = {{A_pub}}.",
+            "Bob's secret is b = {{b}}, and his public curve is A = {{B_pub}}.",
+            "Alice applies a to Bob's curve and Bob applies b to Alice's. Both arrive at A = {{shared}}, the shared secret."
+          ]
+        },
+        {
+          "p": "The build checks the implementation three ways. Applying the negated vector to Alice's public curve returns A = 0. Every curve reached passes a supersingularity test: multiplying random points on the curve and on its twist by p + 1 gives the identity. And exploring every step from A = 0 reaches exactly {{orbit}} distinct curves. That is the class number h(&minus;4p) = {{h}}, which the build counts independently from reduced quadratic forms. An action of a group of order {{h}} that reaches {{h}} curves is acting freely and transitively, as the theory says it must."
+        },
+        {
+          "p": "The toy also shows why exponent vectors are not the key space. With exponents in [&minus;{{bound}}, {{bound}}] there are {{keyspace}} vectors but only {{h}} curves, so many vectors give the same public key. Real parameters choose the prime and the exponent range so that the vectors cover the class group roughly evenly."
+        }
+      ]
+    },
+    {
+      "heading": "Real parameters",
+      "blocks": [
+        {
+          "p": "CSIDH-512 uses the product of the first 74 odd primes, with 587 in place of the largest, giving a prime of 511 bits, and exponents in [&minus;5, 5]. A public key is one element of F<sub>p</sub>, 64 bytes, and validating that a received curve is supersingular is cheap, which is what makes static keys safe. Beullens, Kleinjung and Vercauteren later computed the full class group of CSIDH-512, which turned it into a signature scheme, CSI-FiSh, and let keys be sampled uniformly."
+        },
+        {
+          "p": "The cost is speed. A key exchange takes tens to hundreds of milliseconds, depending on how much the implementation pays for constant time, orders of magnitude slower than <a href=\"x25519.html\">X25519</a> or <a href=\"ml-kem.html\">ML-KEM</a>, and constant-time implementation is harder than for other schemes because the number of isogeny steps depends on the secret."
+        }
+      ]
+    },
+    {
+      "heading": "Security, and the commutativity problem",
+      "blocks": [
+        {
+          "p": "Classically, recovering a secret means finding a path through the class group between two known curves. The best known attacks are meet-in-the-middle searches costing about p<sup>1/4</sup>, well beyond reach for CSIDH-512."
+        },
+        {
+          "p": "Quantum computers change this, and because of the very property that makes CSIDH useful. Recovering the key of a commutative group action is an instance of the abelian hidden shift problem, for which Kuperberg's algorithm runs in subexponential time. How large p must be for a given quantum security level has been argued in detail. Peikert, and Bonnetain and Schrottenloher, concluded independently in 2020 that CSIDH-512 falls well short of NIST level 1. Other teams have proposed much larger primes, of thousands of bits. The <a href=\"../cryptanalysis/kuperberg-csidh.html\">Kuperberg page</a> covers the dispute."
+        },
+        {
+          "p": "CSIDH's curves are supersingular, but the attacks that broke <a href=\"../cryptanalysis/sidh-torsion-attacks.html\">SIDH</a> needed torsion-point images that CSIDH never publishes, and they do not apply. For the non-commutative supersingular problems behind <a href=\"sqisign.html\">SQIsign</a> no subexponential quantum algorithm is known."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "W. Castryck, T. Lange, C. Martindale, L. Panny and J. Renes, \"CSIDH: an efficient post-quantum commutative group action\", ASIACRYPT 2018",
+      "href": "https://doi.org/10.1007/978-3-030-03332-3_15"
+    },
+    {
+      "text": "W. Beullens, T. Kleinjung and F. Vercauteren, \"CSI-FiSh: efficient isogeny based signatures through class group computations\", ASIACRYPT 2019",
+      "href": "https://doi.org/10.1007/978-3-030-34578-5_9"
+    },
+    {
+      "text": "C. Peikert, \"He gives C-sieves on the CSIDH\", EUROCRYPT 2020",
+      "href": "https://doi.org/10.1007/978-3-030-45724-2_16"
+    },
+    {
+      "text": "X. Bonnetain and A. Schrottenloher, \"Quantum security analysis of CSIDH\", EUROCRYPT 2020",
+      "href": "https://doi.org/10.1007/978-3-030-45724-2_17"
+    }
+  ],
+  "related": ["cryptanalysis/kuperberg-csidh", "notes/isogenies", "sqisign"]
+}
