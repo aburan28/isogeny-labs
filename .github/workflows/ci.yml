@@ -1,24 +1,10 @@
 name: CI
-
 on:
   pull_request:
   push:
     branches: [main]
-
 permissions:
   contents: read
-
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check script syntax
-        run: node --check script.js
-
-      - name: Check the generated pages match their content and recompute the worked examples
-        run: python3 tools/build_site.py --check
-
-      - name: Check every page parses and its local references resolve
-        run: python3 tools/check_links.py
+  quality:
+    uses: ./.github/workflows/quality.yml

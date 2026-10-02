@@ -1,0 +1,56 @@
+name: Website quality
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: isogeny
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_DB: isogeny_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U isogeny -d isogeny_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://isogeny:test-only-password@127.0.0.1:5432/isogeny_test
+      REDIS_URL: redis://127.0.0.1:6379
+      CONTACT_API_URL: /api/inquiries
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: python3 tools/build_site.py --check
+      - run: npm run build
+      - run: git diff --exit-code -- contact/
+      - run: python3 tools/check_links.py
+      - run: node --check script.js
+      - run: npm test
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: browser-test-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

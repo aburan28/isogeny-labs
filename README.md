@@ -14,11 +14,12 @@ and protocol review. Besides the home page it hosts three generated sections:
 ## Preview locally
 
 ```sh
-python3 -m http.server 8000 --bind 127.0.0.1 --directory .
+npm ci
+npm run build
+python3 -m http.server 8000 --bind 127.0.0.1 --directory _site
 ```
 
-Open <http://localhost:8000>. There is no package installation, and the pages that
-ship are plain HTML — nothing is compiled at request time. All asset paths are
+Open <http://localhost:8000>. The reference pages ship as plain HTML. The contact form adds a bundled React component; nothing is compiled at request time. All asset paths are
 relative, so the site also serves correctly from a subdirectory.
 
 ## Files
@@ -39,7 +40,7 @@ relative, so the site also serves correctly from a subdirectory.
   worked examples, see below).
 - `tools/check_links.py`: the link checker.
 
-Everything is stdlib-only Python; nothing is installed.
+The reference generator is stdlib-only Python. The contact UI, API and browser tests use the locked Node dependencies in `package-lock.json`.
 
 The stylesheet requests Source Serif 4 and IBM Plex Mono from Google Fonts; system
 fonts are used if that service is unavailable. Everything else is local, and there
@@ -123,9 +124,7 @@ re-check them if either surface colour changes.
 
 ## Before launch
 
-The contact section deliberately reads "Contact details coming soon." Replace that
-text in `#contact-slot` with the approved business email or booking link before
-accepting enquiries. There is no enquiry form and no backend.
+The contact section links to the React enterprise inquiry form. It is disabled by default until `CONTACT_API_URL` is configured. Publish the approved business contact details, retention policy and staffed triage process before enabling it. See `docs/enterprise-platform.md` for the PostgreSQL-backed API and deployment prerequisites.
 
 ## Deployment
 
@@ -134,7 +133,7 @@ accepting enquiries. There is no enquiry form and no backend.
 as CI, copies the site files and the `cryptanalysis/`, `notes/` and `schemes/`
 directories into `_site/`, adds
 `.nojekyll` so Pages serves them verbatim, and deploys via the official Pages
-actions. No build tooling is installed.
+actions. A locked Node build bundles the React contact component; the reusable quality workflow gates publication.
 
 This requires Pages to be enabled once in **Settings → Pages → Source → GitHub
 Actions**. Until that is set, the deploy job fails with a Pages-not-enabled error;
@@ -152,3 +151,17 @@ python3 tools/check_links.py                   # references, anchors, duplicate 
 
 For content changes, review the pages at desktop and phone widths, in both light
 and dark mode.
+
+### Curve traits guide
+
+`content/notes/curve-traits.json` defines all 22 DiSSECT traits plus eight foundations, the factorization comparison and six-phase study plan. The `traits` block renders searchable disclosures with source filters and deep links, progressively enhanced by `script.js`. Its F_101 example is recomputed by `tools/sitegen/worked/curve_traits.py`. Regenerate with the standard site build; existing CI and Pages deployment include the page.
+
+## Enterprise inquiries and browser coverage
+
+- `web/contact.jsx`: React form with validation, consent, pending/error states and retry identifiers.
+- `server/`: Fastify API, PostgreSQL migration/repository, Redis rate limits, health checks and built-site hosting.
+- `tests/browser/`: Playwright page-health, accessibility, mobile/dark, traits and contact-flow checks.
+- `compose.yml`: local PostgreSQL, Redis, migration job and web server; `Dockerfile` builds a non-root production image.
+- `docs/enterprise-platform.md`: deployment contract and AWS/Google Cloud mappings, including planned blob storage.
+
+Run `CONTACT_API_URL=/api/inquiries npm run build`, `npm test`, then `npm run test:e2e` after installing Playwright Chromium and WebKit. CI uses real PostgreSQL/Redis services; local tests can use embedded PostgreSQL. The quality workflow must pass before Pages publishes. Frontend-only builds leave the form disabled unless an API endpoint is supplied.
