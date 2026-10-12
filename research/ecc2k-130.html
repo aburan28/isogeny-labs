@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="The standard attack client for Certicom&#x27;s ECC2K-130 challenge, open since 1997, made 17.1 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the algorithm: from 0.857 to 14.64 billion iterations per second, which cuts the expected cost of the attack from about 80 GPU-years to 4.7.">
+  <meta property="og:title" content="A 29-year-old challenge got four times cheaper, and the math didn&#x27;t change · Isogeny Labs">
+  <meta property="og:description" content="The standard attack client for Certicom&#x27;s ECC2K-130 challenge, open since 1997, made 17.1 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the algorithm: from 0.857 to 14.64 billion iterations per second, which cuts the expected cost of the attack from about 80 GPU-years to 4.7.">
+  <meta property="og:type" content="article">
+  <title>A 29-year-old challenge got four times cheaper, and the math didn&#x27;t change · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">
+        <picture>
+          <source srcset="../assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="../assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html">Home</a>
+        <a href="../research/index.html" aria-current="page">Research</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../about/index.html">About</a>
+        <a href="../contact/index.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Research</a>
+      </nav>
+      <header>
+        <h1>A 29-year-old challenge got four times cheaper, and the math didn't change</h1>
+        <p class="meta">GPU cryptanalysis · parallel Pollard rho · CUDA</p>
+      </header>
+      <p class="paper-link">The paper will be linked here when it is posted to IACR ePrint.<br><a class="code-link" href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Code on GitHub</a></p>
+      <p>In 1997, Certicom posted a set of elliptic curve challenges: here are some curves, here are some public keys, go find the private ones. Most of them are still unsolved. The cheapest of those is ECC2K-130, a discrete logarithm on a Koblitz curve over GF(2<sup>131</sup>), and it has been open for 29 years.</p>
+      <p>We did not solve it. What we did was make the standard attack client 17.1 times faster on a single NVIDIA RTX PRO 6000 Blackwell, from 0.857 to 14.64 billion iterations per second. A variant iteration function gets to 20.08 billion. The algorithm is untouched: same walk, same distinguished-point rule, same expected 2<sup>60.9</sup> iterations. Every bit of the gain is in how arithmetic over the field is represented and scheduled on the GPU.</p>
+      <p>At the old rate, the attack needs roughly 80 GPU-years on one card. At the new rate, about 4.7.</p>
+      <p>Before going further, we should be clear about what this does and does not mean. ECC2K-130 is a small challenge curve chosen in 1997 precisely because it was the cheapest unsolved target. Nobody deploys it. Nothing you are using today is weaker than it was last week. We found no mathematical break and we are not claiming one.</p>
+      <p>What we think is interesting is the gap itself: a published security estimate moved by a factor of 17 without anyone discovering anything new about elliptic curves.</p>
+      <h2 id="where-the-time-goes">Where the time goes</h2>
+      <p>The attack is parallel <a href="../cryptanalysis/pollard-rho.html">Pollard rho</a> with distinguished points. You start walks at random points on the curve and step them forward until two walks collide; the collision gives you the logarithm. Each step is one affine point addition:</p>
+      <pre class="listing">lambda = (y + y_2) / (x + x_2)
+x_3    = lambda^2 + lambda + x + x_2
+y_3    = lambda(x + x_3) + x_3 + y</pre>
+      <p>Division in a finite field is expensive, so inversions get batched across B parallel walks using Montgomery's trick. That makes one step cost</p>
+      <div class="math">5 + 5/B field multiplications</div>
+      <p>or 5.16 at batch 32 and 5.31 at batch 16. Everything else in a step is linear over GF(2): the Frobenius map, the Hamming weight, the basis conversions, the reduction.</p>
+      <p>Read that cost model and you conclude this is a multiplication problem. That is what implementations have assumed for fifteen years, and it is what we assumed when we started.</p>
+      <p>It turned out to be wrong. The baseline client was issuing about 6% of the logic throughput the card sustains in a synthetic probe. The multiplier was fine. Each thread's working state had spilled out of registers into a 16 KB stack frame, and the machine was spending its time waiting on memory.</p>
+      <h2 id="three-changes-carried-most-of-it">Three changes carried most of it</h2>
+      <p>Sixteen changes got us from 0.857 to 14.64. Three of them did the heavy lifting.</p>
+      <p><strong>Packing the field element.</strong> A field element was stored bitsliced: 131 machine words, each 32-bit word carrying one coordinate of 32 independent walks. We replaced that with five 32-bit words holding 131 bits, advancing one walk per slot. The mathematical representation is identical. The difference is that a thread's state now fits almost entirely in registers. Worth 3.47× on its own.</p>
+      <p><strong>Frobenius as permutation networks.</strong> In the packed form, squaring is no longer free, it is a bit permutation. We replaced the repeated squaring with one fixed Beneš network per power, generated and verified against all 256 basis vectors. Another 41%.</p>
+      <p><strong>The carry-less multiply instruction.</strong> PTX 9.3 added <code>clmad</code>, a native carry-less multiply-add. This is the one that changes the shape of the problem. The 128-bit part of a product went from 144 integer multiplies to six <code>clmad</code> instructions. Worth 22%, and the retuned batch depth that followed it worth another 52%.</p>
+      <p>After all of it, the kernel is bound by linear logic work rather than by multiplication. The logic pipe sits at 91% of measured peak.</p>
+      <h2 id="the-part-that-surprised-us">The part that surprised us</h2>
+      <p>Here is the finding we did not expect, and the one we think is useful outside this problem.</p>
+      <p>The right answer depends on which die you are running on.</p>
+      <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th scope="col">Card</th><th scope="col" class="num">Cost of one clmad, in logic instructions</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">RTX PRO 6000</th><td class="num">37.8</td></tr>
+          <tr><th scope="row">B200</th><td class="num">3.8</td></tr>
+          <tr><th scope="row">H100</th><td class="num">2.0</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>That is more than a tenfold swing in the relative price of two operations, across cards from one vendor in one generation. On the RTX PRO 6000 the carry-less unit is the scarce resource. On a B200 it sits idle and the logic pipe binds instead.</p>
+      <p>The consequence is concrete. Two changes we built, measured, and rejected on the RTX PRO 6000, moving the top-three-bit correction and the normal-basis inversion onto <code>clmad</code>, win on a B200. The second one by 37.9% when stacked with related changes.</p>
+      <p>This is why we publish the changes that lost alongside the ones that won. A list of what worked supports no prediction on hardware you have not tested. A per-pipe instruction model does, and ours predicted the B200 reversal before we measured it.</p>
+      <h2 id="why-this-matters">Why this matters</h2>
+      <p>The algorithms for post-quantum cryptography are settled. ML-KEM, ML-DSA and SLH-DSA are standardized, and the migration is running against real dates: new national security systems have to support quantum-resistant algorithms from 2027, with legacy systems phased out by 2030.</p>
+      <p>What is not settled is everything downstream of the standard, and that is where a result like this is relevant.</p>
+      <p><strong>Implementation quality moves security by factors that matter.</strong> We moved the cost of one attack by 17× without touching any mathematics. Every post-quantum primitive being written right now is new code, much of it on constrained hardware, under schedule pressure, by teams implementing these algorithms for the first time. The distance between what a specification promises and what an implementation delivers is where the risk lives, and almost nobody measures it.</p>
+      <p><strong>Published cost estimates are the weakest input to a migration plan.</strong> Parameter choices get made against hardness figures, and those figures move. Germany's federal cybersecurity agency recommended Classic McEliece for six years and withdrew that recommendation in September 2026, after a run of cryptanalytic results dropped the estimated attack cost from far out of reach to below their required security level. No deployment changed. The number did.</p>
+      <p><strong>This is what crypto agility is for.</strong> If a hardness figure can move by an order of magnitude from engineering alone, and further from cryptanalysis, then being able to swap an algorithm quickly is part of the security of the system rather than a nice-to-have. Measurement is what tells you when to use it.</p>
+      <p>The last serious GPU implementation of this attack was published in 2010, on hardware with no carry-less multiply instruction. The representation that was fastest then is not the fastest now. Nobody had checked, because checking is unglamorous engineering work rather than mathematics.</p>
+      <p>That gap is what we built this lab to measure.</p>
+      <h2 id="how-we-measured-it">How we measured it</h2>
+      <p>Every gain in the paper is a paired comparison: control and candidate alternating on one GPU allocation, warm-ups excluded, the figure taken as the ratio of medians of three samples. Each sample completes between 100 and 200 billion iterations.</p>
+      <p>Correctness is checked at four levels. The last one is the one that matters: the optimised client has to produce the same sorted multiset of distinguished points as the control, with zero drops. A speedup that changes one distinguished point is rejected, not investigated. The full pipeline recovers planted logarithms on smaller fields, and ECC2K-95, solved in 1998 with a published answer, is configured as a full-scale test.</p>
+      <p>The client, the code generator, every build option and the measurement receipts are public. One command runs device validation followed by three benchmark and three collection runs of the 14.64 B/s preset. If you have the card, you can check the number yourself.</p>
+      <h2 id="what-is-next">What is next</h2>
+      <p>Two bit-exact cuts are built but not yet timed, and the model predicts about 21.5 B/s from them. On dies where the carry-less unit is idle, reduction against the modulus with <code>clmad</code> is priced at 290 fewer logic instructions and 19 more <code>clmad</code>s per update, which should win on a B200 and lose on the card we tested.</p>
+      <p>The generated field circuits also carry over to FPGAs. Measured as 6-input lookup tables, one FPGA is estimated to be competitive with one GPU on speed and 5 to 10 times better per watt. That is an estimate, not a measurement, and it is the next thing we would like to check.</p>
+      <h2 id="the-campaign">The campaign</h2>
+      <p>Alongside the paper, we are running a distributed Pollard rho walk against ECC2K-130, with clients for NVIDIA GPUs, Apple GPUs and ARM CPUs. Each client's arithmetic is tested bit for bit against a reference model, and any point a client reports can be re-walked from its seed. Progress is on the <a href="https://aburan28.github.io/crypto/status/">campaign status page</a>.</p>
+      <p class="paper-link">The paper will be linked here when it is posted to IACR ePrint.<br><a class="code-link" href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Code on GitHub</a></p>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

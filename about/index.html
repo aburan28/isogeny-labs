@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Why Isogeny Labs exists, and who runs it.">
+  <meta property="og:title" content="About · Isogeny Labs">
+  <meta property="og:description" content="Why Isogeny Labs exists, and who runs it.">
+  <meta property="og:type" content="article">
+  <title>About · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">
+        <picture>
+          <source srcset="../assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="../assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html">Home</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../about/index.html" aria-current="page">About</a>
+        <a href="../contact/index.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <article>
+      <header>
+        <h1>About</h1>
+      <p class="standfirst">Isogeny Labs implements known attacks on elliptic-curve and isogeny-based cryptography and measures what they cost on hardware that exists now.</p>
+      </header>
+      <h2 id="why-the-lab-exists">Why the lab exists</h2>
+      <p>The security of a cryptosystem is an estimate: the cost of the best known attack, worked out once and then cited for years. Those estimates age as hardware improves and cryptanalysis advances, and checking them is engineering work that the field does not reward. We do that work, and we publish the code and the measurements so anyone can check them.</p>
+      <h2 id="why-now">Why now</h2>
+      <p>Quantum computing makes this more pressing. A large fault-tolerant quantum computer running Shor's algorithm would break every elliptic-curve and RSA key in use. Nobody can say when such a machine will exist, but the published estimates of what it would take keep falling, and encrypted traffic recorded today can be decrypted once one does. Replacing the cryptography in deployed systems takes years, so the migration has to start well before the threat arrives. That makes it a problem for today, not for whenever the machine is built.</p>
+      <p>The replacements are post-quantum schemes: lattice-based ML-KEM and ML-DSA, hash-based SLH-DSA, and isogeny-based schemes such as SQIsign. Their security levels are estimates too, made the same way and subject to the same ageing. Isogeny-based cryptography has already shown how fast an estimate can fail: SIDH was broken in 2022 by a classical attack after years of analysis. Measuring the cost of attacks on elliptic curves today, and on the isogeny-based systems proposed to replace parts of them, is the work this lab was set up to do.</p>
+      <p><a href="../research/quantum-and-post-quantum.html">Quantum computers and post-quantum cryptography</a> explains the background in more detail.</p>
+      <h2 id="people">People</h2>
+      <h3 id="adam-buran">Adam Buran</h3>
+      <p>Cofounder, Principal Cryptographer</p>
+      <p>[To come: bio.]</p>
+      <h3 id="kevin-nguyen">Kevin Nguyen</h3>
+      <p>Cofounder, Technical Programs</p>
+      <p>[To come: bio.]</p>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

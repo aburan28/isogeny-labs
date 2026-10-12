@@ -1,8 +1,17 @@
 # Isogeny Labs website
 
-Static website for Isogeny Labs, a cryptography research and engineering lab:
-hardness analysis, isogeny and elliptic-curve systems, post-quantum migration,
-and protocol review. Besides the home page it hosts three generated sections:
+Static website for Isogeny Labs, a cryptanalysis research lab. It implements known
+attacks on elliptic-curve and isogeny-based systems, measures what they cost on
+current hardware, and publishes the code and the measurements.
+
+The navigation is Home, Research, Notes, About and Contact:
+
+- `/` — the **home page**: the logo, the lab's thesis, and a card for each paper.
+- `/research/` — **one page per paper**: a plain-language account of the work and
+  a link to the paper on IACR ePrint.
+- `/about/` and `/contact/` — why the lab exists, who runs it, and how to reach it.
+
+Notes holds everything else, in three generated sections:
 
 - `/cryptanalysis/` — the **cryptanalysis reference**: how hardness assumptions are
   actually attacked, with costs, records, and where each attack stops applying.
@@ -23,7 +32,14 @@ relative, so the site also serves correctly from a subdirectory.
 
 ## Files
 
-- `index.html`: the home page: current work, services, and contact.
+- `content/home.md`, `content/research/*.md`, `content/about.md`,
+  `content/contact.md`: the Markdown source of the home, research, about and
+  contact pages. `index.html`, `research/`, `about/` and `contact/` are
+  **generated from them — do not hand-edit.**
+- `assets/logo-light.png`, `assets/logo-dark.png`: the full logo on a transparent
+  background, one for each colour scheme, shown at the top of the home page.
+- `assets/mark-light.png`, `assets/mark-dark.png`: the mark alone, shown beside
+  the name in every page's header.
 - `styles.css`: one stylesheet for every page. A single text column, Source Serif 4
   for text and IBM Plex Mono for figures, with a dark scheme that follows the
   reader's system setting.
@@ -33,17 +49,18 @@ relative, so the site also serves correctly from a subdirectory.
   generated sections, one file per page plus an `index.json` per section.
 - `cryptanalysis/`, `notes/`, `schemes/`: the rendered pages. **Generated — do not
   hand-edit.**
-- `tools/build_site.py`: builds all three sections. The code lives in
-  `tools/sitegen/`: `shell.py` (page shell and content blocks), `collections.py`
-  (loading, validation, rendering), `figures.py` (SVG figures), and `worked/` (the
+- `tools/build_site.py`: builds every generated page. The code lives in
+  `tools/sitegen/`: `shell.py` (page shell, navigation and content blocks),
+  `markdown.py` and `pages.py` (the Markdown pages), `collections.py`
+  (loading, validation, rendering of the JSON sections), `figures.py` (SVG figures), and `worked/` (the
   worked examples, see below).
 - `tools/check_links.py`: the link checker.
 
 Everything is stdlib-only Python; nothing is installed.
 
 The stylesheet requests Source Serif 4 and IBM Plex Mono from Google Fonts; system
-fonts are used if that service is unavailable. Everything else is local, and there
-are no binary image assets.
+fonts are used if that service is unavailable. Everything else is local. The logo
+is the only binary image asset.
 
 ### Writing for the site
 
@@ -53,7 +70,35 @@ sentences: no slogans, no taglines split across lines, and no section eyebrows o
 decorative numbering. If a number on the home page changes in the source
 repository, change it here too, and link to where it was measured.
 
-## Generated sections
+## Adding a paper
+
+Add one Markdown file to `content/research/`. Its file name becomes the page's
+address, so `content/research/ecc2k-130.md` is published at
+`/research/ecc2k-130.html`. Start the file with this front matter:
+
+```
+---
+title: The paper's title
+order: 3
+meta: Status · method · platforms
+summary: One paragraph for the card on the home page and the research index.
+authors: As listed on the paper
+eprint: https://eprint.iacr.org/2026/1234
+---
+```
+
+Below it, write the plain-language account of the work in Markdown: `##` and
+`###` headings, paragraphs, `-` and `1.` lists, `**bold**`, `*italic*`,
+`` `code` ``, `[links](https://...)`, and raw HTML for anything else, such as a
+table. Then run `python3 tools/build_site.py` and commit the Markdown and the
+regenerated HTML together. The build refuses a file without a title, order,
+meta or summary, and an `eprint` that is not an `eprint.iacr.org` URL. Leave
+`eprint` empty until the paper is posted.
+
+The home page and the research index list every paper in `order`. About and
+contact are edited the same way, in `content/about.md` and `content/contact.md`.
+
+## Notes: the generated sections
 
 Each page is one JSON file in `content/<section>/`, rendered by
 `tools/build_site.py`. The generated HTML is committed, so the served site stays
@@ -123,16 +168,19 @@ re-check them if either surface colour changes.
 
 ## Before launch
 
-The contact section deliberately reads "Contact details coming soon." Replace that
-text in `#contact-slot` with the approved business email or booking link before
-accepting enquiries. There is no enquiry form and no backend.
+Text in square brackets beginning "To come" marks content still to be written:
+the bios and the contact address. The research pages also need their `eprint`
+links (and `code` for the autoresearcher) filled in. Replace each one before
+merging to `main`. There is no enquiry form and no
+backend.
 
 ## Deployment
 
 `.github/workflows/pages.yml` publishes the site to GitHub Pages on every push to
 `main`, and can also be run manually from the Actions tab. It runs the same checks
-as CI, copies the site files and the `cryptanalysis/`, `notes/` and `schemes/`
-directories into `_site/`, adds
+as CI, copies the site files and the `assets/`, `research/`, `about/`,
+`contact/`, `cryptanalysis/`, `notes/` and `schemes/` directories into
+`_site/`, adds
 `.nojekyll` so Pages serves them verbatim, and deploys via the official Pages
 actions. No build tooling is installed.
 

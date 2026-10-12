@@ -18,14 +18,19 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
-      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <a class="wordmark" href="../index.html">
+        <picture>
+          <source srcset="../assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="../assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
       <nav class="site-nav" aria-label="Main">
-        <a href="../index.html#work">Work</a>
-        <a href="../index.html#services">Services</a>
+        <a href="../index.html">Home</a>
+        <a href="../research/index.html">Research</a>
         <a href="../notes/index.html" aria-current="page">Notes</a>
-        <a href="../schemes/index.html">Schemes</a>
-        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
-        <a href="../index.html#contact">Contact</a>
+        <a href="../about/index.html">About</a>
+        <a href="../contact/index.html">Contact</a>
       </nav>
     </div>
   </header>
@@ -100,7 +105,7 @@
       <section id="what-real-computations-cost" aria-labelledby="what-real-computations-cost-title">
         <h2 id="what-real-computations-cost-title">What real computations cost</h2>
         <p>The largest discrete logarithms computed in public on elliptic curves are far from cryptographic sizes. The prime-field record is 114 bits, set in 2017 by Kusaka and collaborators on a Barreto&ndash;Naehrig curve, with about 2,000 CPU cores over six months. Before that, Bos, Kaihara, Kleinjung, Lenstra and Montgomery solved the 112-bit standard curve secp112r1 in 2009 on a cluster of PlayStation 3 consoles. On binary curves, the 113-bit standard curves sect113r1 and sect113r2 were solved on FPGA clusters in 2015 and 2016.</p>
-        <p>The next public target is Certicom's ECC2K-130, a Koblitz curve over F<sub>2<sup>131</sup></sub> with a subgroup of about 2<sup>129</sup> points, whose expected cost Bailey and collaborators put at 2<sup>60.9</sup> iterations. It has been open since 1997, and <a href="../index.html#work">we are running a distributed attack on it</a>. The distance from there to a 256-bit curve is a factor of about 2<sup>67</sup> in work.</p>
+        <p>The next public target is Certicom's ECC2K-130, a Koblitz curve over F<sub>2<sup>131</sup></sub> with a subgroup of about 2<sup>129</sup> points, whose expected cost Bailey and collaborators put at 2<sup>60.9</sup> iterations. It has been open since 1997, and <a href="../research/ecc2k-130.html">we are running a distributed attack on it</a>. The distance from there to a 256-bit curve is a factor of about 2<sup>67</sup> in work.</p>
       </section>
       <section id="beyond-generic-attacks" aria-labelledby="beyond-generic-attacks-title">
         <h2 id="beyond-generic-attacks-title">Beyond generic attacks</h2>

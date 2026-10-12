@@ -77,10 +77,11 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
 
 .site-header { border-bottom: 1px solid var(--rule); }
 .site-header .wrap {
-  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   gap: .5rem 1.5rem; padding-top: 1.1rem; padding-bottom: 1rem;
 }
-.wordmark { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 1.15rem; }
+.wordmark { display: inline-flex; align-items: center; gap: .6rem; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 1.15rem; }
+.wordmark img { display: block; width: auto; height: 2rem; }
 .site-nav { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; font-size: 1rem; }
 .site-nav a { color: var(--muted); text-decoration: none; }
 .site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; }
@@ -91,31 +92,34 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
 
 main.wrap { padding-top: 3rem; }
 
-/* Home page */
+/* Home page: the logo, the thesis, and the research cards */
 
-.lede { font-size: 1.25rem; line-height: 1.55; }
-.intro h1 { margin-bottom: 1.25rem; }
+.masthead { margin: 0 0 2rem; font-size: 1rem; }
+.masthead img { display: block; width: 100%; height: auto; max-width: 26rem; }
 
-.work { list-style: none; padding: 0; margin: 0; }
-.work > li { padding: 1.5rem 0; border-top: 1px solid var(--rule); margin: 0; }
-.work > li:last-child { border-bottom: 1px solid var(--rule); }
-.work h3 { margin: 0 0 .15rem; font-size: 1.15rem; }
+.thesis h2 { margin-top: 0; }
+.thesis p { font-size: 1.1875rem; line-height: 1.6; }
+.thesis p:first-child { font-size: 1.3rem; line-height: 1.5; }
+
+.cards { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+.cards > li { margin: 0; padding: 1.1rem 1.25rem 1.25rem; border: 1px solid var(--rule); background: var(--wash); display: flex; flex-direction: column; }
+.cards h3 { margin: 0 0 .15rem; font-size: 1.15rem; }
+.cards h3 a { color: var(--ink); text-decoration: none; }
+.cards h3 a:hover { text-decoration: underline; }
+.cards p { margin-bottom: .75rem; }
+.cards .links { margin-top: auto; }
 .meta { color: var(--muted); font-size: .8rem; letter-spacing: .01em; margin-bottom: .6rem; }
-.work p:last-child { margin-bottom: 0; }
-
-.figures { border-collapse: collapse; width: 100%; margin: .75rem 0 1rem; font-size: .95rem; }
-.figures th, .figures td { text-align: left; padding: .35rem .75rem .35rem 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
-.figures th { font-weight: 400; color: var(--muted); }
-.figures td.figure { text-align: right; white-space: nowrap; padding-right: 0; font-size: .9rem; }
 
 .links { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin: 0; padding: 0; list-style: none; font-size: 1rem; }
 .links li + li { margin: 0; }
 
-.services dt { font-weight: 600; margin-top: 1.25rem; }
-.services dd { margin: .2rem 0 0; }
+/* Research pages: the link to the paper sits directly under the title */
 
-.contact { background: var(--wash); border: 1px solid var(--rule); padding: 1rem 1.25rem; margin-top: 1.25rem; }
-.contact p { margin: 0; }
+.paper-link { margin: 1.5rem 0 2.5rem; padding: .9rem 1.1rem; border: 1px solid var(--rule); border-left: 3px solid var(--link); background: var(--wash); font-size: 1.05rem; }
+.paper-link a { font-weight: 600; }
+.paper-link .mono { color: var(--muted); font-size: .85rem; margin-left: .5rem; }
+.paper-link .code-link { font-weight: 400; display: inline-block; margin-top: .3rem; }
+article > .paper-link:last-child { margin: 3rem 0 0; }
 
 /* Cryptanalysis reference: index and articles */
 
