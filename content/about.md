@@ -22,10 +22,6 @@ The replacements are post-quantum schemes: lattice-based ML-KEM and ML-DSA, hash
 
 Cofounder, Principal Cryptographer
 
-[To come: bio.]
-
 ### Kevin Nguyen
 
 Cofounder, Technical Programs
-
-[To come: bio.]

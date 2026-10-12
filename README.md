@@ -168,10 +168,9 @@ re-check them if either surface colour changes.
 
 ## Before launch
 
-Text in square brackets beginning "To come" marks content still to be written:
-the bios and the contact address. The research pages also need their `eprint`
-links (and `code` for the autoresearcher) filled in. Replace each one before
-merging to `main`. There is no enquiry form and no
+The research pages still need their `eprint` links (and `code` for the
+autoresearcher) filled in; until then each says the paper will be linked when
+it is posted. There is no enquiry form and no
 backend.
 
 ## Deployment
