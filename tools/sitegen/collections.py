@@ -171,6 +171,23 @@ def related_items(entry: dict, pages_by_key: dict[str, dict]) -> str:
     return "".join(items)
 
 
+def notes_crumb(collection: str) -> str:
+    """The cryptanalysis reference and the schemes catalogue live under Notes."""
+    if collection == "notes":
+        return ""
+    return '        <a href="../notes/index.html">Notes</a> /\n'
+
+
+def section_crumb(collection: str) -> str:
+    if collection == "notes":
+        return ""
+    return (
+        '    <nav class="breadcrumb" aria-label="Breadcrumb">\n'
+        '      <a href="../notes/index.html">Notes</a>\n'
+        "    </nav>\n"
+    )
+
+
 def render_article(entry: dict, pages_by_key: dict[str, dict]) -> str:
     collection = entry["collection"]
     facts = entry.get("facts") or {}
@@ -216,7 +233,7 @@ def render_article(entry: dict, pages_by_key: dict[str, dict]) -> str:
 
     body = f"""    <article>
       <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="index.html">{COLLECTION_LABELS[collection]}</a> /
+{notes_crumb(collection)}        <a href="index.html">{COLLECTION_LABELS[collection]}</a> /
         <a href="index.html#{E(group_key(entry))}">{T(entry["group_label"])}</a>
       </nav>
       <header>
@@ -285,7 +302,7 @@ def render_grouped_index(index: dict, entries: list[dict], collection: str) -> s
         else ""
     )
 
-    body = f"""    <header aria-labelledby="library-title">
+    body = f"""{section_crumb(collection)}    <header aria-labelledby="library-title">
       <h1 id="library-title">{index["heading"]}</h1>
       <p class="standfirst">{index["standfirst"]}</p>
     </header>
@@ -364,7 +381,7 @@ def render_catalogue(index: dict, entries: list[dict], pages_by_key: dict[str, d
 
     extra = render_blocks(index["glance_after"], "      ") if index.get("glance_after") else ""
     jump = "".join(f'        <li><a href="#{E(g["id"])}">{T(g["label"])}</a></li>\n' for g in index["groups"])
-    body = f"""    <header aria-labelledby="catalogue-title">
+    body = f"""{section_crumb("schemes")}    <header aria-labelledby="catalogue-title">
       <h1 id="catalogue-title">{index["heading"]}</h1>
       <p class="standfirst">{index["standfirst"]}</p>
     </header>

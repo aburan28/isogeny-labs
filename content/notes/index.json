@@ -2,7 +2,22 @@
   "title": "Notes · Isogeny Labs",
   "description": "Explanations of elliptic curves, the elliptic-curve discrete logarithm problem, the attacks on it, isogenies, and lattices, with worked examples computed by the code that builds this site.",
   "heading": "Notes",
-  "standfirst": "Longer explanations of the mathematics under the <a href=\"../cryptanalysis/index.html\">cryptanalysis reference</a>. The worked examples run on groups small enough to follow by hand. They are computed by the code that builds this site, and every number on them is checked again each time it is built.",
+  "standfirst": "Explanations of the mathematics our measurements rest on, a reference to the attacks, and a catalogue of the schemes they apply to. The worked examples run on groups small enough to follow by hand. They are computed by the code that builds this site, and every number on them is checked again each time it is built.",
+  "guide_heading": "Reference",
+  "guide_blocks": [
+    {
+      "dl": [
+        [
+          "<a href=\"../cryptanalysis/index.html\">Cryptanalysis reference</a>",
+          "How public-key hardness assumptions are attacked: what each attack needs, what it costs, the largest computation on record, and where it stops applying."
+        ],
+        [
+          "<a href=\"../schemes/index.html\">Schemes</a>",
+          "The schemes in use and the ones replacing them, from RSA and elliptic curves to ML-KEM, ML-DSA, SLH-DSA and SQIsign: what each rests on, its sizes, and its status against quantum computers."
+        ]
+      ]
+    }
+  ],
   "groups": [
     {
       "id": "elliptic-curves",

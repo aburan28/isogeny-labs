@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
-  <meta name="description" content="Isogeny Labs measures what it costs to break elliptic-curve and isogeny-based cryptography, and helps teams choose parameters, review protocols, and plan post-quantum migrations.">
+  <meta name="description" content="Isogeny Labs implements known cryptanalytic attacks on elliptic-curve and isogeny-based systems, measures what they cost on current hardware, and publishes the code and the measurements.">
   <meta property="og:title" content="Isogeny Labs">
-  <meta property="og:description" content="Cryptanalysis of elliptic-curve and isogeny-based cryptography, with the code and measurements published.">
+  <meta property="og:description" content="Isogeny Labs implements known cryptanalytic attacks on elliptic-curve and isogeny-based systems, measures what they cost on current hardware, and publishes the code and the measurements.">
   <meta property="og:type" content="website">
   <title>Isogeny Labs</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
@@ -18,106 +18,60 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
-      <a class="wordmark" href="./index.html">Isogeny Labs</a>
+      <a class="wordmark" href="./index.html">
+        <picture>
+          <source srcset="./assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="./assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
       <nav class="site-nav" aria-label="Main">
-        <a href="#work">Work</a>
-        <a href="#services">Services</a>
+        <a href="./index.html" aria-current="page">Home</a>
+        <a href="./research/index.html">Research</a>
         <a href="./notes/index.html">Notes</a>
-        <a href="./schemes/index.html">Schemes</a>
-        <a href="./cryptanalysis/index.html">Cryptanalysis reference</a>
-        <a href="#contact">Contact</a>
+        <a href="./about/index.html">About</a>
+        <a href="./contact/index.html">Contact</a>
       </nav>
     </div>
   </header>
-
   <main id="main" class="wrap">
-    <section class="intro" aria-labelledby="intro-title">
-      <h1 id="intro-title">Isogeny Labs</h1>
-      <p class="lede">We work out what it costs to break public-key cryptography, mostly elliptic-curve and isogeny-based systems, and we check our estimates by running the attacks.</p>
-      <p>Most of this work is public. The code is on GitHub, benchmarks are published with the commands that produced them, and the figures below can be reproduced on your own hardware. We take on client work in the same areas: parameter and hardness reviews, implementations, protocol audits, and post-quantum migration.</p>
+    <h1 class="masthead">
+      <picture>
+        <source srcset="./assets/logo-dark.png" width="934" height="350" media="(prefers-color-scheme: dark)">
+        <img src="./assets/logo-light.png" width="952" height="249" alt="Isogeny Labs">
+      </picture>
+    </h1>
+    <section class="thesis" aria-labelledby="thesis-title">
+      <h2 id="thesis-title">Thesis</h2>
+      <p>The move to post-quantum cryptography will replace the public-key cryptography in nearly every system in use. The new schemes are being deployed in new code against fixed deadlines, on cost estimates that have had little time to be tested, and that is why this lab exists.</p>
+      <p>Cryptographic hardness is estimated once and re-examined rarely. Someone computes the cost of the best known attack, publishes the figure, and the field cites it for decades. The algorithm is usually sound. The cost model ages, against hardware that does not stand still and against cryptanalysis that does not stop.</p>
+      <p>Most of the time nobody checks. Checking is engineering rather than mathematics, it produces no theorem, and the incentives in this field do not reward it. So the numbers that parameter choices, migration plans and procurement deadlines all rest on go unexamined for years at a time.</p>
+      <p>This lab builds the attacks and measures them. We implement known cryptanalytic methods against elliptic curve and isogeny based systems, report what they cost on hardware that exists now, and publish the code and the measurements so the figures can be checked by anyone who wants to. Where the estimate and the measurement disagree, the measurement is the finding.</p>
     </section>
-
-    <section id="work" aria-labelledby="work-title">
-      <h2 id="work-title">Current work</h2>
-      <ol class="work">
-        <li>
-          <h3>ECC2K-130</h3>
-          <p class="meta">Ongoing · distributed Pollard rho · CUDA, Metal, CPU</p>
-          <p>Certicom's ECC2K-130 challenge is a discrete logarithm on a Koblitz curve over GF(2<sup>131</sup>). It has been unsolved since Certicom published it in 1997. We are running a distributed Pollard rho walk against it, and have written walk clients for NVIDIA GPUs, Apple GPUs, and ARM CPUs. Each client's arithmetic is tested bit for bit against a reference model, and any point a client reports can be re-walked from its seed.</p>
-          <table class="figures">
-            <caption class="sr-only">Measured iteration rates</caption>
-            <tbody>
-              <tr><th scope="row">CUDA, one RTX PRO 6000 Blackwell (table walk)</th><td class="figure">20,080 M it/s</td></tr>
-              <tr><th scope="row">Metal, M4 Pro 20-core GPU</th><td class="figure">390 M it/s</td></tr>
-              <tr><th scope="row">CPU, M4 Pro, 14 cores using PMULL</th><td class="figure">139–159 M it/s</td></tr>
-            </tbody>
-          </table>
-          <ul class="links">
-            <li><a href="https://aburan28.github.io/crypto/status/">Campaign status</a></li>
-            <li><a href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Client source and measurements</a></li>
-          </ul>
-        </li>
-        <li>
-          <h3>A discrete-log library that measures its own constants</h3>
-          <p class="meta">C11 · Rust, Go and Python bindings</p>
-          <p>Baby-step giant-step, Pollard rho and kangaroo, Bernstein–Lange precomputation, Pohlig–Hellman, Cheon's attack, a linear-sieve index calculus, a distributed rho coordinator, and a CUDA rho kernel. Every solver reports its work as S = group operations / √n, so two algorithms, or two implementations of the same one, can be compared directly. Groups are capped at 64 bits on purpose: the library is for measuring algorithms, not for attacking deployed keys.</p>
-          <ul class="links">
-            <li><a href="https://github.com/aburan28/cryptanalysis">Source</a></li>
-            <li><a href="https://github.com/aburan28/cryptanalysis/blob/HEAD/docs/BENCHMARKS.md">Benchmark tables</a></li>
-          </ul>
-        </li>
-        <li>
-          <h3>Cryptanalysis reference</h3>
-          <p class="meta">On this site · 8 attacks written up, 4 in progress</p>
-          <p>Notes on the attacks our estimates are measured against. Each one gives the cost, the largest computation on record, the condition under which the attack stops applying, and links to the original papers.</p>
-          <ul>
-            <li><a href="./cryptanalysis/pollard-rho.html">Pollard's rho and parallel collision search</a></li>
-            <li><a href="./cryptanalysis/pohlig-hellman.html">Pohlig–Hellman</a></li>
-            <li><a href="./cryptanalysis/summation-polynomials.html">Summation polynomials</a> and <a href="./cryptanalysis/weil-descent.html">Weil descent</a></li>
-            <li><a href="./cryptanalysis/number-field-sieve.html">The number field sieve</a></li>
-            <li><a href="./cryptanalysis/hidden-number-problem.html">The hidden number problem and nonce leakage</a></li>
-            <li><a href="./cryptanalysis/sidh-torsion-attacks.html">The SIDH torsion-point attacks</a> and <a href="./cryptanalysis/kuperberg-csidh.html">Kuperberg's algorithm against CSIDH</a></li>
-          </ul>
-        </li>
-        <li>
-          <h3>Notes and a catalogue of schemes</h3>
-          <p class="meta">On this site · worked examples recomputed on every build</p>
-          <p>Explanations of elliptic curves and the discrete logarithm problem, and worked examples of the attacks on it. The examples run on small groups: a Pollard rho walk followed step by step to its collision and then measured over two thousand walks, and index calculus carried out end to end, both in a prime field and on an elliptic curve over F<sub>p<sup>2</sup></sub> with Semaev's summation polynomial. The code that builds the site computes every number on those pages and checks each result before printing it.</p>
-          <p>The catalogue covers the schemes in use and the ones replacing them, with full pages on ML-KEM, ML-DSA and SQIsign, including how SQIsign's parameters changed after Wesolowski's 2026 attack.</p>
-          <ul>
-            <li><a href="./notes/elliptic-curves.html">Elliptic curves, from the equation to the group</a> and <a href="./notes/ecdlp.html">the ECDLP</a></li>
-            <li><a href="./notes/pollard-rho-worked-example.html">Pollard's rho, worked on a small curve</a></li>
-            <li><a href="./notes/index-calculus-end-to-end.html">Index calculus, end to end</a></li>
-            <li><a href="./schemes/index.html">The catalogue of schemes</a>: <a href="./schemes/ml-kem.html">ML-KEM</a>, <a href="./schemes/ml-dsa.html">ML-DSA</a>, <a href="./schemes/sqisign.html">SQIsign</a></li>
-          </ul>
-        </li>
-      </ol>
-    </section>
-
-    <section id="services" aria-labelledby="services-title">
-      <h2 id="services-title">Services</h2>
-      <dl class="services">
-        <dt>Hardness and parameter review</dt>
-        <dd>You have a curve, an isogeny parameter set, or a custom group, and you need a security level you can defend. We estimate the cost of the best known attack, and where the numbers are close we run a scaled-down version to check the estimate.</dd>
-        <dt>Elliptic-curve and isogeny implementations</dt>
-        <dd>Reference implementations and test vectors for SQIsign, CSIDH-family schemes, pairings, and curve arithmetic, tested against an independent model rather than against themselves.</dd>
-        <dt>Post-quantum migration</dt>
-        <dd>Finding where your systems depend on RSA and elliptic curves, planning a hybrid move to ML-KEM and ML-DSA, and working out how to roll back if interoperability breaks partway.</dd>
-        <dt>Protocol and implementation review</dt>
-        <dd>The protocol, its security proof if it has one, and the code: nonce generation, key handling, and side channels. Findings are ranked by how exploitable they are.</dd>
-      </dl>
-      <p>Each engagement starts with a written scope that names the system, the adversary, and what would count as a break. At the end you get a report and any code we wrote, and the code runs without us.</p>
-    </section>
-
-    <section id="contact" aria-labelledby="contact-title">
-      <h2 id="contact-title">Contact</h2>
-      <p>If you have a construction or a parameter set you're unsure about, send it over along with whatever constraints you're working under.</p>
-      <div class="contact" id="contact-slot">
-        <p>Contact details coming soon.</p>
-      </div>
+    <section aria-labelledby="research-title">
+      <h2 id="research-title">Research</h2>
+    <ol class="cards">
+      <li class="card">
+        <h3><a href="./research/ecc2k-130.html">A 29-year-old challenge got four times cheaper, and the math didn't change</a></h3>
+        <p class="meta">GPU cryptanalysis · parallel Pollard rho · CUDA</p>
+        <p>The standard attack client for Certicom's ECC2K-130 challenge, open since 1997, made 17.1 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the algorithm: from 0.857 to 14.64 billion iterations per second, which cuts the expected cost of the attack from about 80 GPU-years to 4.7.</p>
+        <ul class="links"><li><a href="./research/ecc2k-130.html">The work, in plain language</a></li><li><a href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Code</a></li></ul>
+      </li>
+      <li class="card">
+        <h3><a href="./research/autoresearcher.html">We spent eleven weeks pointing AI agents at cryptanalysis. The instruments were the problem.</a></h3>
+        <p class="meta">Language-model agents · research harness · verification</p>
+        <p>Eleven weeks of language-model agents doing cryptanalysis research, in a harness built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: a mutation control let through five false greens, including a module that detected it was under test and behaved correctly while observed.</p>
+        <ul class="links"><li><a href="./research/autoresearcher.html">The work, in plain language</a></li></ul>
+      </li>
+      <li class="card">
+        <h3><a href="./research/quantum-and-post-quantum.html">Quantum computers and post-quantum cryptography</a></h3>
+        <p class="meta">Survey · Shor, Grover, the migration deadline, and isogenies</p>
+        <p>What a quantum computer breaks and what it does not, why the move away from RSA and elliptic curves has to start before one exists, and where isogeny-based cryptography fits.</p>
+        <ul class="links"><li><a href="./research/quantum-and-post-quantum.html">The work, in plain language</a></li></ul>
+      </li>
+    </ol>
     </section>
   </main>
-
   <footer class="site-footer">
     <div class="wrap">
       <span>© <span id="year">2026</span> Isogeny Labs</span>

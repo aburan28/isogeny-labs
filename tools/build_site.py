@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Render the generated parts of the site from content/.
 
-The site itself stays build-free: this script writes plain static HTML into
-cryptanalysis/, notes/ and schemes/, and that output is committed. CI re-runs
+The site itself stays build-free: this script writes plain static HTML for the
+home page, research/, about/, contact/ (from Markdown) and cryptanalysis/,
+notes/ and schemes/ (from JSON), and that output is committed. CI re-runs
 the script and fails if the committed pages differ, so the content and the
 HTML cannot drift apart. Worked examples are recomputed on every run, so the
 same check also proves that every number on those pages is still what the
@@ -20,7 +21,10 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-from sitegen.collections import COLLECTIONS, ROOT, build  # noqa: E402
+from sitegen.collections import COLLECTIONS, CONTENT, ROOT, build  # noqa: E402
+from sitegen.pages import build_pages  # noqa: E402
+
+GENERATED_DIRS = (*COLLECTIONS, "research")
 
 
 def main() -> int:
@@ -29,6 +33,9 @@ def main() -> int:
     args = parser.parse_args()
 
     pages, errors = build()
+    written, page_errors = build_pages(CONTENT)
+    pages.update(written)
+    errors += page_errors
     if errors:
         for error in errors:
             print(f"content error: {error}", file=sys.stderr)
@@ -41,8 +48,8 @@ def main() -> int:
         ]
         orphans = [
             str(path.relative_to(ROOT))
-            for collection in COLLECTIONS
-            for path in sorted((ROOT / collection).glob("*.html"))
+            for directory in GENERATED_DIRS
+            for path in sorted((ROOT / directory).glob("*.html"))
             if str(path.relative_to(ROOT)) not in pages
         ]
         for name in sorted(stale):

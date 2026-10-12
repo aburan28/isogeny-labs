@@ -18,21 +18,26 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
-      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <a class="wordmark" href="../index.html">
+        <picture>
+          <source srcset="../assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="../assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
       <nav class="site-nav" aria-label="Main">
-        <a href="../index.html#work">Work</a>
-        <a href="../index.html#services">Services</a>
+        <a href="../index.html">Home</a>
+        <a href="../research/index.html">Research</a>
         <a href="../notes/index.html" aria-current="page">Notes</a>
-        <a href="../schemes/index.html">Schemes</a>
-        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
-        <a href="../index.html#contact">Contact</a>
+        <a href="../about/index.html">About</a>
+        <a href="../contact/index.html">Contact</a>
       </nav>
     </div>
   </header>
   <main id="main" class="wrap">
     <header aria-labelledby="library-title">
       <h1 id="library-title">Notes</h1>
-      <p class="standfirst">Longer explanations of the mathematics under the <a href="../cryptanalysis/index.html">cryptanalysis reference</a>. The worked examples run on groups small enough to follow by hand. They are computed by the code that builds this site, and every number on them is checked again each time it is built.</p>
+      <p class="standfirst">Explanations of the mathematics our measurements rest on, a reference to the attacks, and a catalogue of the schemes they apply to. The worked examples run on groups small enough to follow by hand. They are computed by the code that builds this site, and every number on them is checked again each time it is built.</p>
     </header>
     <nav class="toc" aria-label="Parts">
       <ol>
@@ -42,6 +47,13 @@
         <li><a href="#explainers">Explainers</a></li>
       </ol>
     </nav>
+    <section aria-labelledby="guide-title">
+      <h2 id="guide-title">Reference</h2>
+      <dl class="terms">
+        <div><dt><a href="../cryptanalysis/index.html">Cryptanalysis reference</a></dt><dd>How public-key hardness assumptions are attacked: what each attack needs, what it costs, the largest computation on record, and where it stops applying.</dd></div>
+        <div><dt><a href="../schemes/index.html">Schemes</a></dt><dd>The schemes in use and the ones replacing them, from RSA and elliptic curves to ML-KEM, ML-DSA, SLH-DSA and SQIsign: what each rests on, its sizes, and its status against quantum computers.</dd></div>
+      </dl>
+    </section>
       <section id="elliptic-curves" aria-labelledby="elliptic-curves-title">
         <h2 id="elliptic-curves-title">Elliptic curves</h2>
         <p class="family-intro">What an elliptic curve is, why its points form a group, and why recovering a secret multiple of a point is hard enough to build cryptography on.</p>

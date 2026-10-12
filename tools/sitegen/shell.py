@@ -18,16 +18,18 @@ import re
 
 E = html.escape
 
-# Sections of the site that have their own generated directory. The key is
-# what a page passes as `here` to mark its nav entry as current.
+# The main navigation. The key is what a page passes as `here` to mark its
+# nav entry as current.
 NAV = [
-    ("work", "index.html#work", "Work"),
-    ("services", "index.html#services", "Services"),
+    ("home", "index.html", "Home"),
+    ("research", "research/index.html", "Research"),
     ("notes", "notes/index.html", "Notes"),
-    ("schemes", "schemes/index.html", "Schemes"),
-    ("cryptanalysis", "cryptanalysis/index.html", "Cryptanalysis reference"),
-    ("contact", "index.html#contact", "Contact"),
+    ("about", "about/index.html", "About"),
+    ("contact", "contact/index.html", "Contact"),
 ]
+
+# The cryptanalysis reference and the schemes catalogue are part of Notes.
+NAV_SECTION = {"cryptanalysis": "notes", "schemes": "notes"}
 
 BLOCK_TYPES = {"p", "ul", "steps", "math", "note", "h3", "table", "pre", "svg", "dl", "computed"}
 
@@ -53,6 +55,7 @@ def slugify(heading: str) -> str:
 
 def nav(prefix: str, here: str) -> str:
     """Site header. `prefix` reaches the site root; `here` marks the current section."""
+    here = NAV_SECTION.get(here, here)
     links = "\n".join(
         f'        <a href="{prefix}{href}"'
         f'{" aria-current=" + chr(34) + "page" + chr(34) if key == here else ""}>{label}</a>'
@@ -61,7 +64,13 @@ def nav(prefix: str, here: str) -> str:
     return f"""  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
-      <a class="wordmark" href="{prefix}index.html">Isogeny Labs</a>
+      <a class="wordmark" href="{prefix}index.html">
+        <picture>
+          <source srcset="{prefix}assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="{prefix}assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
       <nav class="site-nav" aria-label="Main">
 {links}
       </nav>
@@ -80,7 +89,7 @@ def footer() -> str:
 """
 
 
-def page(*, prefix: str, here: str, title: str, description: str, body: str) -> str:
+def page(*, prefix: str, here: str, title: str, description: str, body: str, og_type: str = "article") -> str:
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -91,7 +100,7 @@ def page(*, prefix: str, here: str, title: str, description: str, body: str) -> 
   <meta name="description" content="{A(description)}">
   <meta property="og:title" content="{A(title)}">
   <meta property="og:description" content="{A(description)}">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="{og_type}">
   <title>{A(title)}</title>
   <link rel="icon" type="image/svg+xml" href="{prefix}favicon.svg">
   <link rel="stylesheet" href="{prefix}styles.css">
