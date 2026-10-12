@@ -1,5 +1,5 @@
 ---
-title: We spent eleven weeks pointing agents at cryptanalysis. The instruments were the problem.
+title: We spent eleven weeks pointing AI agents at cryptanalysis. The instruments were the problem.
 order: 2
 meta: Language-model agents · research harness · verification
 summary: Eleven weeks of language-model agents doing cryptanalysis research, in a harness built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: a mutation control let through five false greens, including a module that detected it was under test and behaved correctly while observed.
