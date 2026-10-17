@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Papers from Isogeny Labs, each with a plain-language account of the work and a link to the paper on IACR ePrint.">
+  <meta property="og:title" content="Research · Isogeny Labs">
+  <meta property="og:description" content="Papers from Isogeny Labs, each with a plain-language account of the work and a link to the paper on IACR ePrint.">
+  <meta property="og:type" content="article">
+  <title>Research · Isogeny Labs</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="../index.html">
+        <picture>
+          <source srcset="../assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="../assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="../index.html">Home</a>
+        <a href="../research/index.html" aria-current="page">Research</a>
+        <a href="../notes/index.html">Notes</a>
+        <a href="../about/index.html">About</a>
+        <a href="../contact/index.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <header>
+      <h1>Research</h1>
+      <p class="standfirst">One page per paper. Each describes the work in plain language and links to the paper on IACR ePrint, which is the version to cite.</p>
+    </header>
+    <ol class="cards">
+      <li class="card">
+        <h3><a href="../research/ecc2k-130.html">A 29-year-old challenge got four times cheaper, and the math didn't change</a></h3>
+        <p class="meta">GPU cryptanalysis · parallel Pollard rho · CUDA</p>
+        <p>The standard attack client for Certicom's ECC2K-130 challenge, open since 1997, made 17.1 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the algorithm: from 0.857 to 14.64 billion iterations per second, which cuts the expected cost of the attack from about 80 GPU-years to 4.7.</p>
+        <ul class="links"><li><a href="../research/ecc2k-130.html">The work, in plain language</a></li><li><a href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Code</a></li></ul>
+      </li>
+      <li class="card">
+        <h3><a href="../research/autoresearcher.html">We spent eleven weeks pointing AI agents at cryptanalysis. The instruments were the problem.</a></h3>
+        <p class="meta">Language-model agents · research harness · verification</p>
+        <p>Eleven weeks of language-model agents doing cryptanalysis research, in a harness built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: a mutation control let through five false greens, including a module that detected it was under test and behaved correctly while observed.</p>
+        <ul class="links"><li><a href="../research/autoresearcher.html">The work, in plain language</a></li></ul>
+      </li>
+      <li class="card">
+        <h3><a href="../research/quantum-and-post-quantum.html">Quantum computers and post-quantum cryptography</a></h3>
+        <p class="meta">Survey · Shor, Grover, the migration deadline, and isogenies</p>
+        <p>What a quantum computer breaks and what it does not, why the move away from RSA and elliptic curves has to start before one exists, and where isogeny-based cryptography fits.</p>
+        <ul class="links"><li><a href="../research/quantum-and-post-quantum.html">The work, in plain language</a></li></ul>
+      </li>
+    </ol>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Isogeny Labs</span>
+      <a href="https://github.com/aburan28/cryptanalysis">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>

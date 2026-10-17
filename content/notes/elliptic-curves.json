@@ -1,0 +1,178 @@
+{
+  "slug": "elliptic-curves",
+  "position": 1,
+  "group": "elliptic-curves",
+  "compute": "curves",
+  "title": "Elliptic curves, from the equation to the group",
+  "short_title": "Elliptic curves",
+  "one_liner": "What an elliptic curve is, how two points are added, what changes over a finite field, and how a point is multiplied by a large integer.",
+  "index_meta": "Primer · worked on a curve with {{c_order}} points",
+  "description": "An introduction to elliptic curves for cryptography: the Weierstrass equation, the chord-and-tangent group law, curves over finite fields, the Hasse bound, and double-and-add scalar multiplication, worked on a small curve over F_97.",
+  "standfirst": "Every elliptic-curve scheme in use rests on one operation: adding two points on a curve. This note builds that operation up from the equation, then carries it out by hand on a curve small enough to draw.",
+  "facts": {
+    "Curve used here": "y<sup>2</sup> = x<sup>3</sup> + {{c_a}}x + {{c_b}} over F<sub>{{c_p}}</sub>",
+    "Its group": "{{c_order}} points, counting the point at infinity. The order is prime, so every point except the identity generates the whole group.",
+    "The group law": "Chord and tangent, with the point at infinity as the identity",
+    "Cost of computing kP": "About log<sub>2</sub> k doublings, plus an addition for each 1 bit of k"
+  },
+  "sections": [
+    {
+      "heading": "Why elliptic curves",
+      "blocks": [
+        {
+          "p": "A public-key system needs a group in which one direction is easy and the other is hard. With a point P and an integer k, computing kP = P + P + &hellip; + P takes a few hundred group operations even when k has 256 bits. Recovering k from P and kP is the <a href=\"ecdlp.html\">elliptic-curve discrete logarithm problem</a>, and for a well-chosen curve the best known way to solve it is a generic collision search whose cost grows with the square root of the group size."
+        },
+        {
+          "p": "That is the whole case for elliptic curves. The multiplicative group of a finite field, and the integers modulo an RSA modulus, have more structure, and that structure admits subexponential attacks such as the <a href=\"../cryptanalysis/number-field-sieve.html\">number field sieve</a>. Their parameters have to be much larger to compensate: a 256-bit elliptic curve is conventionally matched with a 3072-bit RSA modulus."
+        }
+      ]
+    },
+    {
+      "heading": "The curve",
+      "blocks": [
+        {
+          "p": "Over any field whose characteristic is not 2 or 3, an elliptic curve can be written in short Weierstrass form:"
+        },
+        {
+          "math": "E : y<sup>2</sup> = x<sup>3</sup> + ax + b, &nbsp;&nbsp; with 4a<sup>3</sup> + 27b<sup>2</sup> &ne; 0",
+          "label": "The condition rules out cusps and self-crossings, where the group law below would break."
+        },
+        {
+          "p": "The points of E are the solutions (x, y), together with one extra point O, called the point at infinity, which plays the role of zero. Other shapes of equation describe the same objects with faster formulas: Montgomery curves, used by X25519, and twisted Edwards curves, used by Ed25519, are both elliptic curves that can be rewritten in this form. Over fields of characteristic 2 the equation becomes y<sup>2</sup> + xy = x<sup>3</sup> + ax<sup>2</sup> + b."
+        }
+      ]
+    },
+    {
+      "heading": "Adding two points",
+      "blocks": [
+        {
+          "computed": "real_figure"
+        },
+        {
+          "p": "Over the real numbers the rule can be drawn. A straight line through two points P and Q of the curve meets it in exactly one more point, counted with multiplicity. Reflecting that third point in the x-axis gives P + Q. To double a point, use the tangent line at P instead. The negative of P = (x, y) is &minus;P = (x, &minus;y), and a vertical line through P and &minus;P meets the curve &ldquo;at infinity&rdquo;, which is why P + (&minus;P) = O."
+        },
+        {
+          "p": "Writing the rule in coordinates gives formulas that make sense over any field. For P = (x<sub>1</sub>, y<sub>1</sub>) and Q = (x<sub>2</sub>, y<sub>2</sub>) with Q &ne; &plusmn;P:"
+        },
+        {
+          "math": "&lambda; = (y<sub>2</sub> &minus; y<sub>1</sub>) / (x<sub>2</sub> &minus; x<sub>1</sub>), &nbsp;&nbsp; x<sub>3</sub> = &lambda;<sup>2</sup> &minus; x<sub>1</sub> &minus; x<sub>2</sub>, &nbsp;&nbsp; y<sub>3</sub> = &lambda;(x<sub>1</sub> &minus; x<sub>3</sub>) &minus; y<sub>1</sub>",
+          "label": "For doubling, the slope is the tangent's: &lambda; = (3x<sub>1</sub><sup>2</sup> + a) / (2y<sub>1</sub>)."
+        },
+        {
+          "p": "With this operation the points form an abelian group. That the operation is associative, (P + Q) + R = P + (Q + R), is not visible in the picture and takes real work to prove; it is the one deep fact in this note, and everything else follows from it."
+        }
+      ]
+    },
+    {
+      "heading": "Over a finite field",
+      "blocks": [
+        {
+          "p": "Cryptography uses the same formulas over a finite field. Take the prime {{c_p}} and the curve y<sup>2</sup> = x<sup>3</sup> + {{c_a}}x + {{c_b}}. Every operation is now arithmetic modulo {{c_p}}, and dividing means multiplying by an inverse modulo {{c_p}}. The picture loses its geometry but keeps one piece of it: since (x, y) and (x, &minus;y) are both points, the set is symmetric."
+        },
+        {
+          "computed": "finite_figure"
+        },
+        {
+          "p": "Add P = {{c_P}} to Q = {{c_Q}}. The slope is"
+        },
+        {
+          "math": "&lambda; = ({{c_Qy}} &minus; {{c_Py}}) / ({{c_Qx}} &minus; {{c_Px}}) = {{c_lam_num}} &middot; {{c_lam_den}}<sup>&minus;1</sup> = {{c_lam_num}} &middot; {{c_lam_den_inv}} = {{c_lam}} &nbsp; (mod {{c_p}})",
+          "label": "{{c_lam_den_inv}} is the inverse of {{c_lam_den}} modulo {{c_p}}, because {{c_lam_den}} &middot; {{c_lam_den_inv}} leaves remainder 1."
+        },
+        {
+          "math": "x<sub>3</sub> = {{c_lam}}<sup>2</sup> &minus; {{c_Px}} &minus; {{c_Qx}} = {{c_x3}}, &nbsp;&nbsp; y<sub>3</sub> = {{c_lam}} &middot; ({{c_Px}} &minus; {{c_x3}}) &minus; {{c_Py}} = {{c_y3}} &nbsp; (mod {{c_p}})",
+          "label": "So P + Q = ({{c_x3}}, {{c_y3}})."
+        },
+        {
+          "p": "Doubling P uses the tangent slope (3 &middot; {{c_Px}}<sup>2</sup> + {{c_a}}) / (2 &middot; {{c_Py}}) = {{c_lam2}}, and gives 2P = ({{c_dx}}, {{c_dy}}). Repeating the addition lists the multiples of P: {{c_multiples}}, and so on. Q was chosen as 5P, which is why P + Q came out as 6P."
+        }
+      ]
+    },
+    {
+      "heading": "How many points",
+      "blocks": [
+        {
+          "p": "A curve over F<sub>p</sub> has about p + 1 points, and never far from it. Hasse's theorem bounds the difference:"
+        },
+        {
+          "math": "#E(F<sub>p</sub>) = p + 1 &minus; t, &nbsp;&nbsp; with |t| &le; 2&radic;p",
+          "label": "t is the trace of Frobenius."
+        },
+        {
+          "p": "For our curve the interval runs from {{c_hasse_lo}} to {{c_hasse_hi}}, and the actual count is {{c_order}}: {{c_points}} affine points plus O, so t = {{c_trace}}. Counting points on a small curve is a loop over x. Counting them on a 256-bit curve takes Schoof's polynomial-time algorithm, or in practice its refinement by Elkies and Atkin, and it is how standard curves are chosen: generate candidates until the count has the required form."
+        },
+        {
+          "p": "The group of points is either cyclic or a product of two cyclic groups. What cryptography needs is a large subgroup of prime order n, so that #E = h &middot; n with a small cofactor h. The NIST prime curves and secp256k1 have h = 1; Curve25519 has h = 8 and Curve448 has h = 4. A cofactor is not a weakness in itself, but protocols must keep secret-dependent computation inside the prime-order subgroup, or an attacker can learn the secret modulo h. The <a href=\"../cryptanalysis/pohlig-hellman.html\">Pohlig&ndash;Hellman page</a> explains why."
+        }
+      ]
+    },
+    {
+      "heading": "Multiplying a point by an integer",
+      "blocks": [
+        {
+          "p": "Adding P to itself k times would take k &minus; 1 additions, which is hopeless for a 256-bit k. Double-and-add reads k in binary, from the most significant bit: for each bit, double the running total, and add P when the bit is 1."
+        },
+        {
+          "computed": "trace_table"
+        },
+        {
+          "p": "That is {{c_doublings}} doublings and {{c_additions}} additions instead of {{c_naive}} additions. A 256-bit scalar takes about 255 doublings and, on average, 128 additions. Windowed methods cut the additions further by adding precomputed small multiples of P."
+        },
+        {
+          "note": "The loop above takes a different path for each bit of k, so its running time and memory accesses depend on the secret. Leaking even a few bits of each signature's secret nonce is enough to recover a signing key, as the <a href=\"../cryptanalysis/hidden-number-problem.html\">hidden number problem</a> page shows. Production code uses a fixed sequence of operations regardless of k, such as the Montgomery ladder, and works in projective coordinates so that the expensive field inversion happens once at the end rather than at every step.",
+          "note_label": "Where this bites"
+        }
+      ]
+    },
+    {
+      "heading": "Curves in use",
+      "blocks": [
+        {
+          "ul": [
+            "<strong>P-256</strong>, P-384 and P-521 are the NIST prime curves, specified in SP 800-186 and used in TLS certificates, government systems and most hardware security modules.",
+            "<strong>secp256k1</strong>, y<sup>2</sup> = x<sup>3</sup> + 7, is the curve of Bitcoin and Ethereum signatures. Its j-invariant is 0, which gives it an extra endomorphism of order 3: this speeds up scalar multiplication and also speeds up Pollard's rho by a factor of &radic;3.",
+            "<strong>Curve25519</strong>, over the prime 2<sup>255</sup> &minus; 19, is used for key exchange as X25519 and, in Edwards form, for signatures as Ed25519. It was designed so that simple, constant-time implementations are also the fast ones. <strong>Curve448</strong> is its higher-security sibling."
+          ]
+        },
+        {
+          "p": "The <a href=\"ecdlp.html\">note on the discrete logarithm problem</a> gives the size of each one's group and what it costs to attack, and the <a href=\"../schemes/index.html\">schemes catalogue</a> covers the key-exchange and signature schemes built on them."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "J. H. Silverman, The Arithmetic of Elliptic Curves, 2nd edition, Springer GTM 106 (2009)",
+      "href": "https://link.springer.com/book/10.1007/978-0-387-09494-6"
+    },
+    {
+      "text": "D. Hankerson, A. Menezes and S. Vanstone, Guide to Elliptic Curve Cryptography, Springer (2004)",
+      "href": "https://link.springer.com/book/10.1007/b97644"
+    },
+    {
+      "text": "R. Schoof, \"Elliptic curves over finite fields and the computation of square roots mod p\", Mathematics of Computation 44 (1985)",
+      "href": "https://www.ams.org/journals/mcom/1985-44-170/S0025-5718-1985-0777280-6/"
+    },
+    {
+      "text": "P. L. Montgomery, \"Speeding the Pollard and elliptic curve methods of factorization\", Mathematics of Computation 48 (1987)",
+      "href": "https://www.ams.org/journals/mcom/1987-48-177/S0025-5718-1987-0866113-7/"
+    },
+    {
+      "text": "D. J. Bernstein, \"Curve25519: new Diffie-Hellman speed records\", PKC 2006",
+      "href": "https://cr.yp.to/ecdh/curve25519-20060209.pdf"
+    },
+    {
+      "text": "NIST SP 800-186, Recommendations for Discrete Logarithm-based Cryptography: Elliptic Curve Domain Parameters (2023)",
+      "href": "https://csrc.nist.gov/pubs/sp/800/186/final"
+    },
+    {
+      "text": "SECG, SEC 2: Recommended Elliptic Curve Domain Parameters, version 2.0 (2010)",
+      "href": "https://www.secg.org/sec2-v2.pdf"
+    },
+    {
+      "text": "A. Langley, M. Hamburg and S. Turner, \"Elliptic Curves for Security\", RFC 7748",
+      "href": "https://www.rfc-editor.org/rfc/rfc7748"
+    }
+  ],
+  "related": ["ecdlp", "pollard-rho-worked-example", "cryptanalysis/pohlig-hellman", "cryptanalysis/hidden-number-problem"]
+}

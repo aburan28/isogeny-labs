@@ -1,0 +1,49 @@
+{
+  "title": "Cryptanalysis reference · Isogeny Labs",
+  "description": "Notes on how public-key hardness assumptions are attacked: generic discrete-log algorithms, index calculus and descent, lattice attacks, and isogeny attacks, with costs, record computations, and the conditions under which each attack applies.",
+  "heading": "Cryptanalysis reference",
+  "standfirst": "Notes on the attacks that public-key parameters are sized against. Each page says what the attack needs, what it costs, what the largest computation on record used, and when the attack stops applying. Every page cites the original papers, and those are the thing to read if you need precision.",
+  "guide_heading": "How the pages are organised",
+  "guide_blocks": [
+    {
+      "p": "Most published attacks don't break deployed systems. They improve an exponent, or need a structural coincidence that sensible parameters avoid, or assume an oracle nobody has. So the question each page tries to answer is what the attack would cost against a particular set of parameters, and what would have to change for that cost to become affordable."
+    },
+    {
+      "p": "Each page covers, in order:"
+    },
+    {
+      "ul": [
+        "<strong>The problem instance:</strong> what the attacker is given and what counts as success.",
+        "<strong>The mechanism:</strong> the idea that makes the attack cheaper than brute force. It is usually a collision, a relation, or a map to an easier object.",
+        "<strong>The cost:</strong> the asymptotic bound, and what the largest published computation actually used.",
+        "<strong>The boundary:</strong> the hypothesis the attack depends on, and so the parameter choice that makes it irrelevant."
+      ]
+    },
+    {
+      "note": "an asymptotic bound is not a security level. O(&radic;n) group operations says nothing about memory, communication, or the constant factor, and those decide whether a computation is affordable. Where a record computation exists, we give its measured cost alongside the bound.",
+      "note_label": "A caveat that applies throughout"
+    }
+  ],
+  "families": [
+    {
+      "id": "generic",
+      "label": "Generic group algorithms",
+      "intro": "These work in any cyclic group where you can compute the group operation and test equality. Shoup's lower bound says no generic algorithm can use fewer than about &radic;p operations, where <em>p</em> is the largest prime dividing the group order, so these algorithms set the baseline every discrete-log parameter is measured against."
+    },
+    {
+      "id": "index-calculus",
+      "label": "Index calculus and descent",
+      "intro": "Index calculus collects relations over a factor base and solves a linear system. It is the reason discrete logarithms in finite fields take subexponential time. Whether anything like it works on elliptic curves has been an open question since Semaev's 2004 paper."
+    },
+    {
+      "id": "lattice",
+      "label": "Lattice attacks",
+      "intro": "When a secret is partly known, from a few leaked bits, a biased nonce, or a small root of a modular equation, lattice reduction can often recover the rest. Many breaks of deployed ECDSA and RSA implementations come from this family rather than from any weakness in the underlying problem."
+    },
+    {
+      "id": "isogeny",
+      "label": "Isogeny attacks",
+      "intro": "Isogeny problems are the newest of these assumptions. SIKE was broken outright in 2022, after it had reached the fourth round of NIST's standardisation process, which is a good reason to read the attacks on its successors closely."
+    }
+  ]
+}

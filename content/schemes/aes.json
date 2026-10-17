@@ -1,0 +1,114 @@
+{
+  "slug": "aes",
+  "position": 1,
+  "group": "symmetric",
+  "compute": "aes",
+  "title": "AES",
+  "short_title": "AES",
+  "one_liner": "The block cipher behind most bulk encryption, implemented from FIPS 197 and checked against its test vector, with diffusion measured round by round.",
+  "description": "AES (FIPS 197, Rijndael): the round structure, the S-box built from inversion in GF(2^8), the FIPS 197 example vector reproduced, avalanche measured round by round, the best known cryptanalysis, cache-timing side channels, modes of operation, and what quantum computers do to key search.",
+  "standfirst": "Almost every encrypted byte on the internet passes through AES. Unlike the public-key schemes in this catalogue, its security does not reduce to any mathematical problem. It rests on twenty-five years of cryptanalysis that has barely dented it, and in practice the attacks that matter are on how it is implemented.",
+  "facts": {
+    "Rests on": "Resistance to cryptanalysis; there is no reduction to a number-theoretic problem",
+    "Standards": "FIPS 197 (2001, updated 2023); modes in NIST SP 800-38 series",
+    "Sizes": "128-bit block; 128-, 192- or 256-bit key; 10, 12 or 14 rounds",
+    "Best known attack": "Biclique cryptanalysis: an AES-128 key in about 2<sup>126.1</sup> operations, four times faster than brute force",
+    "Quantum": "Grover's algorithm speeds up key search; NIST uses AES-128 key search as the benchmark for its lowest post-quantum category"
+  },
+  "sections": [
+    {
+      "heading": "The cipher",
+      "blocks": [
+        {
+          "p": "AES is Rijndael, by Daemen and Rijmen, chosen by NIST in 2000 after an open competition. It encrypts a 16-byte block, arranged as a 4 &times; 4 array of bytes, through a fixed number of rounds. Each round applies four steps:"
+        },
+        {
+          "steps": [
+            "<strong>SubBytes.</strong> Replace every byte by its image under a fixed 8-bit S-box. This is the only nonlinear step.",
+            "<strong>ShiftRows.</strong> Rotate row i of the array left by i positions, so each column's bytes move to four different columns.",
+            "<strong>MixColumns.</strong> Multiply each column by a fixed 4 &times; 4 matrix over GF(2<sup>8</sup>). A change in one input byte changes all four output bytes of its column.",
+            "<strong>AddRoundKey.</strong> XOR in a 16-byte round key derived from the cipher key."
+          ]
+        },
+        {
+          "p": "The S-box is not an arbitrary table. It is inversion in the field GF(2<sup>8</sup>), with 0 sent to 0, followed by a fixed affine map over GF(2). Inversion was chosen because its differential and linear properties are close to the best any 8-bit S-box can have, and the affine map removes its simple algebraic structure. The code behind this page builds the S-box from exactly that definition, and checks it against the examples in the standard."
+        },
+        {
+          "p": "With the S-box built, the whole cipher is about a hundred lines. It reproduces the example of FIPS 197 appendix C.1:"
+        },
+        {
+          "pre": "key        {{key}}\nplaintext  {{pt}}\nciphertext {{ct}}",
+          "label": "FIPS 197 appendix C.1, AES-128, recomputed at build time"
+        }
+      ]
+    },
+    {
+      "heading": "Diffusion, measured",
+      "blocks": [
+        {
+          "p": "The design goal of the round structure is that every output bit depends on every input bit after very few rounds, the property Daemen and Rijmen call the wide-trail strategy. It can be watched directly. Take two plaintexts that differ in a single bit, encrypt both under the same key, and count how many of the 128 state bits differ after each round:"
+        },
+        {
+          "computed": "avalanche"
+        },
+        {
+          "p": "After one round the difference has spread to a single column, {{r1}} bits on average. The S-box changes one byte, and MixColumns spreads it to the four bytes of that column. After round 2, ShiftRows has sent those four bytes to four different columns, and the difference covers the whole state: {{r2}} bits, indistinguishable from the 64 of two unrelated random blocks. It stays there through round 10. Full diffusion after two rounds is by design, and it is part of why published attacks meaningfully faster than brute force reach only about seven of AES-128's ten rounds."
+        }
+      ]
+    },
+    {
+      "heading": "Cryptanalysis",
+      "blocks": [
+        {
+          "p": "The design was built to resist differential and linear cryptanalysis with a provable margin: every four-round trail passes through at least 25 active S-boxes, which bounds the probability of any single differential or linear trail far below what an attack could use. Twenty-five years on, the best attack on the full cipher is the 2011 biclique attack of Bogdanov, Khovratovich and Rechberger. It recovers an AES-128 key in about 2<sup>126.1</sup> operations, compared with 2<sup>128</sup> for brute force, with a data requirement that makes it purely theoretical. Related-key attacks on AES-192 and AES-256 exist, but need keys with a chosen relationship, which proper protocols never produce."
+        },
+        {
+          "p": "The attacks that have mattered in practice are side channels. Fast software AES used lookup tables indexed by secret-dependent bytes, and which table entries are in the processor's cache leaks those bytes through timing. Bernstein demonstrated remote timing leakage in 2005, and Osvik, Shamir and Tromer recovered full keys through cache attacks in 2006. The fix is to avoid secret-dependent memory access: the AES instructions in modern processors, or bitsliced constant-time software."
+        }
+      ]
+    },
+    {
+      "heading": "Modes, and what can go wrong there",
+      "blocks": [
+        {
+          "p": "A block cipher on its own encrypts 16 bytes. Real use needs a mode. The standard choice is GCM (NIST SP 800-38D), which encrypts in counter mode and authenticates with a polynomial hash over GF(2<sup>128</sup>). GCM's security depends absolutely on never repeating a nonce under one key: a repeated nonce reveals the XOR of two plaintexts and allows forgeries. Where nonces cannot be guaranteed unique, nonce-misuse-resistant modes such as AES-GCM-SIV limit the damage. ECB mode, which encrypts each block independently, leaks the pattern of equal blocks and should not be used at all."
+        }
+      ]
+    },
+    {
+      "heading": "The quantum question",
+      "blocks": [
+        {
+          "p": "Grover's algorithm searches 2<sup>k</sup> keys in about 2<sup>k/2</sup> quantum steps, which is often summarised as halving the key length. In practice the steps are long, sequential and hard to parallelise, so the real cost is far above 2<sup>64</sup> for AES-128. NIST defines its lowest post-quantum security category as \"at least as hard as key search on AES-128\" and does not consider AES-128 broken by quantum computers. AES-256 is the conservative choice where a large margin is wanted. Either way, the symmetric side of the quantum transition is a parameter choice, not a replacement, unlike <a href=\"rsa.html\">RSA</a> and <a href=\"x25519.html\">elliptic-curve</a> cryptography."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "NIST FIPS 197, Advanced Encryption Standard (AES) (2001, updated 2023)",
+      "href": "https://doi.org/10.6028/NIST.FIPS.197-upd1"
+    },
+    {
+      "text": "J. Daemen and V. Rijmen, The Design of Rijndael, Springer (2002)",
+      "href": "https://doi.org/10.1007/978-3-662-04722-4"
+    },
+    {
+      "text": "A. Bogdanov, D. Khovratovich and C. Rechberger, \"Biclique cryptanalysis of the full AES\", ASIACRYPT 2011",
+      "href": "https://doi.org/10.1007/978-3-642-25385-0_19"
+    },
+    {
+      "text": "D. A. Osvik, A. Shamir and E. Tromer, \"Cache attacks and countermeasures: the case of AES\", CT-RSA 2006",
+      "href": "https://doi.org/10.1007/11605805_1"
+    },
+    {
+      "text": "D. J. Bernstein, \"Cache-timing attacks on AES\" (2005)",
+      "href": "https://cr.yp.to/antiforgery/cachetiming-20050414.pdf"
+    },
+    {
+      "text": "M. Dworkin, NIST SP 800-38D, Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC (2007)",
+      "href": "https://doi.org/10.6028/NIST.SP.800-38D"
+    }
+  ],
+  "related": ["ml-kem", "slh-dsa"]
+}

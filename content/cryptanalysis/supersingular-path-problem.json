@@ -1,0 +1,158 @@
+{
+  "slug": "supersingular-path-problem",
+  "position": 3,
+  "family": "isogeny",
+  "compute": "isogeny_paths",
+  "title": "Meet-in-the-middle and the supersingular path problem",
+  "short_title": "Supersingular path problem",
+  "one_liner": "Delfs&ndash;Galbraith, Wesolowski's 2026 p<sup>1/3</sup> algorithm, and what its memory cost means for SQIsign parameters.",
+  "cost_label": "p<sup>1/2</sup> for thirty years; p<sup>1/3+o(1)</sup> time and memory since 2026",
+  "description": "The supersingular isogeny path problem: meet-in-the-middle, claw finding, the Delfs-Galbraith algorithm through curves over F_p, Wesolowski's 2026 p^(1/3) algorithm, and a measured search in the 2-isogeny graph for p = 10007.",
+  "standfirst": "Given two supersingular elliptic curves, find an isogeny between them. Every isogeny-based scheme still standing rests on some form of this problem, and for thirty years the best classical algorithms took about p<sup>1/2</sup> steps. In 2026 that exponent moved to 1/3, at the price of memory just as large.",
+  "facts": {
+    "Problem": "Given supersingular E, E&prime; over F<sub>p<sup>2</sup></sub>, find an isogeny E &rarr; E&prime; of smooth degree",
+    "Cost": "&Otilde;(p<sup>1/2</sup>) with polynomial memory (Delfs&ndash;Galbraith); p<sup>1/3+o(1)</sup> time and memory (Wesolowski, 2026)",
+    "Quantum": "&Otilde;(p<sup>1/4</sup>) (Biasse, Jao and Sankar)",
+    "Equivalent to": "Computing the endomorphism ring of a supersingular curve (Wesolowski, 2021, under GRH)",
+    "Affects": "SQIsign parameters; the Charles&ndash;Goren&ndash;Lauter hash; any scheme resting on the general path problem"
+  },
+  "sections": [
+    {
+      "heading": "The problem",
+      "blocks": [
+        {
+          "p": "Fix a prime p. Up to isomorphism there are about p/12 supersingular elliptic curves over the algebraic closure of F<sub>p</sub>, all of them defined over F<sub>p<sup>2</sup></sub>. Join two of them whenever there is an isogeny of degree &#8467; between them, for a fixed small prime &#8467;, and you get the supersingular &#8467;-isogeny graph: connected, (&#8467;+1)-regular, of diameter about log p, and an excellent expander. The <a href=\"../notes/isogenies.html\">isogeny note</a> draws it for p = 431."
+        },
+        {
+          "p": "The path problem asks for a path in that graph between two given vertices, which amounts to an isogeny of degree a power of &#8467; between two given curves. Because the graph mixes so fast, a random walk of length about log p lands on a nearly uniform curve, which is exactly how the Charles&ndash;Goren&ndash;Lauter hash function and SIDH-style key generation used it. Finding a collision in that hash, or recovering an SIDH key without the torsion information, means solving an instance of the path problem."
+        },
+        {
+          "p": "The problem has a second face. Wesolowski proved in 2021, assuming the generalised Riemann hypothesis, that finding paths and computing endomorphism rings are equivalent under reductions of polynomial expected time. Knowing both endomorphism rings, a path can be computed in polynomial time with the KLPT algorithm; this is how SQIsign's signer, who knows End(E<sub>pk</sub>), answers challenges a forger cannot."
+        }
+      ]
+    },
+    {
+      "heading": "Meet in the middle",
+      "blocks": [
+        {
+          "p": "The generic attack treats the graph as a black box. Grow a ball of curves around E by computing isogenies of degree &#8467;, &#8467;<sup>2</sup>, &hellip;, grow another around E&prime;, and stop when a curve appears in both: its two paths joined give the answer. By the birthday bound the two balls meet once each holds about &radic;(p/12) curves, so the search costs &Otilde;(p<sup>1/2</sup>) isogeny evaluations and as much memory. Searching from one side alone would need the ball to hold a constant fraction of the whole graph, about p/12 curves."
+        },
+        {
+          "p": "The memory is the catch. Van Oorschot and Wiener's parallel collision search trades it away, replacing the stored balls with random walks and distinguished points, as in <a href=\"pollard-rho.html\">Pollard's rho</a>. Adj, Cervantes-V&aacute;zquez, Chi-Dom&iacute;nguez, Menezes and Rodr&iacute;guez-Henr&iacute;quez costed both approaches against SIKE's parameters in 2018 and concluded that, with realistic memory, van Oorschot&ndash;Wiener was the cheaper, which led to SIKE's parameters being reduced. The same accounting now decides how much the 2026 algorithm matters."
+        }
+      ]
+    },
+    {
+      "heading": "A measured search",
+      "blocks": [
+        {
+          "p": "The 2-isogeny graph for p = {{p}} has {{vertices}} vertices: &lfloor;p/12&rfloor; = {{p_over_12}}, plus 2 because p &equiv; 11 mod 12. It was built by breadth-first search from j = 1728, finding each curve's three neighbours as roots of the modular polynomial &Phi;<sub>2</sub>. Every curve lies within {{depth}} steps of j = 1728."
+        },
+        {
+          "p": "In each of {{trials}} trials a start curve was drawn at random, and a secret non-backtracking walk of {{walk}} steps led from it to the target. Each search was then run to recover a path, and every path it returned was checked edge by edge against &Phi;<sub>2</sub>. The graph is small enough that every one of the {{trials}} walks had a shortcut: the shortest paths found had median length {{found_median}} and never more than {{found_max}}. The attacker only needs some path, not the secret one."
+        },
+        {
+          "table": {
+            "caption": "Distinct curves examined before the path was found, over {{trials}} trials on the {{vertices}}-vertex graph for p = {{p}}.",
+            "head": ["Search", "Mean", "Median", "Share of the graph"],
+            "rows": [
+              ["From the start curve only", "{{one_mean}}", "{{one_median}}", "{{one_pct}}%"],
+              ["From both ends, alternating layers", "{{two_mean}}", "{{two_median}}", "{{two_pct}}%"]
+            ],
+            "numeric": [1, 2, 3]
+          }
+        },
+        {
+          "p": "The bidirectional search examined {{ratio}} times fewer curves. At this size the constant factors are still visible: &radic;{{vertices}} is about {{sqrt_n}}, and a 3-regular ball grows by a factor of two per layer, so the two balls overshoot before they meet. The ratio between the two searches is what grows with p. At a cryptographic prime the one-sided search is hopeless and the meet-in-the-middle is merely very expensive."
+        },
+        {
+          "note": "these are counts in a graph of {{vertices}} curves, and they illustrate the shape of the costs, nothing more. At cryptographic sizes every step is an isogeny evaluation over a field of hundreds of bits, and memory, not arithmetic, decides what is affordable.",
+          "note_label": "Scale"
+        }
+      ]
+    },
+    {
+      "heading": "Delfs&ndash;Galbraith: going through F<sub>p</sub>",
+      "blocks": [
+        {
+          "p": "Delfs and Galbraith observed that the curves defined over F<sub>p</sub> itself, rather than F<sub>p<sup>2</sup></sub>, form a subset of only &Otilde;(p<sup>1/2</sup>) vertices, and that paths between them are easy to find, because over F<sub>p</sub> the curves carry a commutative class-group action of the kind CSIDH uses. So the attack walks randomly from each end until it lands on a curve defined over F<sub>p</sub>, which takes about p<sup>1/2</sup> steps, and then joins the two landing points cheaply. The total is &Otilde;(p<sup>1/2</sup>) time, the same exponent as meet-in-the-middle, but with polynomial memory."
+        },
+        {
+          "p": "The graph for p = {{p}} has {{in_fp}} curves with j-invariant in F<sub>p</sub>, where &radic;p is about {{sqrt_p}}. From every start and target curve in the trials above, a breadth-first search reached one of them within {{dg_max}} steps, and the median was {{dg_median}}. At this size a curve over F<sub>p</sub> is always close by. At a 256-bit prime they make up roughly one curve in 2<sup>124</sup>, and finding one is the whole cost of the attack."
+        },
+        {
+          "p": "The same route is why quantum computers help here only modestly. Biasse, Jao and Sankar replaced the random search for an F<sub>p</sub> curve with Grover's algorithm and the class-group step with a quantum subexponential algorithm, for a total of &Otilde;(p<sup>1/4</sup>). The general path problem has no known quantum attack better than that. This is the reason SQIsign's security depends on classical cryptanalysis, while <a href=\"kuperberg-csidh.html\">CSIDH's</a> commutative structure exposes it to Kuperberg's subexponential quantum algorithm."
+        }
+      ]
+    },
+    {
+      "heading": "The p<sup>1/3</sup> algorithm",
+      "blocks": [
+        {
+          "p": "In 2026 Wesolowski gave a heuristic algorithm for the path problem, equivalently the endomorphism ring problem, running in time and memory p<sup>1/3+o(1)</sup>. Instead of joining two arbitrary curves, it looks for a short isogeny from a single curve to its Galois conjugate, the curve obtained by applying the Frobenius p-th power map to its coefficients. Such an isogeny, composed with Frobenius, gives a new endomorphism, and a few endomorphisms determine the whole ring. A meet-in-the-middle search over isogenies of smooth degree finds one after p<sup>1/3+o(1)</sup> steps rather than p<sup>1/2</sup>."
+        },
+        {
+          "p": "Three qualifications decide what this means in practice:"
+        },
+        {
+          "ul": [
+            "<strong>It is heuristic.</strong> The running time rests on explicit, stated heuristics about the distribution of these isogenies, not on a proof.",
+            "<strong>The o(1) is not small.</strong> It hides a superpolynomial factor, so at cryptographic sizes the cost is well above p<sup>1/3</sup>.",
+            "<strong>Memory equals time.</strong> Like any meet-in-the-middle search it stores what it searches. No low-memory variant analogous to van Oorschot&ndash;Wiener is known, and the concrete cost therefore depends on how much memory an attacker is assumed to have."
+          ]
+        },
+        {
+          "p": "SQIsign's designers answered it in version 3.0 of their specification by raising the prime at each level and costing the attack under memory limits of 2<sup>80</sup>, 2<sup>120</sup> and 2<sup>160</sup> stored entries. With those limits the estimated costs clear NIST's targets, and the designers say plainly that a version of the attack without the memory requirement would force the parameters to be revisited. The <a href=\"../schemes/sqisign.html\">SQIsign page</a> has the numbers."
+        }
+      ]
+    },
+    {
+      "heading": "The boundary",
+      "blocks": [
+        {
+          "ul": [
+            "<strong>SIDH and SIKE</strong> were not broken by any of this. They fell to <a href=\"sidh-torsion-attacks.html\">torsion-point attacks</a>, which exploit extra information those schemes published. Without that information the path problem is untouched by those attacks.",
+            "<strong>Special curves</strong> are easy. If the starting curve's endomorphism ring is known, as it is for j = 1728 when p &equiv; 3 mod 4, a path from it to anything is exactly as hard as the endomorphism ring problem for the other end. Schemes must never let a secret curve's endomorphism ring leak.",
+            "<strong>Parameter sizing</strong> should now be done against p<sup>1/3+o(1)</sup> time and memory, with an explicit memory bound, rather than against p<sup>1/2</sup>. Whether the exponent can go below 1/3, or the memory be reduced, is open.",
+            "<strong>The quantum picture</strong> is unchanged: &Otilde;(p<sup>1/4</sup>) remains the best known quantum algorithm for the general problem."
+          ]
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "D. X. Charles, K. E. Lauter and E. Z. Goren, \"Cryptographic hash functions from expander graphs\", Journal of Cryptology 22 (2009)",
+      "href": "https://doi.org/10.1007/s00145-007-9002-x"
+    },
+    {
+      "text": "C. Delfs and S. D. Galbraith, \"Computing isogenies between supersingular elliptic curves over F<sub>p</sub>\", Designs, Codes and Cryptography 78 (2016)",
+      "href": "https://doi.org/10.1007/s10623-014-0010-1"
+    },
+    {
+      "text": "J.-F. Biasse, D. Jao and A. Sankar, \"A quantum algorithm for computing isogenies between supersingular elliptic curves\", INDOCRYPT 2014",
+      "href": "https://doi.org/10.1007/978-3-319-13039-2_25"
+    },
+    {
+      "text": "G. Adj, D. Cervantes-V&aacute;zquez, J.-J. Chi-Dom&iacute;nguez, A. Menezes and F. Rodr&iacute;guez-Henr&iacute;quez, \"On the cost of computing isogenies between supersingular elliptic curves\", SAC 2018",
+      "href": "https://eprint.iacr.org/2018/313"
+    },
+    {
+      "text": "K. Eisentr&auml;ger, S. Hallgren, K. Lauter, T. Morrison and C. Petit, \"Supersingular isogeny graphs and endomorphism rings: reductions and solutions\", EUROCRYPT 2018",
+      "href": "https://eprint.iacr.org/2018/371"
+    },
+    {
+      "text": "B. Wesolowski, \"The supersingular isogeny path and endomorphism ring problems are equivalent\", FOCS 2021",
+      "href": "https://eprint.iacr.org/2021/919"
+    },
+    {
+      "text": "B. Wesolowski, \"The supersingular isogeny problem in time and memory p<sup>1/3+o(1)</sup>\" (2026)",
+      "href": "https://eprint.iacr.org/2026/1486"
+    },
+    {
+      "text": "SQIsign team, \"SQIsign: algorithm specifications and supporting documentation\", version 3.0 (September 2026)",
+      "href": "https://sqisign.org/spec/sqisign-20260901.pdf"
+    }
+  ],
+  "related": ["sidh-torsion-attacks", "kuperberg-csidh", "notes/isogenies", "schemes/sqisign"]
+}

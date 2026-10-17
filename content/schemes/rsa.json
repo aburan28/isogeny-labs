@@ -1,0 +1,149 @@
+{
+  "slug": "rsa",
+  "position": 3,
+  "group": "signatures",
+  "compute": "rsa",
+  "title": "RSA",
+  "short_title": "RSA",
+  "one_liner": "The first widely deployed public-key system, for signatures and encryption, and the ways real deployments of it have failed.",
+  "description": "RSA: key generation, encryption and signatures, the Chinese remainder theorem speedup, why padding is not optional, and three real failure modes worked at toy size: textbook malleability, the Boneh-DeMillo-Lipton fault attack on CRT signing, and moduli sharing a prime.",
+  "standfirst": "RSA has been in use since 1977 and still signs most web certificates. The mathematics has held up: the best attack is still factoring the modulus, and the largest public factorisation is 829 bits. The failures have come from how it is used: missing padding, faulty hardware, and keys generated without enough randomness.",
+  "facts": {
+    "Rests on": "The RSA problem, taking e-th roots modulo N = pq, which is no harder than factoring N",
+    "Standards": "PKCS #1 v2.2 (RFC 8017); FIPS 186-5 for signatures; SP 800-56B for key establishment",
+    "Sizes": "RSA-2048: 256-byte modulus and signature; RSA-3072: 384 bytes",
+    "Best known attack": "The <a href=\"../cryptanalysis/number-field-sieve.html\">number field sieve</a>; the largest public factorisation is RSA-250, 829 bits, in 2020",
+    "Quantum": "Broken by Shor's algorithm"
+  },
+  "sections": [
+    {
+      "heading": "The scheme",
+      "blocks": [
+        {
+          "p": "Pick two large primes p and q and publish their product N together with an exponent e, almost always 65537. The private exponent d satisfies ed &equiv; 1 mod (p &minus; 1)(q &minus; 1), and computing it needs p and q. Then for every m mod N,"
+        },
+        {
+          "math": "(m<sup>e</sup>)<sup>d</sup> &equiv; m &nbsp;(mod N)",
+          "label": "Raising to e and to d undo each other"
+        },
+        {
+          "p": "Encryption raises to e, and so does signature verification. Decryption and signing raise to d. Recovering m from m<sup>e</sup> mod N without d is the RSA problem. Factoring N solves it, and nothing substantially better than factoring is known."
+        },
+        {
+          "p": "Here is a key with {{bits}}-bit primes, generated and checked by the code that builds this page. That makes a {{nbits}}-bit modulus, small enough to read and far too small to use:"
+        },
+        {
+          "dl": [
+            ["p, q", "{{p}}, {{q}}"],
+            ["N = pq", "{{N}}"],
+            ["e", "{{e}}"],
+            ["d = e<sup>&minus;1</sup> mod (p&minus;1)(q&minus;1)", "{{d}}"]
+          ]
+        },
+        {
+          "p": "The message m = {{m}} encrypts to c = m<sup>e</sup> mod N = {{c}}, and c<sup>d</sup> mod N gives m back."
+        }
+      ]
+    },
+    {
+      "heading": "The CRT speedup",
+      "blocks": [
+        {
+          "p": "The private-key holder knows p and q, and can compute c<sup>d</sup> modulo each separately, with the smaller exponents d<sub>p</sub> = d mod (p &minus; 1) = {{dp}} and d<sub>q</sub> = d mod (q &minus; 1) = {{dq}}. The Chinese remainder theorem then combines the two halves into the answer mod N. Each half is an exponentiation with numbers half the size, so the whole takes about a quarter of the work, and nearly every implementation does it this way. On the key above both routes give the same m, as the build checks."
+        },
+        {
+          "p": "The speedup has a cost that is not arithmetic: the two halves are separate secrets, and an error in one of them, as the fault attack below shows, gives the factorisation away."
+        }
+      ]
+    },
+    {
+      "heading": "Why padding is not optional",
+      "blocks": [
+        {
+          "p": "The bare operation m &#8614; m<sup>e</sup>, \"textbook RSA\", has structure an attacker can use. It is deterministic, so equal messages give equal ciphertexts. It is also multiplicative: (m<sub>1</sub>m<sub>2</sub>)<sup>d</sup> = m<sub>1</sub><sup>d</sup> m<sub>2</sub><sup>d</sup> mod N. With the key above, the signatures on m<sub>1</sub> = {{m1}} and m<sub>2</sub> = {{m2}} multiply to {{fs}}, which verifies as a valid signature on m<sub>1</sub>m<sub>2</sub> mod N = {{fm}}, a message the key holder never signed."
+        },
+        {
+          "p": "Padding destroys that structure. RSA-PSS for signatures and RSA-OAEP for encryption, both in PKCS #1 v2.2, hash and randomise the message before exponentiation, and come with security proofs in the random-oracle model. The older PKCS #1 v1.5 encryption padding does not, and Bleichenbacher showed in 1998 that a server revealing only whether a ciphertext's padding was valid lets an attacker decrypt any ciphertext with about a million queries. Variants of that attack have recurred in TLS implementations ever since, which is one reason TLS 1.3 dropped RSA key transport altogether."
+        }
+      ]
+    },
+    {
+      "heading": "Faults in CRT signing",
+      "blocks": [
+        {
+          "p": "Boneh, DeMillo and Lipton observed in 1997 that one faulty CRT signature is enough to factor N. Suppose a glitch, from voltage, heat or a deliberate laser pulse, corrupts only the half computed mod q. The faulty signature s&prime; is still correct mod p and wrong mod q, so s&prime;<sup>e</sup> &minus; h is divisible by p and not by q, and"
+        },
+        {
+          "math": "gcd(s&prime;<sup>e</sup> &minus; h, N) = p",
+          "label": "One faulty signature on a known h factors N"
+        },
+        {
+          "p": "The build signs h = {{h}} twice with the key above. The correct signature is {{good}}. The second run adds one to the half mod q, and the result is {{bad}}. That fails verification, and the gcd above comes out as {{leaked}}, which is p."
+        },
+        {
+          "p": "The defence is to verify every signature before releasing it, which costs one cheap exponentiation by e, or to randomise the computation. Smartcards and HSMs are expected to do this."
+        }
+      ]
+    },
+    {
+      "heading": "Shared primes",
+      "blocks": [
+        {
+          "p": "RSA's security needs p and q to be unpredictable. In 2012 two independent teams, Heninger, Durumeric, Wustrow and Halderman, and Lenstra and colleagues, collected millions of RSA public keys from the internet and computed pairwise gcds of the moduli. Many devices, mostly routers and embedded systems that generated keys at first boot with too little entropy, had produced moduli sharing one prime with another device. Heninger's team recovered private keys for 0.50% of the TLS hosts they scanned."
+        },
+        {
+          "p": "The attack is one line. The build generates two keys that share a prime, as such a device would:"
+        },
+        {
+          "dl": [
+            ["N<sub>1</sub>", "{{N1}}"],
+            ["N<sub>2</sub>", "{{N2}}"],
+            ["gcd(N<sub>1</sub>, N<sub>2</sub>)", "{{g}}"]
+          ]
+        },
+        {
+          "p": "The gcd is the shared prime, and dividing it out gives the other two, {{N1q}} and {{N2q}}: both keys are factored without any factoring. Computing a gcd takes microseconds at real sizes, and a product tree does all pairs in a large collection at once."
+        }
+      ]
+    },
+    {
+      "heading": "Sizes and the quantum question",
+      "blocks": [
+        {
+          "p": "RSA-2048 is conventionally rated at about 112 bits of classical security and RSA-3072 at 128, against the <a href=\"../cryptanalysis/number-field-sieve.html\">number field sieve</a>, which is subexponential. That is why RSA keys are so much larger than elliptic-curve keys of the same strength. Shor's algorithm factors N in polynomial time on a large enough quantum computer, so RSA is on the same retirement path as elliptic-curve cryptography. NIST IR 8547 proposes deprecating 112-bit-security RSA after 2030 and disallowing RSA entirely after 2035, in favour of <a href=\"ml-dsa.html\">ML-DSA</a> and <a href=\"ml-kem.html\">ML-KEM</a>."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "R. L. Rivest, A. Shamir and L. Adleman, \"A method for obtaining digital signatures and public-key cryptosystems\", Communications of the ACM 21 (1978)",
+      "href": "https://doi.org/10.1145/359340.359342"
+    },
+    {
+      "text": "K. Moriarty, B. Kaliski, J. Jonsson and A. Rusch, RFC 8017, PKCS #1: RSA Cryptography Specifications Version 2.2 (2016)",
+      "href": "https://www.rfc-editor.org/rfc/rfc8017"
+    },
+    {
+      "text": "D. Bleichenbacher, \"Chosen ciphertext attacks against protocols based on the RSA encryption standard PKCS #1\", CRYPTO 1998",
+      "href": "https://doi.org/10.1007/BFb0055716"
+    },
+    {
+      "text": "D. Boneh, R. A. DeMillo and R. J. Lipton, \"On the importance of checking cryptographic protocols for faults\", EUROCRYPT 1997",
+      "href": "https://doi.org/10.1007/3-540-69053-0_4"
+    },
+    {
+      "text": "N. Heninger, Z. Durumeric, E. Wustrow and J. A. Halderman, \"Mining your Ps and Qs: detection of widespread weak keys in network devices\", USENIX Security 2012",
+      "href": "https://factorable.net/"
+    },
+    {
+      "text": "A. K. Lenstra, J. P. Hughes, M. Augier, J. W. Bos, T. Kleinjung and C. Wachter, \"Ron was wrong, Whit is right\" (2012)",
+      "href": "https://eprint.iacr.org/2012/064"
+    },
+    {
+      "text": "NIST IR 8547 (initial public draft), Transition to Post-Quantum Cryptography Standards (2024)",
+      "href": "https://csrc.nist.gov/pubs/ir/8547/ipd"
+    }
+  ],
+  "related": ["cryptanalysis/number-field-sieve", "cryptanalysis/coppersmith", "ml-dsa"]
+}
