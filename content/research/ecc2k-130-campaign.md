@@ -1,8 +1,8 @@
 ---
-title: We rented a few hundred machines and spent five weeks attacking a 29-year-old challenge
+title: We rented a few hundred machines and spent four weeks attacking a 29-year-old challenge
 order: 4
 meta: Pollard rho · GPUs, CPUs and an FPGA · a distributed campaign
-summary: We rebuilt the planned 2009 attack on Certicom's ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at observed spot prices, not of mathematics.
+summary: We rebuilt the planned 2009 attack on Certicom's ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at spot prices, not of mathematics.
 authors:
 eprint:
 code: https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130
@@ -28,7 +28,7 @@ At peak we had about 130 workers running: NVIDIA GPUs of several kinds, plus CPU
 
 The interesting constraint is not raw speed, it is cost per step. Our twelve-card survey found that the card we used by default beat every data center GPU on this workload, including the B200 and the H100. That is unintuitive if you are used to AI benchmarks, and it has a simple cause: this attack hammers a narrow, specialized part of the chip that the big AI cards do not prioritize. Rankings from one workload do not transfer to another.
 
-By dollars rather than by card, the cheapest option at one point was a modest L4 in a Northern European region, at roughly 56 trillion steps per dollar.
+By dollars rather than by card, the cheapest option at one point was a modest L4 in a Northern European region, at roughly 56 trillion steps per dollar, against 38 trillion for the RTX PRO 6000. The fastest card is not the cheapest card: buying steps per dollar instead of steps per card takes the same attack from about $56,000 to about $38,000.
 
 Then on September 18th the spot market reclaimed every worker at once, and the cloud account went onto a verification hold that blocked new launches. Collection continued at a much smaller scale elsewhere. The last point landed on October 7th.
 
@@ -40,7 +40,7 @@ That is exactly what the mathematics predicts. At 5% of the way through, the odd
 
 Collection is paused rather than finished. Every worker's state is checkpointed, so a machine that picks up a slot resumes its walks where they left off.
 
-Whether the remaining 94.6% gets walked is a question of money, not mathematics. At the spot prices we observed, the full attack is roughly $56,000 of GPU time. Nothing about that number requires a breakthrough, a government, or a data center. It requires a credit card and patience.
+Whether the remaining 94.6% gets walked is a question of money, not mathematics. The full attack is about 42,400 hours on the card the paper measures, an RTX PRO 6000, which at its spot price of $1.31 an hour is roughly $56,000. Fleet size does not change the bill: 8 cards for 221 days costs the same as 512 for three and a half. Nothing about that number requires a breakthrough, a government, or a data center. It requires a credit card and patience.
 
 ## The thing we got wrong
 
@@ -48,7 +48,7 @@ One parameter controls how rare a reported point is. Make it rarer and you store
 
 The first measurement said one point per 250 million steps. It was wrong, for two separate reasons. One counter was multiplying every machine's work by a constant that only applied to one kind of card, inflating the slower machines by a factor of about 26. And the point total quietly included two retired machines that had been running a different setting.
 
-The replacement measurement reads each worker's own two counters directly, frozen at one moment across 132 machines. The answer is one point per 356 million steps, and it comes out the same on every hardware family to within rounding.
+The replacement measurement reads each worker's own two counters directly, frozen at one moment across 132 machines. The answer, on the current configuration, is one point per 356 million steps, and it comes out the same on every hardware family to within rounding.
 
 We retired the old number rather than averaging it in. It is in the paper with an explanation of why it was wrong, because a campaign that quietly corrects its own figures is not one anyone should trust.
 
@@ -82,7 +82,7 @@ Before tuning anything, we wrote down what the hardware could not exceed. That l
 
 We also set a target of 17 billion steps per second before building a variant we expected to be faster. It measured 16.56. We declined it. That is what a target declared in advance is for.
 
-Every point a machine reports can be re-walked from its seed by a separate reference implementation, and every version of the code, on every kind of hardware, produces byte-identical records. That is the property that makes a corpus collected across four years and a dozen machine types mean anything at all.
+Every point a machine reports can be re-walked from its seed by a separate reference implementation, and every version of the code, on every kind of hardware, produces byte-identical records. That is the property that makes a corpus collected across four weeks and four hardware families mean anything at all.
 
 ## What this adds up to
 

@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
-  <meta name="description" content="We rebuilt the planned 2009 attack on Certicom&#x27;s ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at observed spot prices, not of mathematics.">
-  <meta property="og:title" content="We rented a few hundred machines and spent five weeks attacking a 29-year-old challenge · Isogeny Labs">
-  <meta property="og:description" content="We rebuilt the planned 2009 attack on Certicom&#x27;s ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at observed spot prices, not of mathematics.">
+  <meta name="description" content="We rebuilt the planned 2009 attack on Certicom&#x27;s ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at spot prices, not of mathematics.">
+  <meta property="og:title" content="We rented a few hundred machines and spent four weeks attacking a 29-year-old challenge · Isogeny Labs">
+  <meta property="og:description" content="We rebuilt the planned 2009 attack on Certicom&#x27;s ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at spot prices, not of mathematics.">
   <meta property="og:type" content="article">
-  <title>We rented a few hundred machines and spent five weeks attacking a 29-year-old challenge · Isogeny Labs</title>
+  <title>We rented a few hundred machines and spent four weeks attacking a 29-year-old challenge · Isogeny Labs</title>
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../styles.css">
   <script defer src="../script.js"></script>
@@ -40,7 +40,7 @@
         <a href="index.html">Research</a>
       </nav>
       <header>
-        <h1>We rented a few hundred machines and spent five weeks attacking a 29-year-old challenge</h1>
+        <h1>We rented a few hundred machines and spent four weeks attacking a 29-year-old challenge</h1>
         <p class="meta">Pollard rho · GPUs, CPUs and an FPGA · a distributed campaign</p>
       </header>
       <p class="paper-link">The paper will be linked here when it is posted to IACR ePrint.<br><a class="code-link" href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Code on GitHub</a></p>
@@ -54,17 +54,17 @@
       <h2 id="the-fleet">The fleet</h2>
       <p>At peak we had about 130 workers running: NVIDIA GPUs of several kinds, plus CPU machines, spread across cloud providers and regions. They produced around 2,600 points per second.</p>
       <p>The interesting constraint is not raw speed, it is cost per step. Our twelve-card survey found that the card we used by default beat every data center GPU on this workload, including the B200 and the H100. That is unintuitive if you are used to AI benchmarks, and it has a simple cause: this attack hammers a narrow, specialized part of the chip that the big AI cards do not prioritize. Rankings from one workload do not transfer to another.</p>
-      <p>By dollars rather than by card, the cheapest option at one point was a modest L4 in a Northern European region, at roughly 56 trillion steps per dollar.</p>
+      <p>By dollars rather than by card, the cheapest option at one point was a modest L4 in a Northern European region, at roughly 56 trillion steps per dollar, against 38 trillion for the RTX PRO 6000. The fastest card is not the cheapest card: buying steps per dollar instead of steps per card takes the same attack from about $56,000 to about $38,000.</p>
       <p>Then on September 18th the spot market reclaimed every worker at once, and the cloud account went onto a verification hold that blocked new launches. Collection continued at a much smaller scale elsewhere. The last point landed on October 7th.</p>
       <h2 id="where-it-stands">Where it stands</h2>
       <p>486 million points stored. About 5.4% of the expected work. No collision.</p>
       <p>That is exactly what the mathematics predicts. At 5% of the way through, the odds of having found a collision already are about one in five hundred. Finding nothing is the expected outcome and tells you nothing is wrong.</p>
       <p>Collection is paused rather than finished. Every worker's state is checkpointed, so a machine that picks up a slot resumes its walks where they left off.</p>
-      <p>Whether the remaining 94.6% gets walked is a question of money, not mathematics. At the spot prices we observed, the full attack is roughly $56,000 of GPU time. Nothing about that number requires a breakthrough, a government, or a data center. It requires a credit card and patience.</p>
+      <p>Whether the remaining 94.6% gets walked is a question of money, not mathematics. The full attack is about 42,400 hours on the card the paper measures, an RTX PRO 6000, which at its spot price of $1.31 an hour is roughly $56,000. Fleet size does not change the bill: 8 cards for 221 days costs the same as 512 for three and a half. Nothing about that number requires a breakthrough, a government, or a data center. It requires a credit card and patience.</p>
       <h2 id="the-thing-we-got-wrong">The thing we got wrong</h2>
       <p>One parameter controls how rare a reported point is. Make it rarer and you store less data but lose more work in flight when a collision finally lands. We needed to know the real rate, so we measured it across the fleet.</p>
       <p>The first measurement said one point per 250 million steps. It was wrong, for two separate reasons. One counter was multiplying every machine's work by a constant that only applied to one kind of card, inflating the slower machines by a factor of about 26. And the point total quietly included two retired machines that had been running a different setting.</p>
-      <p>The replacement measurement reads each worker's own two counters directly, frozen at one moment across 132 machines. The answer is one point per 356 million steps, and it comes out the same on every hardware family to within rounding.</p>
+      <p>The replacement measurement reads each worker's own two counters directly, frozen at one moment across 132 machines. The answer, on the current configuration, is one point per 356 million steps, and it comes out the same on every hardware family to within rounding.</p>
       <p>We retired the old number rather than averaging it in. It is in the paper with an explanation of why it was wrong, because a campaign that quietly corrects its own figures is not one anyone should trust.</p>
       <h2 id="the-fpga">The FPGA</h2>
       <p>GPUs are general-purpose machines that happen to be good at this. An FPGA is a chip you wire yourself, and the arithmetic this attack needs is close to what an FPGA is naturally made of.</p>
@@ -81,7 +81,7 @@
       <p>Every rate in this paper is a paired comparison. Old version and new version run alternately on the same machine in the same session, several times each, and we report the middle. A number quoted without its control, its hardware and its configuration is the most common mistake in this area, and we have made it ourselves at least twice in earlier drafts, which the paper records.</p>
       <p>Before tuning anything, we wrote down what the hardware could not exceed. That let us answer a question in advance: no, you cannot get 28 billion steps per second out of one of these cards with any version of this attack, because the chip's own pipes do not allow it. Thirty would need two cards.</p>
       <p>We also set a target of 17 billion steps per second before building a variant we expected to be faster. It measured 16.56. We declined it. That is what a target declared in advance is for.</p>
-      <p>Every point a machine reports can be re-walked from its seed by a separate reference implementation, and every version of the code, on every kind of hardware, produces byte-identical records. That is the property that makes a corpus collected across four years and a dozen machine types mean anything at all.</p>
+      <p>Every point a machine reports can be re-walked from its seed by a separate reference implementation, and every version of the code, on every kind of hardware, produces byte-identical records. That is the property that makes a corpus collected across four weeks and four hardware families mean anything at all.</p>
       <h2 id="what-this-adds-up-to">What this adds up to</h2>
       <p>The exponent did not move. The number of steps is what it was in 2009, and we measured it rather than trusting it.</p>
       <p>What moved is the cost of one step, and the answer to what it would take to finish. The remaining work is a known quantity of money. Someone will eventually spend it, or they will not, but it is no longer a mystery.</p>
