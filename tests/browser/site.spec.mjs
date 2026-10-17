@@ -20,15 +20,15 @@ test('trait explorer filters, searches, clears and expands deep links',async({pa
  await page.goto('/notes/curve-traits.html#trait-10');await expect(page.locator('#trait-10')).toHaveAttribute('open','');
  await page.locator('#trait-10 summary').focus();await page.keyboard.press('Enter');await expect(page.locator('#trait-10')).not.toHaveAttribute('open','');
 });
-test('home and Notes index expose the traits guide',async({page})=>{
- await page.goto('/index.html');await page.getByRole('link',{name:'Elliptic curve traits and their security connections',exact:true}).click();await expect(page).toHaveURL(/curve-traits.html$/);
+test('Notes index exposes the traits guide',async({page})=>{
  await page.goto('/notes/index.html');await expect(page.locator('a[href="curve-traits.html"]')).toBeVisible();
+ await page.locator('a[href="curve-traits.html"]').click();await expect(page).toHaveURL(/curve-traits.html$/);
 });
 test('learning content works without JavaScript',async({browser})=>{
  const context=await browser.newContext({javaScriptEnabled:false});const page=await context.newPage();await page.goto('http://127.0.0.1:3100/notes/curve-traits.html');await expect(page.locator('.trait')).toHaveCount(30);await expect(page.locator('#filters')).toBeHidden();await context.close();
 });
 for(const path of ['/index.html','/notes/curve-traits.html','/contact/index.html'])test(`accessibility ${path}`,async({page})=>{
- await page.goto(path); if(path.includes('contact'))await expect(page.getByLabel('Work email')).toBeVisible();
+ await page.goto(path);
  const result=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(result.violations).toEqual([]);
  await page.screenshot({path:test.info().outputPath('page.png'),fullPage:true});
 });

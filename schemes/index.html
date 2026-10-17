@@ -18,18 +18,26 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
-      <a class="wordmark" href="../index.html">Isogeny Labs</a>
+      <a class="wordmark" href="../index.html">
+        <picture>
+          <source srcset="../assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="../assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
       <nav class="site-nav" aria-label="Main">
-        <a href="../index.html#work">Work</a>
-        <a href="../index.html#services">Services</a>
-        <a href="../notes/index.html">Notes</a>
-        <a href="../schemes/index.html" aria-current="page">Schemes</a>
-        <a href="../cryptanalysis/index.html">Cryptanalysis reference</a>
-        <a href="../index.html#contact">Contact</a>
+        <a href="../index.html">Home</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../notes/index.html" aria-current="page">Notes</a>
+        <a href="../about/index.html">About</a>
+        <a href="../contact/index.html">Contact</a>
       </nav>
     </div>
   </header>
   <main id="main" class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../notes/index.html">Notes</a>
+    </nav>
     <header aria-labelledby="catalogue-title">
       <h1 id="catalogue-title">Schemes</h1>
       <p class="standfirst">What each widely used scheme rests on, what it costs, and where it stands against classical and quantum attacks. <a href="ml-kem.html">ML-KEM</a>, <a href="ml-dsa.html">ML-DSA</a> and <a href="sqisign.html">SQIsign</a> have full pages; the rest are summarised here, with links to the attacks that set their parameters.</p>
@@ -94,7 +102,7 @@
               <div><dt>Best known attack</dt><dd>Pollard's rho: about 2<sup>126</sup> to 2<sup>128</sup> group operations for 256-bit curves</dd></div>
               <div><dt>Quantum</dt><dd>Shor's algorithm; Roetteler et al. estimate about 2,330 logical qubits for P-256</dd></div>
             </dl>
-            <p class="see">See also: <a href="../notes/elliptic-curves.html">Elliptic curves</a> · <a href="../notes/ecdlp.html">The ECDLP</a> · <a href="../cryptanalysis/pollard-rho.html">Pollard's rho</a></p>
+            <p class="see">See also: <a href="x25519.html">Full page</a></p>
           </li>
           <li id="ffdh">
             <h3>Finite-field Diffie&ndash;Hellman</h3>
@@ -152,7 +160,7 @@
               <div><dt>Best known attack</dt><dd>Classically about p<sup>1/4</sup>; quantumly, Kuperberg's subexponential algorithm, whose concrete cost is disputed</dd></div>
               <div><dt>Quantum</dt><dd>Subexponential; CSIDH-512 is widely considered too small</dd></div>
             </dl>
-            <p class="see">See also: <a href="../cryptanalysis/kuperberg-csidh.html">Kuperberg and CSIDH</a></p>
+            <p class="see">See also: <a href="csidh.html">Full page</a></p>
           </li>
         </ul>
       </section>
@@ -163,7 +171,7 @@
           <svg viewBox="0 0 600 324" role="img" aria-label="Public-key and signature sizes of eight signature schemes on a logarithmic axis, from 32 bytes to 17,088 bytes. The same numbers are in the table below." xmlns="http://www.w3.org/2000/svg"><line class="rule" x1="252.9" y1="36" x2="252.9" y2="290" stroke-width="1"/><text x="252.9" y="310" text-anchor="middle">100</text><line class="rule" x1="382.1" y1="36" x2="382.1" y2="290" stroke-width="1"/><text x="382.1" y="310" text-anchor="middle">1,000</text><line class="rule" x1="511.4" y1="36" x2="511.4" y2="290" stroke-width="1"/><text x="511.4" y="310" text-anchor="middle">10,000</text><text x="578" y="21" text-anchor="end">bytes, log scale</text><circle class="series-1" cx="156" cy="16" r="5"/><text class="label" x="168" y="21">public key</text><circle class="series-2" cx="282" cy="16" r="5"/><text class="label" x="294" y="21">signature</text><text class="label" x="136" y="64" text-anchor="end">Ed25519</text><line class="rule" x1="188.9" y1="59" x2="227.8" y2="59" stroke-width="2"/><g class="hit"><title>Ed25519: public key 32 bytes</title><circle cx="188.9" cy="59" r="12" fill="transparent"/><circle class="series-1 ringed" cx="188.9" cy="59" r="5.5"/></g><g class="hit"><title>Ed25519: signature 64 bytes</title><circle cx="227.8" cy="59" r="12" fill="transparent"/><circle class="series-2 ringed" cx="227.8" cy="59" r="5.5"/></g><text class="label" x="136" y="94" text-anchor="end">ECDSA P-256</text><line class="rule" x1="190.6" y1="89" x2="227.8" y2="89" stroke-width="2"/><g class="hit"><title>ECDSA P-256: public key 33 bytes</title><circle cx="190.6" cy="89" r="12" fill="transparent"/><circle class="series-1 ringed" cx="190.6" cy="89" r="5.5"/></g><g class="hit"><title>ECDSA P-256: signature 64 bytes</title><circle cx="227.8" cy="89" r="12" fill="transparent"/><circle class="series-2 ringed" cx="227.8" cy="89" r="5.5"/></g><text class="label" x="136" y="124" text-anchor="end">SQIsign I</text><line class="rule" x1="242.4" y1="119" x2="291.8" y2="119" stroke-width="2"/><g class="hit"><title>SQIsign I: public key 83 bytes</title><circle cx="242.4" cy="119" r="12" fill="transparent"/><circle class="series-1 ringed" cx="242.4" cy="119" r="5.5"/></g><g class="hit"><title>SQIsign I: signature 200 bytes</title><circle cx="291.8" cy="119" r="12" fill="transparent"/><circle class="series-2 ringed" cx="291.8" cy="119" r="5.5"/></g><text class="label" x="136" y="154" text-anchor="end">RSA-3072</text><line class="rule" x1="328.4" y1="149" x2="328.4" y2="149" stroke-width="2"/><g class="hit"><title>RSA-3072: public key 384 bytes</title><circle cx="328.4" cy="144.5" r="12" fill="transparent"/><circle class="series-1 ringed" cx="328.4" cy="144.5" r="5.5"/></g><g class="hit"><title>RSA-3072: signature 384 bytes</title><circle cx="328.4" cy="153.5" r="12" fill="transparent"/><circle class="series-2 ringed" cx="328.4" cy="153.5" r="5.5"/></g><text class="label" x="136" y="184" text-anchor="end">FN-DSA-512</text><line class="rule" x1="359.3" y1="179" x2="376" y2="179" stroke-width="2"/><g class="hit"><title>FN-DSA-512: public key 897 bytes</title><circle cx="376" cy="179" r="12" fill="transparent"/><circle class="series-1 ringed" cx="376" cy="179" r="5.5"/></g><g class="hit"><title>FN-DSA-512: signature 666 bytes</title><circle cx="359.3" cy="179" r="12" fill="transparent"/><circle class="series-2 ringed" cx="359.3" cy="179" r="5.5"/></g><text class="label" x="136" y="214" text-anchor="end">ML-DSA-44</text><line class="rule" x1="397.4" y1="209" x2="431.7" y2="209" stroke-width="2"/><g class="hit"><title>ML-DSA-44: public key 1,312 bytes</title><circle cx="397.4" cy="209" r="12" fill="transparent"/><circle class="series-1 ringed" cx="397.4" cy="209" r="5.5"/></g><g class="hit"><title>ML-DSA-44: signature 2,420 bytes</title><circle cx="431.7" cy="209" r="12" fill="transparent"/><circle class="series-2 ringed" cx="431.7" cy="209" r="5.5"/></g><text class="label" x="136" y="244" text-anchor="end">SLH-DSA-128s</text><line class="rule" x1="188.9" y1="239" x2="497.8" y2="239" stroke-width="2"/><g class="hit"><title>SLH-DSA-128s: public key 32 bytes</title><circle cx="188.9" cy="239" r="12" fill="transparent"/><circle class="series-1 ringed" cx="188.9" cy="239" r="5.5"/></g><g class="hit"><title>SLH-DSA-128s: signature 7,856 bytes</title><circle cx="497.8" cy="239" r="12" fill="transparent"/><circle class="series-2 ringed" cx="497.8" cy="239" r="5.5"/></g><text class="label" x="136" y="274" text-anchor="end">SLH-DSA-128f</text><line class="rule" x1="188.9" y1="269" x2="541.5" y2="269" stroke-width="2"/><g class="hit"><title>SLH-DSA-128f: public key 32 bytes</title><circle cx="188.9" cy="269" r="12" fill="transparent"/><circle class="series-1 ringed" cx="188.9" cy="269" r="5.5"/></g><g class="hit"><title>SLH-DSA-128f: signature 17,088 bytes</title><circle cx="541.5" cy="269" r="12" fill="transparent"/><circle class="series-2 ringed" cx="541.5" cy="269" r="5.5"/></g></svg>
           <figcaption>Public key and signature sizes at the lowest standard security level of each scheme. SQIsign is at its round-3 parameters (version 3.0, September 2026); the ECDSA public key is compressed and its signature is the raw pair (r, s).</figcaption>
         </figure>
-        <div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">
+        <div class="table-wrap">
         <table class="data">
           <caption>The values plotted above.</caption>
           <thead><tr><th scope="col">Scheme</th><th scope="col" class="num">Public key (bytes)</th><th scope="col" class="num">Signature (bytes)</th><th scope="col">Standard or status</th></tr></thead>
@@ -190,7 +198,7 @@
               <div><dt>Best known attack</dt><dd>The number field sieve; the largest public factorisation is RSA-250, 829 bits, in 2020</dd></div>
               <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
             </dl>
-            <p class="see">See also: <a href="../cryptanalysis/number-field-sieve.html">The number field sieve</a></p>
+            <p class="see">See also: <a href="rsa.html">Full page</a></p>
           </li>
           <li id="ecdsa">
             <h3>ECDSA</h3>
@@ -202,7 +210,7 @@
               <div><dt>Best known attack</dt><dd>Pollard's rho on the curve, about 2<sup>128</sup>. In practice, keys are lost to biased or leaked nonces through the hidden number problem</dd></div>
               <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
             </dl>
-            <p class="see">See also: <a href="../cryptanalysis/hidden-number-problem.html">Hidden number problem</a> · <a href="../notes/ecdlp.html">The ECDLP</a></p>
+            <p class="see">See also: <a href="ecdsa.html">Full page</a></p>
           </li>
           <li id="eddsa">
             <h3>EdDSA (Ed25519, Ed448)</h3>
@@ -214,7 +222,7 @@
               <div><dt>Best known attack</dt><dd>Pollard's rho, about 2<sup>126</sup> for Ed25519. Deterministic signing is exposed to fault attacks instead</dd></div>
               <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
             </dl>
-            <p class="see">See also: <a href="../notes/elliptic-curves.html">Elliptic curves</a></p>
+            <p class="see">See also: <a href="eddsa.html">Full page</a></p>
           </li>
           <li id="schnorr-bip340">
             <h3>Schnorr signatures (BIP-340)</h3>
@@ -226,7 +234,7 @@
               <div><dt>Best known attack</dt><dd>Pollard's rho, about 2<sup>127</sup> using the curve's extra automorphisms</dd></div>
               <div><dt>Quantum</dt><dd>Shor's algorithm</dd></div>
             </dl>
-            <p class="see">See also: <a href="../notes/ecdlp.html">The ECDLP</a></p>
+            <p class="see">See also: <a href="schnorr.html">Full page</a></p>
           </li>
           <li id="bls">
             <h3>BLS signatures</h3>
@@ -273,6 +281,7 @@
               <div><dt>Best known attack</dt><dd>Generic attacks on the hash function</dd></div>
               <div><dt>Quantum</dt><dd>Only generic speedups, which the parameters account for</dd></div>
             </dl>
+            <p class="see">See also: <a href="slh-dsa.html">Full page</a></p>
           </li>
           <li id="lms-xmss">
             <h3>LMS and XMSS</h3>
@@ -313,6 +322,7 @@
               <div><dt>Best known attack</dt><dd>Biclique cryptanalysis recovers an AES-128 key in about 2<sup>126.1</sup> operations, four times faster than brute force. In practice, table-based software leaks through cache timing; use AES instructions or bitsliced code</dd></div>
               <div><dt>Quantum</dt><dd>NIST uses key search on AES-128 as the benchmark for its lowest post-quantum security category</dd></div>
             </dl>
+            <p class="see">See also: <a href="aes.html">Full page</a></p>
           </li>
           <li id="chacha20-poly1305">
             <h3>ChaCha20-Poly1305</h3>

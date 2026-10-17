@@ -29,11 +29,7 @@
             "Best known attack": "Pollard's rho: about 2<sup>126</sup> to 2<sup>128</sup> group operations for 256-bit curves",
             "Quantum": "Shor's algorithm; Roetteler et al. estimate about 2,330 logical qubits for P-256"
           },
-          "see": [
-            "notes/elliptic-curves",
-            "notes/ecdlp",
-            "cryptanalysis/pollard-rho"
-          ]
+          "page": "x25519"
         },
         {
           "id": "ffdh",
@@ -108,9 +104,7 @@
             "Best known attack": "Classically about p<sup>1/4</sup>; quantumly, Kuperberg's subexponential algorithm, whose concrete cost is disputed",
             "Quantum": "Subexponential; CSIDH-512 is widely considered too small"
           },
-          "see": [
-            "cryptanalysis/kuperberg-csidh"
-          ]
+          "page": "csidh"
         }
       ]
     },
@@ -188,9 +182,7 @@
             "Best known attack": "The number field sieve; the largest public factorisation is RSA-250, 829 bits, in 2020",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "cryptanalysis/number-field-sieve"
-          ]
+          "page": "rsa"
         },
         {
           "id": "ecdsa",
@@ -205,10 +197,7 @@
             "Best known attack": "Pollard's rho on the curve, about 2<sup>128</sup>. In practice, keys are lost to biased or leaked nonces through the hidden number problem",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "cryptanalysis/hidden-number-problem",
-            "notes/ecdlp"
-          ]
+          "page": "ecdsa"
         },
         {
           "id": "eddsa",
@@ -223,9 +212,7 @@
             "Best known attack": "Pollard's rho, about 2<sup>126</sup> for Ed25519. Deterministic signing is exposed to fault attacks instead",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "notes/elliptic-curves"
-          ]
+          "page": "eddsa"
         },
         {
           "id": "schnorr-bip340",
@@ -240,9 +227,7 @@
             "Best known attack": "Pollard's rho, about 2<sup>127</sup> using the curve's extra automorphisms",
             "Quantum": "Shor's algorithm"
           },
-          "see": [
-            "notes/ecdlp"
-          ]
+          "page": "schnorr"
         },
         {
           "id": "bls",
@@ -302,7 +287,8 @@
             "Sizes": "SLH-DSA-128s: 32-byte public key, 7,856-byte signature. The 128f variant signs faster with 17,088-byte signatures",
             "Best known attack": "Generic attacks on the hash function",
             "Quantum": "Only generic speedups, which the parameters account for"
-          }
+          },
+          "page": "slh-dsa"
         },
         {
           "id": "lms-xmss",
@@ -354,7 +340,8 @@
             "Sizes": "128-bit block; 128-, 192- or 256-bit key",
             "Best known attack": "Biclique cryptanalysis recovers an AES-128 key in about 2<sup>126.1</sup> operations, four times faster than brute force. In practice, table-based software leaks through cache timing; use AES instructions or bitsliced code",
             "Quantum": "NIST uses key search on AES-128 as the benchmark for its lowest post-quantum security category"
-          }
+          },
+          "page": "aes"
         },
         {
           "id": "chacha20-poly1305",

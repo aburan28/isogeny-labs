@@ -18,16 +18,18 @@ import re
 
 E = html.escape
 
-# Sections of the site that have their own generated directory. The key is
-# what a page passes as `here` to mark its nav entry as current.
+# The main navigation. The key is what a page passes as `here` to mark its
+# nav entry as current.
 NAV = [
-    ("work", "index.html#work", "Work"),
-    ("services", "index.html#services", "Services"),
+    ("home", "index.html", "Home"),
+    ("research", "research/index.html", "Research"),
     ("notes", "notes/index.html", "Notes"),
-    ("schemes", "schemes/index.html", "Schemes"),
-    ("cryptanalysis", "cryptanalysis/index.html", "Cryptanalysis reference"),
-    ("contact", "index.html#contact", "Contact"),
+    ("about", "about/index.html", "About"),
+    ("contact", "contact/index.html", "Contact"),
 ]
+
+# The cryptanalysis reference and the schemes catalogue are part of Notes.
+NAV_SECTION = {"cryptanalysis": "notes", "schemes": "notes"}
 
 BLOCK_TYPES = {"p", "ul", "steps", "math", "note", "h3", "table", "pre", "svg", "dl", "computed", "traits"}
 
@@ -53,6 +55,7 @@ def slugify(heading: str) -> str:
 
 def nav(prefix: str, here: str) -> str:
     """Site header. `prefix` reaches the site root; `here` marks the current section."""
+    here = NAV_SECTION.get(here, here)
     links = "\n".join(
         f'        <a href="{prefix}{href}"'
         f'{" aria-current=" + chr(34) + "page" + chr(34) if key == here else ""}>{label}</a>'
@@ -61,7 +64,13 @@ def nav(prefix: str, here: str) -> str:
     return f"""  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
-      <a class="wordmark" href="{prefix}index.html">Isogeny Labs</a>
+      <a class="wordmark" href="{prefix}index.html">
+        <picture>
+          <source srcset="{prefix}assets/mark-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="{prefix}assets/mark-light.png" width="160" height="137" alt="">
+        </picture>
+        Isogeny Labs
+      </a>
       <nav class="site-nav" aria-label="Main">
 {links}
       </nav>
@@ -80,7 +89,7 @@ def footer() -> str:
 """
 
 
-def page(*, prefix: str, here: str, title: str, description: str, body: str) -> str:
+def page(*, prefix: str, here: str, title: str, description: str, body: str, og_type: str = "article") -> str:
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -91,7 +100,7 @@ def page(*, prefix: str, here: str, title: str, description: str, body: str) -> 
   <meta name="description" content="{A(description)}">
   <meta property="og:title" content="{A(title)}">
   <meta property="og:description" content="{A(description)}">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="{og_type}">
   <title>{A(title)}</title>
   <link rel="icon" type="image/svg+xml" href="{prefix}favicon.svg">
   <link rel="stylesheet" href="{prefix}styles.css">
@@ -128,7 +137,7 @@ def render_table(table: dict, indent: str) -> str:
         for row in table["rows"]
     )
     return (
-        f'{indent}<div class="table-wrap" role="region" aria-label="Scrollable data table" tabindex="0">\n'
+        f'{indent}<div class="table-wrap">\n'
         f'{indent}<table class="data">\n{caption}{head}'
         f"{indent}  <tbody>\n{rows}{indent}  </tbody>\n"
         f"{indent}</table>\n{indent}</div>"
@@ -141,12 +150,40 @@ def render_blocks(blocks: list[dict], indent: str) -> str:
         if "p" in block:
             out.append(f"{indent}<p>{block['p']}</p>")
         elif "traits" in block:
-            out.append('<div id="filters" class="trait-filters" hidden><div><label for="trait-search">Search traits</label><input id="trait-search" type="search" placeholder="Trace, conductor, factorization…"></div><div><label for="trait-origin">Source</label><select id="trait-origin"><option value="all">All topics</option><option value="dissect">DiSSECT</option><option value="foundation">Foundations</option></select></div><button type="button" id="reset-traits">Clear filters</button></div><p id="trait-count" role="status" aria-live="polite">30 of 30 topics</p>')
+            out.append(
+                '<div id="filters" class="trait-filters" hidden>'
+                '<div><label for="trait-search">Search traits</label>'
+                '<input id="trait-search" type="search" '
+                'placeholder="Trace, conductor, factorization…"></div>'
+                '<div><label for="trait-origin">Source</label>'
+                '<select id="trait-origin">'
+                '<option value="all">All topics</option>'
+                '<option value="dissect">DiSSECT</option>'
+                '<option value="foundation">Foundations</option>'
+                '</select></div>'
+                '<button type="button" id="reset-traits">Clear filters</button>'
+                '</div>'
+                '<p id="trait-count" role="status" aria-live="polite">30 of 30 topics</p>'
+            )
             for trait in block["traits"]:
                 number = trait["id"]
                 label = "Foundation" if trait["origin"] == "foundation" else "DiSSECT"
-                out.append(f'<details class="trait" id="trait-{number}" data-origin="{E(trait["origin"])}"><summary>{number}. {trait["title"]} <span class="trait-origin">{label}</span></summary><div class="trait-body"><p><strong>What it measures.</strong> {trait["meaning"]}</p><p><strong>Security connection and study task.</strong> {trait["task"]}</p><a href="#trait-{number}">Link to topic {number}</a></div></details>')
-            out.append('<p id="no-results" hidden>No matching topics. Try another term or clear the filters.</p>')
+                out.append(
+                    f'<details class="trait" id="trait-{number}" '
+                    f'data-origin="{E(trait["origin"])}">'
+                    f'<summary>{number}. {trait["title"]} '
+                    f'<span class="trait-origin">{label}</span></summary>'
+                    f'<div class="trait-body">'
+                    f'<p><strong>What it measures.</strong> {trait["meaning"]}</p>'
+                    f'<p><strong>Security connection and study task.</strong> '
+                    f'{trait["task"]}</p>'
+                    f'<a href="#trait-{number}">Link to topic {number}</a>'
+                    f'</div></details>'
+                )
+            out.append(
+                '<p id="no-results" hidden>'
+                'No matching topics. Try another term or clear the filters.</p>'
+            )
         elif "ul" in block:
             items = "".join(f"{indent}  <li>{item}</li>\n" for item in block["ul"])
             out.append(f"{indent}<ul>\n{items}{indent}</ul>")
@@ -170,7 +207,7 @@ def render_blocks(blocks: list[dict], indent: str) -> str:
         elif "pre" in block:
             label = block.get("label")
             caption = f'\n{indent}<p class="listing-label">{label}</p>' if label else ""
-            out.append(f'{indent}<pre class="listing" tabindex="0">{E(block["pre"])}</pre>{caption}')
+            out.append(f'{indent}<pre class="listing">{E(block["pre"])}</pre>{caption}')
         elif "svg" in block:
             # Generated by tools/sitegen/figures.py from computed data, never
             # hand-authored, so it is inserted verbatim.
@@ -194,8 +231,13 @@ def validate_blocks(blocks: list[dict], where: str) -> list[str]:
             traits = block["traits"]
             if [t.get("id") for t in traits] != list(range(1, 31)):
                 errors.append(f"{where}: expected each trait ID 1–30 exactly once")
-            if sum(t.get("origin") == "dissect" for t in traits) != 22 or sum(t.get("origin") == "foundation" for t in traits) != 8:
-                errors.append(f"{where}: expected 22 DiSSECT entries and eight foundations")
+            if (
+                sum(t.get("origin") == "dissect" for t in traits) != 22
+                or sum(t.get("origin") == "foundation" for t in traits) != 8
+            ):
+                errors.append(
+                    f"{where}: expected 22 DiSSECT entries and eight foundations"
+                )
         kinds = BLOCK_TYPES & set(block)
         if len(kinds) != 1:
             errors.append(f"{where}: block must have exactly one type, got {sorted(block)}")
