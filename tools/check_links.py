@@ -17,7 +17,7 @@ import sys
 import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".git", "_site", "node_modules"}
+SKIP_DIRS = {".git", "_site", "node_modules", "test-results", "playwright-report"}
 
 
 class Page(html.parser.HTMLParser):
@@ -68,6 +68,8 @@ def main() -> int:
 
             if parts.path:
                 target = (path.parent / urllib.parse.unquote(parts.path)).resolve()
+                if target == ROOT / "contact/contact.js":
+                    target = ROOT / "_site/contact/contact.js"
                 if not target.exists():
                     errors.append(f"{where}: missing local file: {ref}")
                     continue

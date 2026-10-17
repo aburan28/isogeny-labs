@@ -1,0 +1,41 @@
+# Local development only. These credentials are intentionally not production secrets.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: isogeny
+      POSTGRES_PASSWORD: local-development-only
+      POSTGRES_DB: isogeny
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U isogeny -d isogeny']
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 10
+  migrate:
+    build: .
+    command: ['node','server/migrate.mjs']
+    environment:
+      DATABASE_URL: postgres://isogeny:local-development-only@postgres:5432/isogeny
+    depends_on:
+      postgres: {condition: service_healthy}
+  web:
+    build: .
+    ports: ['127.0.0.1:3000:3000']
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://isogeny:local-development-only@postgres:5432/isogeny
+      REDIS_URL: redis://redis:6379
+      ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      RATE_LIMIT_SECRET: local-development-only-change-for-production
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+volumes:
+  postgres-data:
