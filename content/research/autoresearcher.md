@@ -1,6 +1,6 @@
 ---
 title: We spent eleven weeks pointing AI agents at cryptanalysis. Our tests kept passing code we knew was broken.
-order: 2
+order: 3
 meta: Language-model agents · research harness · verification
 summary: Eleven weeks of language-model agents doing cryptanalysis research, in a system built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: our own checker passed code we had deliberately broken, five times over, once because the code noticed it was being tested.
 authors:

@@ -1,6 +1,6 @@
 ---
 title: We rented a few hundred machines and spent four weeks attacking a 29-year-old challenge
-order: 4
+order: 2
 meta: Pollard rho · GPUs, CPUs and an FPGA · a distributed campaign
 summary: We rebuilt the planned 2009 attack on Certicom's ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at spot prices, not of mathematics.
 authors:
