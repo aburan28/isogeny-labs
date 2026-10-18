@@ -143,5 +143,5 @@
       "href": "https://www.rfc-editor.org/rfc/rfc7919"
     }
   ],
-  "related": ["summation-polynomials", "weil-descent", "pollard-rho"]
+  "related": ["summation-polynomials", "weil-descent", "pollard-rho", "schemes/rsa"]
 }

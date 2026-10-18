@@ -84,6 +84,15 @@ def cards(papers: list[dict], prefix: str) -> str:
 
 def render_home(content, papers: list[dict]) -> str:
     meta, body = markdown.read(content / "home.md")
+
+    def count(section: str, capital: bool = False) -> str:
+        """Pages in a generated section, read off its content files, in words."""
+        n = sum(1 for p in (content / section).glob("*.json") if p.name != "index.json")
+        words = ("no one two three four five six seven eight nine ten eleven twelve thirteen "
+                 "fourteen fifteen sixteen seventeen eighteen nineteen twenty").split()
+        text = words[n] if n < len(words) else str(n)
+        return text.capitalize() if capital else text
+
     page_body = f"""    <h1 class="masthead">
       <picture>
         <source srcset="./assets/logo-dark.png" width="934" height="350" media="(prefers-color-scheme: dark)">
@@ -96,6 +105,14 @@ def render_home(content, papers: list[dict]) -> str:
     <section aria-labelledby="research-title">
       <h2 id="research-title">Research</h2>
 {cards(papers, "./")}    </section>
+    <section aria-labelledby="reference-title">
+      <h2 id="reference-title">Notes and reference</h2>
+      <dl class="terms">
+        <div><dt><a href="./notes/index.html">Notes</a></dt><dd>{count("notes", True)} pages on the mathematics our measurements rest on, from elliptic curves and isogenies to lattices, with worked examples computed by the code that builds this site.</dd></div>
+        <div><dt><a href="./cryptanalysis/index.html">Cryptanalysis reference</a></dt><dd>{count("cryptanalysis", True)} attacks that public-key parameters are sized against: what each needs, what it costs, and where it stops applying.</dd></div>
+        <div><dt><a href="./schemes/index.html">Schemes</a></dt><dd>A catalogue of the schemes in use and the ones replacing them, with {count("schemes")} full pages, most of them with a worked example computed each time the site is built.</dd></div>
+      </dl>
+    </section>
 """
     return page(
         prefix="./", here="home", title="Isogeny Labs", description=meta["description"],

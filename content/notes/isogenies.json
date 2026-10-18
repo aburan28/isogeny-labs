@@ -57,5 +57,5 @@
     {"text": "D. Charles, E. Goren and K. Lauter, \"Cryptographic hash functions from expander graphs\", Journal of Cryptology 22 (2009)", "href": "https://eprint.iacr.org/2006/021"},
     {"text": "B. Wesolowski, \"The supersingular isogeny problem in time and memory p<sup>1/3+o(1)</sup>\" (2026)", "href": "https://eprint.iacr.org/2026/1486"}
   ],
-  "related": ["elliptic-curves", "cryptanalysis/sidh-torsion-attacks", "cryptanalysis/kuperberg-csidh", "schemes/sqisign"]
+  "related": ["elliptic-curves", "cryptanalysis/sidh-torsion-attacks", "cryptanalysis/kuperberg-csidh", "schemes/sqisign", "schemes/csidh"]
 }

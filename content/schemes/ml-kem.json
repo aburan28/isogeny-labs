@@ -162,5 +162,5 @@
       "href": "https://datatracker.ietf.org/doc/draft-ietf-tls-ecdhe-mlkem/"
     }
   ],
-  "related": ["ml-dsa", "notes/ecdlp", "cryptanalysis/kuperberg-csidh"]
+  "related": ["ml-dsa", "notes/ecdlp", "cryptanalysis/kuperberg-csidh", "x25519"]
 }

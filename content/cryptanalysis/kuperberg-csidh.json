@@ -134,8 +134,5 @@
       "href": "https://eprint.iacr.org/2026/1486"
     }
   ],
-  "related": [
-    "sidh-torsion-attacks",
-    "number-field-sieve"
-  ]
+  "related": ["sidh-torsion-attacks", "number-field-sieve", "schemes/csidh"]
 }

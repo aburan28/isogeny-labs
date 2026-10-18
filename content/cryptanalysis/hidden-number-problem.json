@@ -140,5 +140,5 @@
       "href": "https://www.rfc-editor.org/rfc/rfc6979"
     }
   ],
-  "related": ["pollard-rho", "pohlig-hellman"]
+  "related": ["pollard-rho", "pohlig-hellman", "schemes/ecdsa"]
 }

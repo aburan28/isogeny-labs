@@ -104,5 +104,5 @@
       "href": "https://doi.org/10.1007/978-3-642-02295-1_10"
     }
   ],
-  "related": ["hidden-number-problem", "number-field-sieve", "notes/lattices-and-lwe"]
+  "related": ["hidden-number-problem", "number-field-sieve", "notes/lattices-and-lwe", "schemes/rsa"]
 }

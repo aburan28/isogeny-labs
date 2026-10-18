@@ -139,5 +139,5 @@
       "href": "https://csrc.nist.gov/pubs/fips/205/final"
     }
   ],
-  "related": ["ml-kem", "sqisign", "cryptanalysis/hidden-number-problem"]
+  "related": ["ml-kem", "sqisign", "cryptanalysis/hidden-number-problem", "slh-dsa", "ecdsa"]
 }
