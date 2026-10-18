@@ -15,10 +15,12 @@ Notes holds everything else, in three generated sections:
 
 - `/cryptanalysis/` — the **cryptanalysis reference**: how hardness assumptions are
   actually attacked, with costs, records, and where each attack stops applying.
-- `/notes/` — **notes**: elliptic curves and the ECDLP, and worked examples of the
-  attacks, computed by the build on groups small enough to follow by hand.
-- `/schemes/` — the **catalogue of schemes**, with full pages on ML-KEM, ML-DSA and
-  SQIsign.
+- `/notes/` — **notes**: elliptic curves and the ECDLP, isogenies, lattices and LWE,
+  and worked examples of the attacks, computed by the build on groups small enough
+  to follow by hand.
+- `/schemes/` — the **catalogue of schemes**, with full pages on twelve of them, from
+  RSA, ECDSA and X25519 to ML-KEM, SLH-DSA and SQIsign. Most of those pages carry a
+  worked example checked against the standard's test vectors where there are any.
 
 ## Preview locally
 
@@ -120,8 +122,9 @@ rather than merely intended.
 
 Block types are `p`, `ul`, `steps`, `math` (optional `label`), `note` (optional
 `note_label`), `h3`, `table` (`head`, `rows`, optional `caption` and `numeric`
-column indices), `pre` (optional `label`), `dl`, and `svg` (generated figures
-only). Text may contain inline HTML — every string is authored in this
+column indices), `pre` (optional `label`), `dl`, `traits` (the curve-traits guide),
+`computed` (a block supplied by the entry's worked-example module, below), and
+`svg` (generated figures only). Text may contain inline HTML — every string is authored in this
 repository, so nothing untrusted is interpolated.
 
 In the cryptanalysis reference, entries under a family's `planned` array appear on
@@ -145,7 +148,9 @@ Python version, and they check their own answers: every discrete logarithm is
 verified by exponentiation or scalar multiplication before it is printed, and the
 published group orders in the standard-curves table are checked to be prime and to
 lie in their field's Hasse interval. `--check` therefore re-derives every worked
-example on every CI run. The whole build takes about a second.
+example on every CI run. The whole build takes about a minute, most of it in the
+Coppersmith, lattice and Gröbner experiments, which measure how far each attack
+reaches rather than running a single instance.
 
 Figures are inline SVG from `tools/sitegen/figures.py`, drawn from the same computed
 data and styled through the stylesheet's colour tokens, so dark mode needs no second
@@ -168,10 +173,11 @@ re-check them if either surface colour changes.
 
 ## Before launch
 
-The research pages still need their `eprint` links (and `code` for the
-autoresearcher) filled in; until then each says the paper will be linked when
-it is posted. There is no enquiry form and no
-backend.
+The ECC2K-130 GPU paper is on IACR ePrint. The ECC2K-130 campaign and the
+autoresearcher articles have no paper yet, and the autoresearcher has no `code`
+link; their fields stay empty until there is one. An inquiry form and its API are
+described in `docs/enterprise-platform.md`; the form is disabled in the default
+static build that Pages publishes.
 
 ## Deployment
 

@@ -2,7 +2,7 @@
   "title": "Schemes · Isogeny Labs",
   "description": "A catalogue of cryptographic schemes, from RSA and elliptic curves to ML-KEM, ML-DSA, SLH-DSA and SQIsign: what each rests on, its standard, its sizes, the best known attack, and its status against quantum computers.",
   "heading": "Schemes",
-  "standfirst": "What each widely used scheme rests on, what it costs, and where it stands against classical and quantum attacks. <a href=\"ml-kem.html\">ML-KEM</a>, <a href=\"ml-dsa.html\">ML-DSA</a> and <a href=\"sqisign.html\">SQIsign</a> have full pages; the rest are summarised here, with links to the attacks that set their parameters.",
+  "standfirst": "What each widely used scheme rests on, what it costs, and where it stands against classical and quantum attacks. Schemes with a full page are linked from their entry; most of those pages carry a worked example that is computed, and checked against the standard's test vectors where there are any, every time the site is built. The rest are summarised here, with links to the attacks that set their parameters.",
   "glance_heading": "At a glance",
   "glance_blocks": [
     {
@@ -371,7 +371,8 @@
             "Sizes": "224- to 512-bit output",
             "Best known attack": "None on the full functions; collisions exist only for reduced-round versions. The Merkle&ndash;Damg&aring;rd structure allows length extension, which is why keyed hashing uses HMAC",
             "Quantum": "Generic speedups only"
-          }
+          },
+          "page": "sha-2"
         },
         {
           "id": "sha-3",

@@ -113,5 +113,5 @@
       "href": "https://doi.org/10.6028/NIST.FIPS.186-5"
     }
   ],
-  "related": ["ecdsa", "x25519", "notes/elliptic-curves"]
+  "related": ["ecdsa", "x25519", "notes/elliptic-curves", "schnorr"]
 }

@@ -171,10 +171,5 @@
       "href": "https://safecurves.cr.yp.to/"
     }
   ],
-  "related": [
-    "elliptic-curves",
-    "pollard-rho-worked-example",
-    "index-calculus-end-to-end",
-    "cryptanalysis/pollard-rho"
-  ]
+  "related": ["elliptic-curves", "pollard-rho-worked-example", "index-calculus-end-to-end", "cryptanalysis/pollard-rho", "schemes/ecdsa"]
 }

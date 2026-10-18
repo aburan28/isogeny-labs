@@ -11,7 +11,7 @@ code:
 A large enough quantum computer would break every elliptic-curve and RSA key in use. Nobody can say when one will exist, but data encrypted today can be recorded and decrypted later, and replacing the cryptography in deployed systems takes years. So the deadline that matters is set by the migration, not by the machine.
 
 <dl class="facts">
-  <div><dt>Breaks</dt><dd>RSA, finite-field Diffie&ndash;Hellman, and every elliptic-curve scheme (ECDH, ECDSA, EdDSA, Schnorr), with Shor's algorithm</dd></div>
+  <div><dt>Breaks</dt><dd><a href="../schemes/rsa.html">RSA</a>, finite-field Diffie&ndash;Hellman, and every elliptic-curve scheme (<a href="../schemes/x25519.html">ECDH</a>, <a href="../schemes/ecdsa.html">ECDSA</a>, <a href="../schemes/eddsa.html">EdDSA</a>, <a href="../schemes/schnorr.html">Schnorr</a>), with Shor's algorithm</dd></div>
   <div><dt>Weakens</dt><dd>Symmetric ciphers and hashes, at most by a square root with Grover's algorithm; doubling the key length restores the margin</dd></div>
   <div><dt>Resources needed for P-256</dt><dd>About 2,330 logical qubits for the discrete logarithm on P-256 (Roetteler et al., 2017)</dd></div>
   <div><dt>Replacements</dt><dd>ML-KEM (FIPS 203), ML-DSA (FIPS 204) and SLH-DSA (FIPS 205), published by NIST in August 2024</dd></div>
@@ -27,7 +27,7 @@ In 1994 Peter Shor showed that a quantum computer could solve both factoring and
 
 ## What it does not break
 
-Symmetric ciphers such as AES and hash functions such as SHA-256 have no hidden period to find. The best known quantum attack on them is Grover's search, which at most square-roots the cost of a brute-force key search, and it parallelises badly: splitting the search across many machines reduces the speed-up. Using 256-bit keys keeps a large margin, so symmetric cryptography needs larger parameters rather than replacement.
+Symmetric ciphers such as <a href="../schemes/aes.html">AES</a> and hash functions such as <a href="../schemes/sha-2.html">SHA-256</a> have no hidden period to find. The best known quantum attack on them is Grover's search, which at most square-roots the cost of a brute-force key search, and it parallelises badly: splitting the search across many machines reduces the speed-up. Using 256-bit keys keeps a large margin, so symmetric cryptography needs larger parameters rather than replacement.
 
 Nor does a quantum computer break every public-key system. Schemes built on other problems, such as lattices, hash functions, and isogenies between elliptic curves, have no known efficient quantum attack. These are what <em>post-quantum cryptography</em> means: cryptography that runs on ordinary computers and is designed to resist attackers who have a quantum one.
 
@@ -48,7 +48,7 @@ Key exchange is the urgent part, because recorded ciphertext can be attacked lat
 
 In August 2024 NIST published its first three post-quantum standards: <a href="../schemes/ml-kem.html">ML-KEM</a> for key establishment and <a href="../schemes/ml-dsa.html">ML-DSA</a> for signatures, both built on module lattices, and <a href="../schemes/slh-dsa.html">SLH-DSA</a>, a signature that relies only on the security of a hash function. Deployments are adopting them first as <em>hybrids</em>, alongside X25519 or ECDSA, so that a connection stays secure as long as either half holds.
 
-The new schemes are larger. An ML-KEM-768 public key is 1,184 bytes against 32 for X25519, and an ML-DSA signature is a few kilobytes against 64 bytes for Ed25519. Their security levels are estimates of the cost of the best known attacks, made by the same method as the estimates for elliptic curves, and they will need re-examining in the same way. The <a href="../schemes/index.html">catalogue of schemes</a> lists what each one rests on and what it costs.
+The new schemes are larger. An ML-KEM-768 public key is 1,184 bytes against 32 for <a href="../schemes/x25519.html">X25519</a>, and an ML-DSA signature is a few kilobytes against 64 bytes for <a href="../schemes/eddsa.html">Ed25519</a>. Their security levels are estimates of the cost of the best known attacks, made by the same method as the estimates for elliptic curves, and they will need re-examining in the same way. The <a href="../schemes/index.html">catalogue of schemes</a> lists what each one rests on and what it costs.
 
 ## Where isogenies fit
 

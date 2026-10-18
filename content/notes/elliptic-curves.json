@@ -174,5 +174,5 @@
       "href": "https://www.rfc-editor.org/rfc/rfc7748"
     }
   ],
-  "related": ["ecdlp", "pollard-rho-worked-example", "cryptanalysis/pohlig-hellman", "cryptanalysis/hidden-number-problem"]
+  "related": ["ecdlp", "pollard-rho-worked-example", "cryptanalysis/pohlig-hellman", "cryptanalysis/hidden-number-problem", "schemes/x25519", "schemes/eddsa"]
 }

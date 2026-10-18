@@ -132,5 +132,5 @@
       "href": "https://eprint.iacr.org/2026/1486"
     }
   ],
-  "related": ["pollard-rho", "summation-polynomials"]
+  "related": ["pollard-rho", "summation-polynomials", "schemes/sqisign", "schemes/csidh"]
 }
