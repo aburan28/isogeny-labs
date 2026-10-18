@@ -40,7 +40,7 @@ That is exactly what the mathematics predicts. At 5% of the way through, the odd
 
 Collection is paused rather than finished. Every worker's state is checkpointed, so a machine that picks up a slot resumes its walks where they left off.
 
-Whether the remaining 94.6% gets walked is a question of money, not mathematics. The full attack is about 42,400 hours on the card the paper measures, an RTX PRO 6000, which at its spot price of $1.31 an hour is roughly $56,000. Fleet size does not change the bill: 8 cards for 221 days costs the same as 512 for three and a half. Nothing about that number requires a breakthrough, a government, or a data center. It requires a credit card and patience.
+Whether the remaining 94.6% gets walked is a question of money, not mathematics. The full attack is about 42,400 hours on the card the paper measures, an RTX PRO 6000, which at its spot price of $1.31 an hour is roughly $56,000. Fleet size barely changes the bill: 8 cards for 221 days do the same work as 512 for three and a half. The exception is the work in flight when a collision lands, which a very large fleet pays for: at 512 cards it adds roughly half again. Nothing about that number requires a breakthrough, a government, or a data center. It requires a credit card and patience.
 
 ## The thing we got wrong
 
