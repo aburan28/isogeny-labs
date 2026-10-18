@@ -168,9 +168,9 @@ re-check them if either surface colour changes.
 
 ## Before launch
 
-The research pages still need their `eprint` links (and `code` for the
-autoresearcher) filled in; until then each says the paper will be linked when
-it is posted. There is no enquiry form and no
+The ECC2K-130 page links its paper (ePrint 2026/2469). The other research
+pages still need their `eprint` links (and `code` for the autoresearcher)
+filled in; until then each says the paper will be linked when it is posted. There is no enquiry form and no
 backend.
 
 ## Deployment

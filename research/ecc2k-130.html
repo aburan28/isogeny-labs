@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#fbfaf6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
   <meta name="description" content="We made the program that attacks Certicom&#x27;s ECC2K-130 challenge, open since 1997, run 17.2 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the mathematics. One card would now need about 4.3 years for the whole attack; 290 cards, about a week.">
-  <meta property="og:title" content="A 29-year-old attack got 17 times cheaper on one NVIDIA Blackwell card, and the math didn&#x27;t change · Isogeny Labs">
+  <meta property="og:title" content="A 29-year-old challenge got 17 times cheaper to attack on one NVIDIA Blackwell card, and the math didn&#x27;t change · Isogeny Labs">
   <meta property="og:description" content="We made the program that attacks Certicom&#x27;s ECC2K-130 challenge, open since 1997, run 17.2 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the mathematics. One card would now need about 4.3 years for the whole attack; 290 cards, about a week.">
   <meta property="og:type" content="article">
-  <title>A 29-year-old attack got 17 times cheaper on one NVIDIA Blackwell card, and the math didn&#x27;t change · Isogeny Labs</title>
+  <title>A 29-year-old challenge got 17 times cheaper to attack on one NVIDIA Blackwell card, and the math didn&#x27;t change · Isogeny Labs</title>
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../styles.css">
   <script defer src="../script.js"></script>
@@ -40,13 +40,14 @@
         <a href="index.html">Research</a>
       </nav>
       <header>
-        <h1>A 29-year-old attack got 17 times cheaper on one NVIDIA Blackwell card, and the math didn't change</h1>
+        <h1>A 29-year-old challenge got 17 times cheaper to attack on one NVIDIA Blackwell card, and the math didn't change</h1>
         <p class="meta">GPU cryptanalysis · parallel Pollard rho · CUDA</p>
+      <p class="meta">Adam Buran, Kevin Nguyen</p>
       </header>
       <p class="paper-link"><a href="https://eprint.iacr.org/2026/2469">Read the paper on IACR ePrint</a> <span class="mono">2026/2469</span><br><a class="code-link" href="https://github.com/aburan28/rho-blackwell">Code on GitHub</a></p>
       <p>Nothing anyone uses is weaker than it was last week. This post is about why that is still worth your attention.</p>
-      <p>In 1997, Certicom published a set of elliptic curve challenges. Here are some curves, here are some public keys, go find the private ones. Two fell quickly, in 1998 and 2000. The one called ECC2K-130 has been open ever since, and it is now the cheapest of the ones still standing.</p>
-      <p>We did not solve it. What we did was make the program that attacks it run 17.2 times faster on one NVIDIA RTX PRO 6000 Blackwell, from 0.85 to 14.64 billion steps per second, with a later build reaching 15.88. The attack itself is unchanged: same method, same number of steps expected, same answer at the end. Every bit of the gain came from rewriting how the arithmetic is stored and scheduled on the chip.</p>
+      <p>In 1997, Certicom published a set of elliptic curve challenges. Here are some curves, here are some public keys, go find the private ones. Three of them use the same special kind of curve, a Koblitz curve. Two of those fell quickly, in 1998 and 2000. The third, ECC2K-130, has been open ever since, and it is now the cheapest of the challenges still standing.</p>
+      <p>We did not solve it. What we did was make the program that attacks it run 17.2 times faster on one NVIDIA RTX PRO 6000 Blackwell, from 0.85 to 14.64 billion steps per second, with a later build reaching 15.88. The attack itself is unchanged: same method, same number of steps expected, same answer at the end. None of the gain came from the mathematics. It came from rewriting how the arithmetic is stored and scheduled on the chip.</p>
       <div class="table-wrap">
       <table class="data">
         <thead><tr><th scope="col">Build, on one RTX PRO 6000 Blackwell</th><th scope="col" class="num">Billion steps per second</th></tr></thead>
@@ -59,7 +60,7 @@
       </div>
       <p>Two pieces of fine print, up front, because they decide what the number is worth.</p>
       <p>The 17.2 is against our own earlier program. Nobody has published what the standard design does on a 2026 card, so what got 17 times cheaper is our own baseline, not a world record.</p>
-      <p>And none of this improves on the mathematical floor for this kind of attack. We say so in the paper, and we are not claiming otherwise.</p>
+      <p>And none of this gets below the mathematical floor for this kind of attack, the generic-group bound. We say so in the paper, and we are not claiming otherwise.</p>
       <h2 id="what-that-actually-buys">What that actually buys</h2>
       <p>The useful way to state the result is not a multiplier. It is how long the whole thing would now take.</p>
       <div class="table-wrap">
@@ -67,34 +68,34 @@
         <thead><tr><th scope="col">Fleet</th><th scope="col">Expected time to a solution</th></tr></thead>
         <tbody>
           <tr><th scope="row">1 card</th><td>about 4.3 years</td></tr>
-          <tr><th scope="row">5 cards</th><td>about a year</td></tr>
+          <tr><th scope="row">5 cards</th><td>under a year</td></tr>
           <tr><th scope="row">56 cards</th><td>about a month</td></tr>
           <tr><th scope="row">290 cards</th><td>about a week</td></tr>
           <tr><th scope="row">1,000 cards</th><td>about three days</td></tr>
         </tbody>
       </table>
       </div>
-      <p>Those are at 15.88 billion steps per second, and roughly half of the three-day figure is spent waiting for the last walk to finish rather than doing useful work.</p>
-      <p>In 2010, the best published GPU implementation of this same attack ran at 0.064 billion steps per second on a GTX 295, and the whole job was reckoned at 1,066 card-years. One card now does the work of about 229 of those.</p>
-      <p>That 229 is the number we would most expect someone to challenge, so here is the split. About 6 times of it is simply a bigger, faster chip. The remaining 38 times, per unit of chip time, is the arithmetic. So most of the gap is our work and a meaningful share of it is seventeen years of silicon, and anyone quoting the headline should know which is which.</p>
+      <p>Those are at 15.88 billion steps per second, and they include one fixed cost. A collision is only noticed when the walk that made it next lands on one of the rare marked points that walks report back, and that takes about a day and a half whatever the size of the fleet. At a thousand cards, that wait is roughly half of the three days.</p>
+      <p>In 2010, the best published GPU implementation of this same attack ran at 0.064 billion steps per second on a GTX 295, and the whole job was reckoned at 1,066 card-years. One card running our campaign build does the work of about 229 of those.</p>
+      <p>That 229 is the number we would most expect someone to challenge, so here is the split. About 6 times of it is simply a bigger, faster chip. The remaining 38 times, per processing unit per clock, is the arithmetic. So most of the gap is our work and a meaningful share of it is newer silicon, and anyone quoting the headline should know which is which.</p>
       <div class="table-wrap">
       <table class="data">
         <thead><tr><th scope="col"></th><th scope="col">2010: GTX 295</th><th scope="col">2026: RTX PRO 6000</th><th scope="col" class="num">Ratio</th></tr></thead>
         <tbody>
           <tr><th scope="row">Processing units</th><td>60 at 1.24 GHz</td><td>188 at 2.4 GHz</td><td class="num">about 6×</td></tr>
           <tr><th scope="row">Billion steps per second</th><td>0.064</td><td>14.64</td><td class="num">about 229×</td></tr>
-          <tr><th scope="row">Per unit of chip time</th><td></td><td></td><td class="num">about 38×</td></tr>
+          <tr><th scope="row">Per processing unit per clock</th><td></td><td></td><td class="num">about 38×</td></tr>
         </tbody>
       </table>
       </div>
       <h2 id="the-part-that-is-actually-interesting">The part that is actually interesting</h2>
       <p>The difficulty of this attack is set by two numbers: how many steps it needs, and how long each step takes.</p>
-      <p>The first number is the one cryptographers argue about, the one security estimates are built on, and the one that decides whether a curve is safe. We did not move it. We could not have. It is untouched, and we measured it to confirm it had not shifted.</p>
-      <p>The second number is the one nobody had looked at in sixteen years. It is set by how a chip stores numbers, which instructions it has, and how fast it can reach memory, and all of that changes with every hardware generation.</p>
-      <p>So the finding is not that a curve got weaker. It is that a cost estimate everyone had been citing was off by a factor of 17, and finding that out took no new mathematics. It took reading the chip's manual.</p>
+      <p>The first number is the one cryptographers argue about, the one security estimates are built on, and the one that decides whether a curve is safe. We did not move it. It is untouched, and we measured it to confirm it had not shifted.</p>
+      <p>The second number is the one nobody had re-measured since 2010. It is set by how a chip stores numbers, which instructions it has, and how fast it can reach memory, and all of that changes with every hardware generation.</p>
+      <p>So the finding is not that a curve got weaker. It is that the cost everyone had been citing, worked out on 2010 hardware, is more than 200 times too high on today's, and finding that out took no new mathematics. It took reading the chip's manual.</p>
       <h2 id="everyone-was-optimising-the-wrong-thing">Everyone was optimising the wrong thing</h2>
-      <p>Count the operations in a single step of this attack and multiplication dominates. So for fifteen years, implementations have treated this as a multiplication problem. We assumed the same thing when we started.</p>
-      <p>It was not. Our starting program was using about 6% of what the chip can do. The multiplier was fine. The problem was that each walk's working numbers were too big to keep in the chip's fastest storage, so they spilled into slower memory and the chip spent its time waiting rather than computing.</p>
+      <p>Count the operations in a single step of this attack and multiplication dominates. So implementations have long treated this as a multiplication problem. We assumed the same thing when we started.</p>
+      <p>It isn't one. Our starting program was using about 6% of the chip's logic throughput. The multiplier was fine. The problem was that each walk's working numbers were too big to keep in the chip's fastest storage, so they spilled into slower memory and the chip spent its time waiting rather than computing.</p>
       <p>Sixteen changes, measured one at a time, closed that gap. Grouped by what they did:</p>
       <div class="table-wrap">
       <table class="data">
@@ -103,12 +104,12 @@
           <tr><th scope="row">Representation and arithmetic</th><td class="num">6.3×</td><td>Pack the numbers so they fit in registers. Replace a chain of repeated squarings with a fixed wiring diagram that shuffles bits in one pass. Use three-input logic instructions for everything around it.</td></tr>
           <tr><th scope="row">Launch geometry and batch size</th><td class="num">1.5×</td><td>How many walks run together, and in what shape.</td></tr>
           <tr><th scope="row">Memory layout</th><td class="num">1.3×</td><td>Where the working state lives and how threads reach it.</td></tr>
-          <tr><th scope="row">The native carry-less multiply</th><td class="num">1.2×</td><td>Blackwell chips have an instruction built for exactly the kind of multiplication this attack needs. It forms the core product in six instructions.</td></tr>
+          <tr><th scope="row">The native carry-less multiply</th><td class="num">1.2×</td><td>NVIDIA's latest toolkit exposes an instruction built for exactly the kind of multiplication this attack needs. It forms a full 131-bit product in six instructions.</td></tr>
           <tr><th scope="row">Not attributed</th><td class="num">1.16×</td><td>Left over after the groups above, and not assigned to any of them.</td></tr>
         </tbody>
       </table>
       </div>
-      <p>Three things we should admit about that list. We cannot attribute all of the gain: a factor of about 1.16 is left over and we say so rather than assigning it to whichever change was nearby. Three of the sixteen steps changed more than one thing at a time, so they do not isolate what we claim. And several of the step-by-step figures come from different runs on the machine, so the head-to-head comparisons carry the evidence, not the summary chart.</p>
+      <p>Three things we should admit about that list. We cannot attribute all of the gain: a factor of about 1.16 is left over and we say so rather than assigning it to whichever change was nearby. Some of the steps changed more than one thing at once, so they do not isolate a single cause, and the paper marks which. And the step-by-step figures come from different sessions on the machine, so the paired comparisons in the paper carry the evidence, not this summary.</p>
       <h2 id="what-it-costs-and-why-there-are-several-answers">What it costs, and why there are several answers</h2>
       <p>The honest answer to "what would it cost to break this" is a table, not a number, because the figure moves with which chip you rent, which market you rent it in, and on what day.</p>
       <div class="table-wrap">
@@ -118,15 +119,16 @@
           <tr><th scope="row">Cheapest quote we saw</th><td class="num">about $38k</td><td>An L4 in eu-north-1, 18 September 2026, at 56 trillion steps per dollar</td></tr>
           <tr><th scope="row">An FPGA, spot</th><td class="num">about $51k</td><td>72,400 AWS F2 hours at $0.709/hour, 11 September, at our measured 8.25 billion steps/s</td></tr>
           <tr><th scope="row">The card we tested, spot</th><td class="num">about $56k</td><td>42,400 GPU-hours at $1.31/hour, 11 September, at our campaign rate of 14.11 billion steps/s</td></tr>
-          <tr><th scope="row">The same work at published list price</th><td class="num">about $114k</td><td>Modal list price, 19 September, at 15.88 billion steps/s</td></tr>
-          <tr><th scope="row">The card we tested, on demand</th><td class="num">$142k to $175k</td><td>Same hours, on-demand pricing, 11 September</td></tr>
+          <tr><th scope="row">The card we tested, list price</th><td class="num">about $114k</td><td>Modal list price, 19 September, at 15.88 billion steps/s</td></tr>
+          <tr><th scope="row">The card we tested, on demand</th><td class="num">$142k to $175k</td><td>Same hours as the spot row, on-demand pricing, 11 September</td></tr>
         </tbody>
       </table>
       </div>
-      <p>Two things worth noticing. The cost depends on the work and not on the size of the fleet: eight cards taking 221 days and 512 cards taking 3.4 days come to the same bill. And the fastest card is not the cheapest card, which is why the campaign ran mixed hardware. We publish rates for twelve GPUs from Turing to Blackwell, per card, per processing unit and per dollar, and the workstation part wins on all three for this particular job.</p>
-      <p>All of the spot figures hold only while spot capacity does. Ours did not, which is the next-to-last section.</p>
+      <p>Two things worth noticing. First, the cost mostly depends on the work and not on the size of the fleet: eight cards taking 221 days and 512 cards taking 3.4 days do the same work at the same price. The exception is the wait for a collision to be noticed. Every card keeps running through it, so at 512 cards it adds roughly half again to the bill, and past a few hundred cards a bigger fleet buys more waiting than speed.</p>
+      <p>Second, the fastest card is not always the cheapest, which is why the campaign ran mixed hardware. We publish rates for twelve GPUs from Turing to Blackwell, per card, per processing unit and per dollar. At list prices the workstation part wins on all three for this particular job. On the spot market the ranking moves from day to day, which is how an L4 came to give the cheapest quote above.</p>
+      <p>All of the spot figures hold only while spot capacity does. Ours did not, as <a href="#the-campaign">the campaign section</a> explains.</p>
       <h2 id="the-finding-that-travels">The finding that travels</h2>
-      <p>The native carry-less instruction issues ten to eighteen times faster on NVIDIA's data-centre chips than on the workstation chip we tested. Measured as the time it takes in ordinary instructions:</p>
+      <p>Per clock, the native carry-less instruction issues ten to eighteen times faster on NVIDIA's data-centre chips than on the workstation chip we tested. What decides whether moving work onto it pays is its price in ordinary logic instructions:</p>
       <div class="table-wrap">
       <table class="data">
         <thead><tr><th scope="col">Card</th><th scope="col" class="num">Cost of one carry-less multiply, in ordinary instructions</th></tr></thead>
@@ -137,9 +139,9 @@
         </tbody>
       </table>
       </div>
-      <p>That means the same change can win on one Blackwell part and lose on another. Two changes we built, measured and threw away as losses on our card are wins on a data-centre part.</p>
-      <p>One trade we priced but have not shipped makes the point cleanly. It costs 19 extra of the new instructions and saves 290 ordinary ones, so it pays off wherever the new instruction is worth less than about 15 ordinary ones. On a B200 it is worth 3.8, so it wins. On our card it is worth 37.8, so it loses. That is not a close call, and we did not have to guess, because we had measured what each part of each chip costs.</p>
-      <p>This is why we publish the changes that failed alongside the ones that worked. A list of what worked tells you nothing about hardware you have not tested. We should be honest that we built the cost model first and then read the result off it, rather than writing the prediction down in advance.</p>
+      <p>That means the same change can win on one Blackwell part and lose on another. Two changes we built, measured and threw away as losses on our card are wins on a B200.</p>
+      <p>One trade we priced but have not built makes the point cleanly. It costs 19 extra of the new instructions and saves 290 ordinary ones, so it pays off wherever the new instruction is worth less than about 15 ordinary ones. On a B200 it is worth 3.8, so the trade should win. On our card it is worth 37.8, so it would lose. That is not a close call, and we did not have to guess, because we had measured what each part of each chip costs.</p>
+      <p>This is why we publish the changes that failed alongside the ones that worked. A list of what worked tells you nothing about hardware you have not tested. One thing we should be honest about: we built the cost model first and read these verdicts off it, but we did not write its predictions down before measuring the B200, so those results fit the model rather than confirm a forecast made in advance.</p>
       <h2 id="the-curves-people-actually-use">The curves people actually use</h2>
       <p>ECC2K-130 is a museum piece. Nobody deploys it. So we took the same techniques to Pollard rho on NIST P-256 and P-384, which are in essentially every browser, phone and payment terminal.</p>
       <p>Most of the techniques transferred. The speedups were 1.52 times on P-256 and 2.61 times on P-384.</p>
@@ -154,33 +156,33 @@
         </tbody>
       </table>
       </div>
-      <p>At our best measured rate, a P-256 attack by this method would take roughly 6 × 10<sup>21</sup> card-years. A billion cards running in parallel would need about six trillion years, which is more than four hundred times the age of the universe. Even against a theoretical bound on how fast the arithmetic could ever go, it is still 8 × 10<sup>20</sup> card-years.</p>
-      <p>That is the whole lesson in one comparison. The same engineering that brings one curve within a small fleet's reach does nothing at all to another, because the gap between them is in the exponent, and engineering only ever touches the constant in front of it.</p>
+      <p>At our best measured rate, a P-256 attack by this method would take roughly 6 × 10<sup>21</sup> card-years. A billion cards running in parallel would need about six trillion years, which is more than four hundred times the age of the universe. Even at an upper bound on the rate that counts only the multiplications, it is still 8 × 10<sup>20</sup> card-years.</p>
+      <p>That is the whole lesson in one comparison. The same engineering that brings one curve within a small fleet's reach does nothing that matters to another, because the gap between them is in the exponent, and engineering only ever touches the constant in front of it.</p>
       <h2 id="why-we-think-this-is-worth-doing">Why we think this is worth doing</h2>
-      <p>Cost estimates get computed once, published, and cited for decades. The mathematics behind them is usually sound. The hardware assumptions underneath them quietly rot. And people choose key sizes and parameters against those estimates.</p>
-      <p>This is not hypothetical. Germany's federal cybersecurity agency recommended an algorithm called Classic McEliece for years and withdrew that recommendation in September 2026, after a run of results dropped its estimated attack cost below the level their own guidance requires. No deployment changed. No software was updated. The number changed.</p>
+      <p>Cost estimates get computed once, published, and cited for decades. The mathematics behind them is usually sound, but the hardware assumptions underneath them quietly rot, and cryptanalysis keeps moving. People choose key sizes and parameters against those estimates.</p>
+      <p>Estimates do move. Germany's federal cybersecurity agency had listed an algorithm called Classic McEliece in its guidance since 2020. On 1 October 2026 it advised against using it in new systems, after a run of results showed its security was substantially lower than had been assumed. No deployment changed. No software was updated. The number changed.</p>
       <p>A great deal of new cryptographic code is being written right now, on deadlines that start in 2027, much of it by teams implementing these algorithms for the first time. The distance between what a specification promises and what an implementation delivers is where the real risk sits, and almost nobody measures it.</p>
-      <p>We want to be careful about how far that goes. We have measured one attack on one obsolete curve, two deployed curves it does not threaten, and a dozen cards. We have measured no post-quantum implementation at all. Whether the same gap matters as much for the new lattice-based algorithms is an open question and we have not answered it.</p>
+      <p>We want to be careful about how far that goes. We have measured one attack, on one challenge curve and two deployed curves it does not threaten, across a dozen GPU models. We have measured no post-quantum implementation at all. Whether the same gap matters as much for the new lattice-based algorithms is an open question and we have not answered it.</p>
       <p>Closing that measurement gap is what we built this lab to do.</p>
       <h2 id="what-we-checked-and-the-number-we-had-to-withdraw">What we checked, and the number we had to withdraw</h2>
-      <p>A faster program that gets a different answer is worthless, so the bar we set was that the fast version has to produce exactly the same output as the slow one. Not similar. Identical, down to the byte. A change that gained 30% and altered a single result was rejected rather than investigated. The whole pipeline is also tested on smaller versions of the same problem where we already know the answer, including one challenge from the same 1997 set that was solved in 1998 and has a published solution.</p>
+      <p>A faster program that gets a different answer is worthless, so the bar we set was that the fast version has to produce exactly the same output as the slow one. Not similar. Identical, down to the byte. A change that altered a single result would have been rejected rather than investigated, whatever it gained. In the event, every change we turned down failed on speed, not on correctness. The whole pipeline is also tested on smaller versions of the same problem where we already know the answer, including ECC2K-95, the challenge from the same 1997 set that was solved in 1998.</p>
       <p>Here is the part we would rather not write, and the reason you should trust the rest.</p>
-      <p>We built a variant of the walk that measured 20.08 billion steps per second, well above anything else in the paper. Then we found that the rule it used for escaping dead-end loops was unsound. With the rule corrected, the same variant runs at 8.24, which is slower than the build we actually ship. The 20.08 is not a result. It is in the paper, labelled, next to the explanation, because a reader skimming our tables would otherwise see the biggest number and draw the wrong conclusion.</p>
+      <p>We built a variant of the walk that measured 20.08 billion steps per second, well above anything else in the paper. Then we found that the rule it used to escape the short loops a walk can get trapped in was unsound. With the rule corrected, the same variant runs at 8.24, which is slower than the build we actually ship. The 20.08 is not a result. It is in the paper, labelled, next to the explanation, because a reader skimming our tables would otherwise see the biggest number and draw the wrong conclusion.</p>
       <div class="table-wrap">
       <table class="data">
         <thead><tr><th scope="col">Variant walk</th><th scope="col" class="num">Billion steps per second</th></tr></thead>
         <tbody>
           <tr><th scope="row">With the unsound loop-escape rule (withdrawn)</th><td class="num">20.08</td></tr>
           <tr><th scope="row">With the rule corrected</th><td class="num">8.24</td></tr>
-          <tr><th scope="row">The build we ship, for comparison</th><td class="num">15.88</td></tr>
+          <tr><th scope="row">Our fastest correct build, for comparison</th><td class="num">15.88</td></tr>
         </tbody>
       </table>
       </div>
       <p>That is also the clearest lesson in the work. Speed is not the thing to optimise. Cost per answer is, and the two can point in opposite directions.</p>
       <h2 id="the-campaign">The campaign</h2>
       <p>Alongside this work we ran a distributed attack on ECC2K-130 using the new code, with clients for ordinary CPUs, NVIDIA GPUs and FPGAs. Every client's arithmetic is checked against a reference model, and any result a client reports can be independently re-run from its starting point.</p>
-      <p>It is paused rather than finished. The cloud provider reclaimed our entire fleet on 18 September when the spot market turned, the account went onto a verification hold that has blocked new machines since, and the last result landed on 7 October. At that point we had walked about 5.4% of the expected work with no collision found. <a href="ecc2k-130-campaign.html">The campaign write-up</a> has the full account.</p>
-      <p>Finding nothing at 5.4% is the expected outcome, not a disappointment. Every checkpoint is intact, and any machine that picks a slot back up continues exactly where it stopped. A new fleet running the same walk inherits the credit for the work already done, which takes about 5% off the remaining job. That changes the plan, not the scale.</p>
+      <p>It is paused rather than finished. The spot market took back our entire cloud fleet on 18 September, and the account went onto a verification hold that has blocked new machines since. Collection carried on at a small scale with another provider until the last result landed on 7 October. At that point we had walked about 5.4% of the expected work with no collision found. <a href="ecc2k-130-campaign.html">The campaign write-up</a> has the full account.</p>
+      <p>Finding nothing at 5.4% is the expected outcome, not a disappointment: the chance of a collision that early was about one in five hundred. Every checkpoint is intact, and any machine that picks a slot back up continues exactly where it stopped. A new fleet running the same walk inherits the credit for the work already done, which takes about 5% off the remaining job. That changes the plan, not the scale.</p>
       <p>Every number in the paper cites an evidence record. The code, the data, the evidence and a Dockerfile whose image starts the walk are at <a href="https://github.com/aburan28/rho-blackwell">github.com/aburan28/rho-blackwell</a>.</p>
       <p class="paper-link"><a href="https://eprint.iacr.org/2026/2469">Read the paper on IACR ePrint</a> <span class="mono">2026/2469</span><br><a class="code-link" href="https://github.com/aburan28/rho-blackwell">Code on GitHub</a></p>
     </article>
