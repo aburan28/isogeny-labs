@@ -371,7 +371,8 @@
             "Sizes": "224- to 512-bit output",
             "Best known attack": "None on the full functions; collisions exist only for reduced-round versions. The Merkle&ndash;Damg&aring;rd structure allows length extension, which is why keyed hashing uses HMAC",
             "Quantum": "Generic speedups only"
-          }
+          },
+          "page": "sha-2"
         },
         {
           "id": "sha-3",

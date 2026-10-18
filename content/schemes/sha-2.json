@@ -1,0 +1,104 @@
+{
+  "slug": "sha-2",
+  "position": 2,
+  "group": "symmetric",
+  "compute": "sha256",
+  "title": "SHA-2",
+  "short_title": "SHA-2",
+  "one_liner": "The SHA-256 and SHA-512 family, implemented from FIPS 180-4 with its constants derived from the primes, and checked against the standard's vectors.",
+  "description": "SHA-2 (FIPS 180-4): the Merkle-Damgard construction, the SHA-256 compression function with constants derived from cube roots of primes, test vectors reproduced, avalanche measured, the state of cryptanalysis, length extension and HMAC, and the quantum picture.",
+  "standfirst": "SHA-256 is the hash under TLS certificates, software signatures, Git's newer object format and Bitcoin. It was published in 2001, its predecessor SHA-1 has since fallen to practical collisions, and SHA-256 itself has no known attack that comes close to the full function.",
+  "facts": {
+    "Rests on": "Cryptanalysis of the compression function; no reduction to a mathematical problem",
+    "Standards": "FIPS 180-4",
+    "Sizes": "SHA-224 and SHA-256 on 32-bit words; SHA-384 and SHA-512 on 64-bit words",
+    "Best known attack": "None on the full functions; collisions are known only for reduced-step versions",
+    "Quantum": "Generic speedups only"
+  },
+  "sections": [
+    {
+      "heading": "The construction",
+      "blocks": [
+        {
+          "p": "SHA-2 uses the Merkle&ndash;Damg&aring;rd construction, proposed independently by Merkle and by Damg&aring;rd in 1989. The message is padded to a multiple of the block size, with its length in bits written into the last block, and then processed one block at a time by a <em>compression function</em> that maps the current 256-bit state and a 512-bit block to a new state. The final state is the hash. If the compression function is collision-resistant, so is the whole hash; the length in the padding is what makes that proof go through."
+        },
+        {
+          "p": "SHA-256's compression function expands the 16 words of a block into a schedule of 64 words, then runs 64 steps of additions, rotations and two bitwise functions, <em>choose</em> and <em>majority</em>, over eight 32-bit state words. Each step adds one word of the schedule and one round constant. At the end the result is added back to the input state, which makes the function hard to run backwards."
+        }
+      ]
+    },
+    {
+      "heading": "Nothing up the sleeve",
+      "blocks": [
+        {
+          "p": "A designer who chose the 64 round constants freely could, in principle, have chosen them to hide a weakness. SHA-256 avoids the question by deriving them: each constant is the first 32 bits of the fractional part of the cube root of one of the first 64 primes, 2 to {{p63}}, and the eight words of the initial state come from the square roots of the first eight primes in the same way. The code behind this page computes all of them with integer roots, and they come out as the published values: K<sub>0</sub> = {{k0}} from the cube root of 2, K<sub>63</sub> = {{k63}} from 311, and the first initial word {{h0}} from the square root of 2."
+        },
+        {
+          "p": "With the constants in place the whole function is about forty lines. It reproduces the standard examples, among them the hash of \"abc\":"
+        },
+        {
+          "pre": "SHA-256(\"abc\") =\n{{abc}}",
+          "label": "Recomputed at build time, with the empty-string and two-block examples, and compared with Python's hashlib on {{random_checks}} random inputs"
+        }
+      ]
+    },
+    {
+      "heading": "Avalanche",
+      "blocks": [
+        {
+          "p": "A good hash behaves like a random function: changing any input bit should change each output bit with probability one half. The build hashed {{trials}} random 32-byte messages, flipped one random bit in each, and counted how many of the 256 output bits changed. The mean was {{mean}}, against 128 for a random function, and the counts ranged from {{lo}} to {{hi}}, which is the spread expected from 256 fair coin flips."
+        }
+      ]
+    },
+    {
+      "heading": "Cryptanalysis",
+      "blocks": [
+        {
+          "p": "SHA-2 has held up. The best published collision attacks reach fewer than half of SHA-256's 64 steps, and preimage attacks reach somewhat further but at costs close to brute force. Nothing comparable to the attacks on its predecessors exists: MD5 collisions became practical in 2004, and SHA-1 fell to a public collision in 2017 and to chosen-prefix collisions, the kind that forge certificates, in 2020. The design of SHA-2 is related to SHA-1, which is why NIST ran the open competition that produced SHA-3 as a structurally different alternative. That precaution has not been needed so far."
+        }
+      ]
+    },
+    {
+      "heading": "Length extension, and HMAC",
+      "blocks": [
+        {
+          "p": "The Merkle&ndash;Damg&aring;rd construction has one structural property that matters in practice. The hash output <em>is</em> the internal state after the last block, so anyone who knows SHA-256(m) and the length of m can continue hashing from that state and compute the hash of m followed by its padding and any further data, without knowing m. That breaks the naive message authentication code SHA-256(key &#8214; message), and it has broken real APIs."
+        },
+        {
+          "p": "The standard fix is HMAC, by Bellare, Canetti and Krawczyk, which hashes twice with the key mixed in at both ends, and whose security follows from properties of the compression function. SHA-512/256 and SHA-384, which output only part of the state, and SHA-3, which is not a Merkle&ndash;Damg&aring;rd design, do not have the property at all."
+        }
+      ]
+    },
+    {
+      "heading": "The quantum picture",
+      "blocks": [
+        {
+          "p": "Quantum computers give only generic speedups against hash functions. Grover's algorithm finds preimages of an n-bit hash in about 2<sup>n/2</sup> steps, and quantum collision search is generally not expected to beat classical collision search once its memory and communication costs are counted. SHA-256 therefore keeps its role in the post-quantum world: <a href=\"slh-dsa.html\">SLH-DSA</a> is built entirely on it or on SHAKE, and <a href=\"ml-kem.html\">ML-KEM</a> and <a href=\"ml-dsa.html\">ML-DSA</a> use SHA-3 and SHAKE throughout."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "text": "NIST FIPS 180-4, Secure Hash Standard (SHS) (2015)",
+      "href": "https://doi.org/10.6028/NIST.FIPS.180-4"
+    },
+    {
+      "text": "R. C. Merkle, \"One way hash functions and DES\", CRYPTO 1989",
+      "href": "https://doi.org/10.1007/0-387-34805-0_40"
+    },
+    {
+      "text": "I. B. Damg&aring;rd, \"A design principle for hash functions\", CRYPTO 1989",
+      "href": "https://doi.org/10.1007/0-387-34805-0_39"
+    },
+    {
+      "text": "M. Bellare, R. Canetti and H. Krawczyk, \"Keying hash functions for message authentication\", CRYPTO 1996",
+      "href": "https://doi.org/10.1007/3-540-68697-5_1"
+    },
+    {
+      "text": "M. Stevens, E. Bursztein, P. Karpman, A. Albertini and Y. Markov, \"The first collision for full SHA-1\", CRYPTO 2017",
+      "href": "https://doi.org/10.1007/978-3-319-63688-7_19"
+    }
+  ],
+  "related": ["slh-dsa", "aes"]
+}
