@@ -1,0 +1,91 @@
+---
+title: We rented a few hundred machines and spent four weeks attacking a 29-year-old challenge
+order: 2
+meta: Pollard rho · GPUs, CPUs and an FPGA · a distributed campaign
+summary: We rebuilt the planned 2009 attack on Certicom's ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at spot prices, not of mathematics.
+authors:
+eprint:
+code: https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130
+---
+
+In 1997 Certicom posted a list of elliptic curve challenges. Two of the Koblitz ones were solved, in 1998 and 2000, by volunteer computing efforts. The third, ECC2K-130, is still open.
+
+In 2009 a consortium of twenty researchers published the arithmetic, the attack design, and the hardware throughput for a planned assault on it. They put the cost at a specific number of steps and they were right about it. The attack never completed.
+
+We built the whole thing again from scratch, on hardware that did not exist in 2009, and ran it. This post is about what that actually costs.
+
+## What running it means
+
+The attack is a search with no shortcuts. You start a few million walks at random points on the curve and step each one forward. Occasionally a walk lands on a point that meets a rare condition, and the machine reports it. Collect enough of those and eventually two different walks report the same point. That collision gives you the answer.
+
+Every step is cheap. You just need an enormous number of them. The 2009 estimate was about two quintillion, and our own measurements agree with it to two decimal places in the exponent, which is the first thing worth saying: that number was never in doubt and we did not move it.
+
+So the campaign is not a clever idea. It is a logistics problem. Rent machines, keep them walking, collect and store what they report, and make sure every single point can be independently re-verified later.
+
+## The fleet
+
+At peak we had about 130 workers running: NVIDIA GPUs of several kinds, plus CPU machines, spread across cloud providers and regions. They produced around 2,600 points per second.
+
+The interesting constraint is not raw speed, it is cost per step. Our twelve-card survey found that the card we used by default beat every data center GPU on this workload, including the B200 and the H100. That is unintuitive if you are used to AI benchmarks, and it has a simple cause: this attack hammers a narrow, specialized part of the chip that the big AI cards do not prioritize. Rankings from one workload do not transfer to another.
+
+By dollars rather than by card, the cheapest option at one point was a modest L4 in a Northern European region, at roughly 56 trillion steps per dollar, against 38 trillion for the RTX PRO 6000. The fastest card is not the cheapest card: buying steps per dollar instead of steps per card takes the same attack from about $56,000 to about $38,000.
+
+Then on September 18th the spot market reclaimed every worker at once, and the cloud account went onto a verification hold that blocked new launches. Collection continued at a much smaller scale elsewhere. The last point landed on October 7th.
+
+## Where it stands
+
+486 million points stored. About 5.4% of the expected work. No collision.
+
+That is exactly what the mathematics predicts. At 5% of the way through, the odds of having found a collision already are about one in five hundred. Finding nothing is the expected outcome and tells you nothing is wrong.
+
+Collection is paused rather than finished. Every worker's state is checkpointed, so a machine that picks up a slot resumes its walks where they left off.
+
+Whether the remaining 94.6% gets walked is a question of money, not mathematics. The full attack is about 42,400 hours on the card the paper measures, an RTX PRO 6000, which at its spot price of $1.31 an hour is roughly $56,000. Fleet size does not change the bill: 8 cards for 221 days costs the same as 512 for three and a half. Nothing about that number requires a breakthrough, a government, or a data center. It requires a credit card and patience.
+
+## The thing we got wrong
+
+One parameter controls how rare a reported point is. Make it rarer and you store less data but lose more work in flight when a collision finally lands. We needed to know the real rate, so we measured it across the fleet.
+
+The first measurement said one point per 250 million steps. It was wrong, for two separate reasons. One counter was multiplying every machine's work by a constant that only applied to one kind of card, inflating the slower machines by a factor of about 26. And the point total quietly included two retired machines that had been running a different setting.
+
+The replacement measurement reads each worker's own two counters directly, frozen at one moment across 132 machines. The answer, on the current configuration, is one point per 356 million steps, and it comes out the same on every hardware family to within rounding.
+
+We retired the old number rather than averaging it in. It is in the paper with an explanation of why it was wrong, because a campaign that quietly corrects its own figures is not one anyone should trust.
+
+## The FPGA
+
+GPUs are general-purpose machines that happen to be good at this. An FPGA is a chip you wire yourself, and the arithmetic this attack needs is close to what an FPGA is naturally made of.
+
+Before writing any hardware, we estimated what one would do: somewhere between 5 and 12 billion steps per second, with 8 as the central guess. Then we built it, loaded it onto an AWS board, and measured 8.25.
+
+We think the prediction landing inside its own range matters more than the number does. It means the model of where the time goes is right, which is what lets you reason about hardware you have not bought.
+
+On cost per solve, the FPGA and the GPU come out level within the noise of spot pricing. On power, the FPGA is somewhere between two and five times better. An FPGA worker speaks the same protocol as a GPU worker and writes the same records, so a collision between an FPGA walk and a GPU walk is an ordinary merge.
+
+## Is there a better way to attack this?
+
+This is the question that actually determines whether the challenge is interesting, so we priced the alternative rather than assuming.
+
+There is a family of methods called [index calculus](../notes/index-calculus-three-settings.html) that beats brute-force search on some problems. We measured it on this curve at several smaller sizes, fit the cost, and extrapolated.
+
+It comes out about ten million times worse than the search we are running.
+
+We also checked the specific structural trick the literature suggests for curves like this one, and found that it does not exist at this curve's size. The subspaces the construction needs are not there. Separately, the best decomposition method anyone has measured is 35 to 51 bits short of what it would need to be competitive.
+
+None of that is a proof that no better attack exists. It is a statement that the obvious alternatives have been priced and they lose, which is a more useful thing to publish than a guess.
+
+## Why we did it this way
+
+Every rate in this paper is a paired comparison. Old version and new version run alternately on the same machine in the same session, several times each, and we report the middle. A number quoted without its control, its hardware and its configuration is the most common mistake in this area, and we have made it ourselves at least twice in earlier drafts, which the paper records.
+
+Before tuning anything, we wrote down what the hardware could not exceed. That let us answer a question in advance: no, you cannot get 28 billion steps per second out of one of these cards with any version of this attack, because the chip's own pipes do not allow it. Thirty would need two cards.
+
+We also set a target of 17 billion steps per second before building a variant we expected to be faster. It measured 16.56. We declined it. That is what a target declared in advance is for.
+
+Every point a machine reports can be re-walked from its seed by a separate reference implementation, and every version of the code, on every kind of hardware, produces byte-identical records. That is the property that makes a corpus collected across four weeks and four hardware families mean anything at all.
+
+## What this adds up to
+
+The exponent did not move. The number of steps is what it was in 2009, and we measured it rather than trusting it.
+
+What moved is the cost of one step, and the answer to what it would take to finish. The remaining work is a known quantity of money. Someone will eventually spend it, or they will not, but it is no longer a mystery.

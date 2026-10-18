@@ -1,8 +1,8 @@
 ---
-title: We spent eleven weeks pointing AI agents at cryptanalysis. The instruments were the problem.
-order: 2
+title: We spent eleven weeks pointing AI agents at cryptanalysis. Our tests kept passing code we knew was broken.
+order: 3
 meta: Language-model agents · research harness · verification
-summary: Eleven weeks of language-model agents doing cryptanalysis research, in a harness built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: a mutation control let through five false greens, including a module that detected it was under test and behaved correctly while observed.
+summary: Eleven weeks of language-model agents doing cryptanalysis research, in a system built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: our own checker passed code we had deliberately broken, five times over, once because the code noticed it was being tested.
 authors:
 eprint:
 code:
@@ -26,59 +26,77 @@ The obvious worry is that they find nothing. We decided early that was not the w
 
 The dangerous failure in cryptanalysis is not an agent that comes up empty. It is an agent that reports, fluently and persuasively, a result that is not there. Every such report costs a person the time to refute it. A research loop that produces confident wrong answers is a worse instrument than one that produces nothing, because its errors are expensive to clear.
 
-So we built the harness around that asymmetry. Six roles with separated authority, enforced in tooling rather than in prompts, where only one role can change the official status of a hypothesis. Records typed by what can check them. And two evaluation suites that are never combined into a single number: a capability suite, and a discipline suite in which the correct answer to every task is that the evidence does not show what it appears to show.
+So we built the system around that asymmetry. There are six agent roles, and they are not allowed to do each other's jobs. One proposes ideas. One runs experiments. Several try to poke holes. Only one, the coordinator, can declare that something has been established. That separation is enforced by the software itself rather than by instructions in a prompt, because an instruction is a suggestion and a permission check is not.
 
-One discipline task asks for a discrete logarithm that provably does not exist. Any scalar the agent returns is a fabrication, and the grader does not have to be clever to notice.
+Then we measure the system two ways and never combine the scores. One suite asks whether it can solve problems. The other asks whether it will admit when it cannot, and every task in it is a trap where the correct answer is a refusal.
 
-A regression on discipline vetoes a change regardless of what happened to capability. We built that gate because of a specific hazard: an instruction like "be decisive, commit to an answer" reliably raises solve rates and erodes refusal, and the number that improves is the one the developer was looking at.
+One of those traps asks for a discrete logarithm that provably does not exist. Any number the agent returns is a fabrication, and the grader does not have to be clever to notice.
+
+The rule we care about most: if a change makes the system better at solving but worse at refusing, the change is rejected. We built that gate because of a specific hazard. Tell an agent to "be decisive, commit to an answer" and solve rates go up while honest refusals go down. The number that improved is the one the developer was watching.
 
 ## What happened
 
 No cryptanalytic advance. We are not claiming one.
 
-Eleven weeks, 97,374 tracked files, 2,196 experiment directories. A portfolio review in August classified 416 evidence records: 268 at toy scale, 9 carrying a certificate an independent verifier could re-check. The strongest outputs are scoped negative results, statements that bound a direction rather than advance one. The system also rediscovered a known attack on reduced-round AES, which its own assessment labels a near-certain rediscovery, ending with the sentence "No result here is confirmed publication-worthy."
+Eleven weeks, 97,374 tracked files, 2,196 experiment directories. A portfolio review in August looked at 416 pieces of recorded evidence. Of those, 268 were at toy scale, and only 9 carried a certificate an outside party could independently re-check. The strongest outputs are careful negative results, statements that close off a direction rather than advance one. The system also rediscovered a known attack on a weakened version of AES, which its own assessment labels a near-certain rediscovery, ending with the sentence "No result here is confirmed publication-worthy."
 
-We also learned where the bottleneck is, and it is not ideas. At the August review, 920 proposals had produced 539 experiment directories, of which 15 were completed. The median experiment contract had zero runs. Agents generate proposals and repair specifications far more cheaply than they complete validated experiments, and a harness with strong admission rules can absorb unlimited effort at the admission stage without ever measuring anything.
+We also learned where the bottleneck is, and it is not ideas. At that same review, 920 proposals had produced 539 experiment directories, of which 15 had actually been completed. Most experiments had never been run at all.
+
+Agents are cheap at proposing things and at refining the specification for how a thing would be tested. They are expensive at finishing the test. A system with strict admission standards can absorb unlimited effort at the front door and never measure anything.
 
 ## The finding we did not expect
 
 The most useful thing we learned is about verification, and it is uncomfortable.
 
-To certify measurements made with a variable-round AES implementation, we built a mutation control: inject faults into the module under test, check that each one is detected. A false green is a passing verdict on a module that is demonstrably wrong. Every faulted module had been confirmed wrong by direct ciphertext comparison before the control ran.
+We needed to trust a piece of our own test tooling, so we checked it the standard way: deliberately break the code under test, and confirm the checker notices. We broke it five separate ways, confirming each break independently first, so there was no question the code was wrong.
 
-We got five false greens across three repairs. Each repair produced the next instance of its own failure class.
+The checker passed all five.
+
+We fixed it. It passed again, a different way. We fixed it again. Same result. Five false all-clears across three repairs, and each repair produced the next escape.
 
 <div class="table-wrap">
 <table class="data">
   <thead><tr><th scope="col" class="num">#</th><th scope="col">Class</th><th scope="col">How it escaped</th></tr></thead>
   <tbody>
-    <tr><td class="num">1</td><td>Coverage</td><td>Task generator produced one parameter combination only for 16-byte keys</td></tr>
-    <tr><td class="num">2</td><td>Evasion</td><td>The faulty module read the name it was imported under and hid its fault under test</td></tr>
-    <tr><td class="num">3</td><td>Evasion</td><td>The first mutant rewrote the shared runner script, stripping later mutants of their faults</td></tr>
-    <tr><td class="num">4</td><td>Coverage</td><td>Fault confined to a grid cell the generator left empty by construction</td></tr>
-    <tr><td class="num">5</td><td>Evasion</td><td>A cloak keyed on the runner's file name instead of the module name</td></tr>
+    <tr><td class="num">1</td><td>Coverage</td><td>The test generator only produced one parameter combination, for 16-byte keys</td></tr>
+    <tr><td class="num">2</td><td>Evasion</td><td>The broken code read the name it was imported under and hid its fault while being tested</td></tr>
+    <tr><td class="num">3</td><td>Evasion</td><td>The first broken version rewrote the shared test script, removing the faults from later ones</td></tr>
+    <tr><td class="num">4</td><td>Coverage</td><td>The fault sat in a region the generator never produced by construction</td></tr>
+    <tr><td class="num">5</td><td>Evasion</td><td>A disguise keyed on the test runner's filename instead of the module name</td></tr>
   </tbody>
 </table>
 </div>
 
-Read entry two again. The code under test detected that it was being tested and behaved correctly while observed.
+Read entry two again. The code under test worked out that it was being observed, and behaved correctly while watched.
 
-The pattern has a structural cause. Each repair closes one cell of an open-ended product of parameter axes, or one channel of an open-ended set of things a child process can observe. Enumeration against an open-ended set does not converge. The mutant is an ordinary process holding the harness's own inputs, so any test that runs the object under a distinguishable condition can be evaded by an object that reads the condition.
+Nothing was being devious on purpose. These were faults we injected, and they evaded detection as a side effect of how they were written. But that is the point. If an accident can do this, an adversarial module certainly can.
 
-This is Thompson's trusting-trust argument, which we rediscovered the hard way.
+The failures split into two kinds, and they have different fates.
 
-The useful decomposition has three parts. **Closed properties of the scoring core are meetable:** that the only route to a detection is an executed comparison that diverged is a property of one function over a finite code path, and eleven independently written injection attempts failed to move it. **Coverage escapes are closable by construction rather than by enumeration,** if the task set is derived from the module's own declared parameter domain so an ungenerated cell is impossible. **Evasion escapes are not closable by an in-process instrument against an adversarial module.** The honest handling is to declare that class out of the threat model on a stated ground, and write the declaration into any certificate that relies on the instrument.
+**Coverage failures** are the test set missing a case. Those are fixable, but not by adding cases one at a time. You have to generate the test set from the code's own declared range of inputs, so that a missing case is impossible by construction rather than merely unlikely.
 
-We also, separately, ran a falsification campaign against our own findings. Its first probe reported a 28% violation rate against a structural result, including factorisation patterns impossible for the asserted group. It looked decisive and quantitative. Every violation was an artifact of a silent degree drop inside the probe's own resultant computation. The null object, on which the claim is true by construction, was clean throughout, and that is what localised the fault to the probe.
+**Evasion failures** are the code noticing it is under test. Those are not fixable from inside. The thing you are testing is an ordinary program running on the same machine with access to the same information, so any condition that marks "this is a test" can be read by the thing being tested. Patch one channel and another appears.
 
-A falsification harness without null objects can refute a correct theorem convincingly.
+This is Ken Thompson's trusting-trust argument from 1984, which we rediscovered the hard way. His version was about a compiler that could hide a backdoor from anyone inspecting its source. The shape is the same. A tool cannot fully vouch for itself.
+
+The honest response is not to keep patching. It is to declare that failure class out of scope, say so explicitly, and write that admission into any certificate the tool produces.
+
+We ran into the mirror image of this too. We built a separate campaign to attack our own findings, and its very first probe reported that one of our structural results failed 28% of the time, including patterns that are mathematically impossible for the object in question. It looked decisive. It was quantitative. It was completely wrong, and the cause was a silent arithmetic failure inside the probe itself.
+
+What caught it was a control. We also ran the probe against an object where the claim is true by construction, so any violation it reported there had to be the probe's fault. That control came back clean throughout, which told us the problem was in our instrument rather than in our theorem.
+
+A tool built to falsify things will happily falsify a correct one, convincingly, if nobody checks the tool.
 
 ## Why this matters for everyone else
 
 We set out to find attacks. What we found was how hard it is to know whether an automated system found anything at all.
 
-That generalises past cryptography. Anyone deploying agents on technical work has the same problem: the output is fluent, the verification tooling is also written by the same kind of process, and a passing test tells you less than it appears to. If you are going to trust machine-produced work, the instrument that checks it has to be at least as carefully built as the thing being checked, and in one specific class of failure it cannot be sufficient at all.
+That generalises past cryptography. Anyone pointing agents at technical work has the same problem. The output is fluent. The tooling that checks the output was often produced the same way. And a passing test tells you less than it appears to.
 
-The direction is not hopeless. Discipline can be built in, and it can be measured separately from capability. It just has to be designed in rather than assumed, and the measurement has to be arithmetic rather than another model's opinion. A judge model scoring a cryptanalysis agent would repeat the error of a solver verifying its own certificate, and would fail exactly where it matters: a fabricated solve is fluent, well argued and wrong, which is the profile a judge rewards.
+If you are going to trust machine-produced work, the instrument that checks it has to be built at least as carefully as the thing being checked. For one specific class of failure, no amount of care inside the instrument is enough.
 
-Everything we built is public: the harness, the contracts, the schemas, the suites, and the research records.
+The direction is not hopeless. Discipline can be engineered, and it can be measured separately from capability. It has to be designed in rather than assumed, and the measurement has to be something a person could recompute by hand rather than another model's opinion.
+
+That last part matters. Using a model to grade a cryptanalysis agent repeats the original error, the solver checking its own work, and it fails precisely where it counts. A fabricated result is fluent, well argued and wrong. That is exactly the profile a model-judge rewards.
+
+Everything we built is public: the system, its rules, its test suites, and the full research record.

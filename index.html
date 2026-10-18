@@ -52,15 +52,21 @@
       <h2 id="research-title">Research</h2>
     <ol class="cards">
       <li class="card">
-        <h3><a href="./research/ecc2k-130.html">A 29-year-old challenge got 17 times cheaper, and the math didn't change</a></h3>
+        <h3><a href="./research/ecc2k-130.html">A 29-year-old attack got 17 times cheaper on one NVIDIA Blackwell card, and the math didn't change</a></h3>
         <p class="meta">GPU cryptanalysis · parallel Pollard rho · CUDA</p>
-        <p>Certicom's ECC2K-130 challenge has been open since 1997. We made the standard attack on it run 17.1 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the algorithm, which cuts its expected cost from about 80 GPU-years to 4.7.</p>
-        <ul class="links"><li><a href="./research/ecc2k-130.html">The work, in plain language</a></li><li><a href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Code</a></li></ul>
+        <p>We made the program that attacks Certicom's ECC2K-130 challenge, open since 1997, run 17.2 times faster on one NVIDIA RTX PRO 6000 Blackwell without changing the mathematics. One card would now need about 4.3 years for the whole attack; 290 cards, about a week.</p>
+        <ul class="links"><li><a href="./research/ecc2k-130.html">The work, in plain language</a></li><li><a href="https://eprint.iacr.org/2026/2469">Paper on IACR ePrint</a></li><li><a href="https://github.com/aburan28/rho-blackwell">Code</a></li></ul>
       </li>
       <li class="card">
-        <h3><a href="./research/autoresearcher.html">We spent eleven weeks pointing AI agents at cryptanalysis. The instruments were the problem.</a></h3>
+        <h3><a href="./research/ecc2k-130-campaign.html">We rented a few hundred machines and spent four weeks attacking a 29-year-old challenge</a></h3>
+        <p class="meta">Pollard rho · GPUs, CPUs and an FPGA · a distributed campaign</p>
+        <p>We rebuilt the planned 2009 attack on Certicom's ECC2K-130 from scratch and ran it on rented GPUs, CPUs and an FPGA. After 486 million stored points, about 5.4% of the expected work, there is no collision, as the mathematics predicts. Finishing is a question of money, roughly $56,000 of GPU time at spot prices, not of mathematics.</p>
+        <ul class="links"><li><a href="./research/ecc2k-130-campaign.html">The work, in plain language</a></li><li><a href="https://github.com/aburan28/cryptanalysis/tree/HEAD/ecc2k130">Code</a></li></ul>
+      </li>
+      <li class="card">
+        <h3><a href="./research/autoresearcher.html">We spent eleven weeks pointing AI agents at cryptanalysis. Our tests kept passing code we knew was broken.</a></h3>
         <p class="meta">Language-model agents · research harness · verification</p>
-        <p>Eleven weeks of language-model agents doing cryptanalysis research, in a harness built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: a mutation control let through five false greens, including a module that detected it was under test and behaved correctly while observed.</p>
+        <p>Eleven weeks of language-model agents doing cryptanalysis research, in a system built to catch confident wrong answers. There was no cryptanalytic advance. The finding is about verification: our own checker passed code we had deliberately broken, five times over, once because the code noticed it was being tested.</p>
         <ul class="links"><li><a href="./research/autoresearcher.html">The work, in plain language</a></li></ul>
       </li>
       <li class="card">

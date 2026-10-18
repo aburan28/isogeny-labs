@@ -1,6 +1,6 @@
 ---
 title: Quantum computers and post-quantum cryptography
-order: 3
+order: 4
 meta: Survey · Shor, Grover, the migration deadline, and isogenies
 summary: What a quantum computer breaks and what it does not, why the move away from RSA and elliptic curves has to start before one exists, and where isogeny-based cryptography fits.
 authors:
